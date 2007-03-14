@@ -47,7 +47,7 @@
   <!-- *************************************************************** -->
   <target name="setup" depends="findfeatures">
     <mkdir dir="Classes/tests" />
-    <loadfile property="version" srcfile="RELNOTES">
+    <loadfile property="version" srcfile="Documentation/RELNOTES">
       <!-- someone had a half decent idea with these filter chains,
       but what is availabe is still bloody poor compared to a decent
       grep/sed/awk combination -->
