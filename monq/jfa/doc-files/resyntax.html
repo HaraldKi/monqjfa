@@ -1,0 +1,276 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>jfa's regular expression syntax</title>
+    <link rel="stylesheet" type="text/css" href="../../../docstyle.css">
+    <!-- next one used only during development -->
+    <link rel="stylesheet" type="text/css" href="../docstyle.css">
+  </head>
+
+  <body>
+    <h1>jfa's regular expression syntax</h1>
+
+    <p>The regular expression syntax employed by
+      <code>jfa</code> is similar but not the same as that used in
+      <code>perl, python, tcl</code> or the C library. The two reasons
+      for this are that it sacrifices some features for speed and that it 
+      contains operators which are not known in standard
+      implementations: <a href="../Nfa.html#invert()">invert()</a>,
+      <a href="../Nfa.html#not()">not()</a>
+      and <a href="../Nfa.html#shortest()">shortest()</a>.
+    </p>
+    
+    <p>Regular expressions are built up from <em>atoms</em> and
+    <em>operators</em> which combine atoms into larger regular
+    expressions.
+    </p>
+
+
+    <h4>Atoms</h4>
+      
+    <dl class="cList">
+      <dt><em>c</em></dt>
+      <dd>A single character is a regular expression matching exactly
+	this character. Characters with a special meaning in the
+	regular expression syntax must be escaped as described
+	below. Since Java is UNICODE based, a character can be any
+	UNICODE character.
+      </dd>
+      <dt>\<em>c</em></dt>
+      <dd>A character escaped by a preceding backslash matches that
+	character, even if that character otherwise has a special
+	meaning in the regular expression syntax. Note that two
+	consecutive backslash characters are needed in constant
+	strings within Java programs. To construct an <code>Nfa</code>
+	which matches the open bracket, write<pre>
+Nfa nfa = new Nfa("\\[")</pre>
+      <dt>[<em>...</em>]</dt>
+      <dd>A set of characters enclosed in brackets matches
+	any single character mentioned in the set. Within the
+	brackets, a range of characters is denoted by the first and
+	the last character of the range separated by the dash,
+	e.g. <code>[a-z]</code>. If the caret <code>"^"</code> is the
+	first character within the brackets, the character set is
+	inverted, i.e. it will match any character not in the set. To
+	include the right bracket, dash or caret in the set, they must
+	be preceeded by a backslash. (Two backslashes in constant
+	strings in a Java program, because one backslash is eaten up
+	by the compiler.)
+      </dd>
+      <dt>(<em>re</em>)</dt>
+      <dd>A regular expression <em>re</em> enclosed in parentheses
+	matches exactly whatever the <em>re</em> matches.
+      </dd>
+      <dt>(!<em>re</em>)</dt>
+      <dd>A regular expression <em>re</em> enclosed by
+	<q><code>(!</code></q> 
+	and <q><code>)</code></q>
+	matches exactly whatever the <em>re</em> matches. In addition,
+	the <em>re</em> is made into a <a href="#rse">reporting
+	  subexpression</a>. 
+      </dd>
+    </dl>
+
+    <h4>Operators</h4>
+    <dl class="cList">
+      <dt><em>re</em>?</dt>
+      <dd>A regular expression <em>re</em> followed by the question
+	mark matches <em>re</em> or the empty string.
+      </dd>
+      <dt><em>re</em>+</dt>
+      <dd>A regular expression <em>re</em> followed by the plus sign
+	matches one or more occurences of <em>re</em>.
+      </dd>
+      <dt><em>re</em>*</dt>
+      <dd>A regular expression <em>re</em> followed by the asterisk
+	matches zero or more occurences of <em>re</em>.
+      </dd>
+      <dt><em>re</em>!</dt>
+      <dd>A regular expression <em>re</em> followed by the exclamation
+	mark matches the shortest match satisfying <em>re</em>. This
+	operator is particularly useful to <b>jump to the first
+	  occurence</b> of some string. For example the expression
+	<code>"(.*&lt;/b&gt;)!"</code> matches everything up to and
+	including the first <code>"&lt;/b&gt;"</code> found. A
+	comparison with the non-greedy <code>"*"</code> operator
+	available in other regular expression engines can
+	be found <a href="#greed">below</a>.
+      </dd>
+      <dt><em>re</em>~</dt>
+      <dd>A regular expression <em>re</em> followed by the tilde
+	matches any string which does <b>not match</b>
+	<em>re</em> (See also <a href="../Nfa.html#not()">invert()</a>.)
+      <dt><em>re</em>^</dt>
+      <dd>A regular expression <em>re</em> followed by the hat (caret)
+	matches any string which does <b>not contain</b> a match of
+	<em>re</em>. The tilde operator is a convenience shortcut for
+	<code>"((.*re.*)?)^"</code>. If in doubt whether to use
+	<code>re~</code> or <code>re^</code>, read the explanation
+	about <a href="../Nfa.html#not()">not()</a>. 
+      </dd>
+      <dt><em>re<sub>1</sub>re<sub>2</sub></em></dt>
+      <dd>matches all strings which match
+	<em>re<sub>1</sub></em> immediately followed by a match of
+	<em>re<sub>2</sub></em>.
+      </dd>
+      <dt><em>re<sub>1</sub></em>|<em>re<sub>2</sub></em></dt>
+      <dd>matches all strings which match either
+	<em>re<sub>1</sub></em> or <em>re<sub>2</sub></em>.
+      </dd>
+    </dl>
+
+    <a name="rse"><h2>Reporting Subexpressions</h2>
+    <p>In his reference book about regular expressions, 
+    <a href="http://www.oreilly.com/catalog/regex2/index.html">Friedl</a> 
+    notes on page 150 that</p>
+    <blockquote>
+      The way a DFA engine works completely precludes these concepts.
+    </blockquote>
+    while referring to <q>reporting subexpressions</q>. Since this
+    package relies on deterministic finite automata (DFA), there
+    should be no reporting subexpressions. But there are. And in
+    general &mdash; they do not work.</p>
+
+    <p>But for many practically relevant cases they do work quite
+    well. It requires, however, some overhead to keep track of
+    subexpressions in the DFA. This is why, in contrast to other
+    packages, reporting subexpressions are not the default. They have
+    to be specifically requested by enclosing a regular expression in
+    <q><code>(!</code></q> and <q><code>)</code></q>, like in
+    <code>"(![ab]+)"</code>.
+    </p>
+
+    <p>As mentioned above, subexpression tracking is not perfect. It
+    breaks down in particular when the reporting subexpression
+    competes with another subexpression in matching. As an example
+    consider</p>
+    <blockquote>
+      <code>(!(ab)+)(!abc)</code>
+    </blockquote>
+    which matches a sequence of 'a's and 'b's terminated by a
+    'c'. Obviously the two subexpressions overlap on the string
+    <code>"ab"</code> and the implementation will report this: within
+    the string</p>
+    <blockquote>
+      <code>"---ababc---"<code>
+    </blockquote>
+    <p>the match <code>"ababc"</code> will be found with the two
+    submatches <code>"abab"</code> and <code>"abc"</code> assigned to
+    the two subexpressions respectively.
+    </p>
+    <p>As another example consider the regular expression</p>
+    <blockquote>
+      <code>(!ab*)(!abc)</code>
+    </blockquote>
+    <p>when matching in the string
+    <code>"---aaaabc---aaababc---"</code>. Then the reported match and
+      its first and second subgroup are as follows:</p>
+
+    <div>
+      <table style="float:left;  margin-left:1cm; margin-right:1cm; margin-bottom:1em;" cellpadding="2px" rules="all" border="2">
+	<thead>
+	  <tr><td>%0</td><td>%1</td><td>%2</td></tr>
+	</thead>
+	<tbody>
+	  <tr><td>aabc</td><td>a</td><td>abc</td></tr>
+	  <tr><td>ababc</td><td>ab</td><td>abc</td></tr>
+	</tbody>
+      </table>
+ 
+      <p style="float:left; vertical-align:top; width:6cm; font-size:smaller">See 
+	<a href="../PrintfFormatter.html">monq.jfa.PrintFormatter</a>
+	for an explanation of 
+	how to use <code>%0</code>, etc. in format strings. Submatches
+	and formatting are used together in a 
+	<a href="../actions/Printf.html">monq.jfa.actions.Printf</a>
+	object.</p>
+    </div>
+    <p style="clear:left">The difference to the previous example is that when the second
+    <code>'a'</code> of the matching string is seen, there is no doubt
+    that the second subgroup has to be entered. In the previous
+    example, when encountering the second <code>'a'</code>, it may be
+      the start of another <code>"ab"</code> pair of the first
+      subgroup or it may be the start of the second subgroup.</p>
+
+    <p>The bottom line is: the more clear cut the separation between
+      subexpressions is, the better it will work. Nested
+      subexpressions may work, but are not at all tested.
+    </p>
+
+    <a name="broken"><h2>What if reporting subexpressions do not
+      work</h2></a> 
+    <p>If the results of using submatches turn out to be unusable, 
+      <code>Jfa</code> offers also another approach to
+      get hold of parts of a long match. The matched string is simply
+      analysed a second time. But since the matching text is known to
+      stem from a certain regular expression, its structure is known
+      and verified. Consequently the second analysis can usually be
+      quick, simple and dirty. Examples are splits at fixed character
+      positions or fixed characters. Callback objects which split a
+      matched text must be of type 
+      <a href="../TextSplitter.html">TextSplitter</a>. The interface
+      describes functionality to split a string of known structure
+      into parts. The course of action then goes like this:</p>
+    <ol>
+      <li>
+	The DFA finds a match which has interesting parts.</li>
+      <li>
+	The whole match is split into parts by a
+	<a href="../TextSplitter.html">TextSplitter</a>.</li> 
+      <li>
+	Finally, a <a href="../Formatter.html">Formatter</a> is called
+	to rearrange 
+	the resulting parts into the output.</li>
+    </ol>
+    <p>
+      When it comes to using a <code>TextSplitter</code> there are two
+      scenarios:</p>
+    <ol>
+      <li>
+	When you have full control over the regular expression and the
+	associated <code>TextSplitter</code>, there is actually no
+	reason to use a <code>Formatter</code>. Just write a normal
+	<code>FaAction</code> which calls the
+	<code>TextSplitter</code> and then use the result to assemble
+	some new text to replace the matched text.</li>
+      <li>
+	If, however, you want to supply only the regular expression
+	and a corresponding <code>TextSplitter</code> as a module for
+	other programmers to use, then write a method which creates an
+	<code>Nfa</code> bound to an <code>FaAction</code> which first
+	calls your <code>TextSplitter</code> and passes result to the
+	<code>Formatter</code> supplied by the user of your
+	module.</li>
+    </ol>
+    <p>
+      An example of the latter is 
+      <a href="../Xml.html#EmptyElemTagNfa(monq.jfa.Formatter)">EmptyElemTagNfa</a> which
+      makes sure that the regular expression used and the
+      <code>TextSplitter</code> applied correspond to each other.
+    </p>
+
+
+
+    <a name="greed"><h2>Non Greedy Matching vs. Shortest
+    Match</h2></a> <p>The difference is best explained by an
+    example. When trying to match a full XML element followed by a
+    certain context, one may be tempted to write<pre>
+    &lt;tag&gt;.*?&lt;/tag&gt;&lt;otherTag&gt;</pre> employing the
+    non-greedy operator <code>"*?"</code> available in 
+    <code>java.util.regex</code>. However, non-greedy
+    operators sacrifice the shortest possible match for an overall
+    match of the regular expression if necessary. Consequently the
+    above expression would match the text<pre>
+    &lt;tag&gt;bla&lt;/tag&gt;&lt;somestuff&gt;...&lt;/somestuff&gt;&lt;tag&gt;xxx&lt;/tag&gt;&lt;otherTag&gt;</pre>
+    just because the longer match satisfies the regular expression,
+    while stopping at the first <code>&lt;/tag&gt;</code> would
+    not match.</p> <p>In contrast, the shortest match operator as
+    implemented by <code>jfa</code> does not give up the shortest
+    possible match of a subexpression to allow the whole expression to
+    match. Consequently, <pre>
+    &lt;tag&gt;(.*&lt;/tag&gt;)!&lt;otherTag&gt;</pre> would not match
+    at the beginning of the above string.</p>
+    <hr>
+    Version: $Revision: 1.7 $, $Date: 2005-04-27 09:03:42 $
+  </body>
+</html>

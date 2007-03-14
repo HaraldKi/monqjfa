@@ -1,0 +1,94 @@
+.TableHeadingColor     { background: #FFD700; }
+.TableSubHeadingColor  { background: #FFE766; } 
+
+body {
+  background: #fffefa url("monq/jfa/doc-files/bg.png") repeat-y 0%
+}
+
+h1, h2, h3 {
+  background: #FFD700;
+  padding-left:2mm;
+  padding-top:2mm;
+  padding-bottom:1px;  
+}
+
+h4, h5, h6 {
+  border-left: 5px solid #FFD700;
+  padding-left:2mm;
+}
+
+.footnotemark {
+  position: relative;
+  bottom: 0.5ex;
+  left: 0px;
+  font-size:smaller;
+}
+
+.footnote {
+  font-size: smaller;
+  text-indent: 1cm;
+}
+
+.codex {
+  border: 3px #ffffdd ridge;
+  padding: 5px;
+  //background: #ffffdd;
+  width: auto;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  margin-right: auto;
+}
+
+/* Navigation bar fonts and colors */
+.NavBarCell1    { background-color:#FFD700;}
+.NavBarCell1Rev { background-color:#ffd700;}
+
+.NavBarFont1    { font-family: sans-serif;}
+.NavBarFont1Rev { font-family: sans-serif;}
+
+.NavBarCell2    { font-family: sans-serif; }
+.NavBarCell3    { font-family: sans-serif; }
+
+A:link { color: #a00000 }
+A:visited { color:  #CD4444}
+A:active { color: #FF6347 }
+
+//code { font-family: monospace;}
+
+.cList > dt {
+  display: run-in;
+  text-align: right;
+  width: 5em;
+  //font-style: italic;
+  font-family: courier,monospace;
+  font-weight: bold;
+}
+.cList > dd {
+  display: block;
+  margin-left: 6em;
+  margin-bottom: 1em;
+}
+
+.cList em {
+  font-weight: normal;
+}
+
+.centered {
+  /* see http://www.w3.org/TR/REC-CSS2/visudet.html#q6 */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.monqlink {
+  xbackground-color: #FFD700;
+  background-color: #ffffd7;
+  font-size: normal;
+  font-weight: bold;
+  font-style: normal;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border: 1px solid grey;
+  border-left: 3px ridge grey;
+  border-top: 3px ridge grey;
+}

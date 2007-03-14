@@ -1,0 +1,46 @@
+#!/bin/bash
+
+VERSION=1.0
+
+defaultTarget=site
+
+tgz=MonqJfaTutorial-$VERSION.tar.gz
+site=site.tar.gz
+
+########################################################################
+test_index.html() {
+  old index.html -d index-p.html
+}
+cmd_index.html() {
+  sed -e '/SED:/d' -e "s/@VERSION@/$VERSION/g" <index-p.html >index.html
+}
+########################################################################
+dep_package() { echo index.html; }
+test_package() {
+  PACKAGEFILES=$(echo *.java MonqJfaTutorial.pdf)
+  old "$tgz" -d $PACKAGEFILES
+}
+cmd_package() {
+  local p=$(mapFilenames "" Tutorial/ . $PACKAGEFILES)
+  eval set -- "$p"
+  tar cvfz "$tgz" -C .. "$@"
+}
+########################################################################
+ydoc site create site.tar.gz for uploading and unpacking
+dep_site() { echo package; }
+
+test_site() {
+  SITEFILES=$(echo *.java MonqJfaTutorial.pdf *.png *.css *.html index.php $tgz)
+  old "$site" -d $SITEFILES
+}
+cmd_site() {
+  tar cfz "$site" $SITEFILES  
+}
+########################################################################
+ydoc pub send site.tar.gz to EBI server
+dep_pub() { echo site; }
+cmd_pub() {
+  scp -r -o proxycommand="ssh kirsch@gate.ebi.ac.uk proxy %h" \
+  site.tar.gz kirsch@pigeon:public_html/JfaWiki
+}
+########################################################################

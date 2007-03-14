@@ -1,0 +1,45 @@
+
+
+  <h2><code>monq.jfa</code> &mdash; Java Finite Automata class library</h2>
+
+  <p>This is the core Java class library used to implement
+  Whatizit. It allows for fast and flexible text filtering with
+  regular expressions. In contrast to java.util.regex, monq.jfa allows
+  to bind a regular expression to an action that is automatically
+  called whenever a match is spotted in an input stream.</p>
+
+  <p>In addition it is possible to combine several tenthousand
+  regex/action pairs into one machinery (called 
+    <span style="border-bottom: grey dashed 1px;" 
+	  title="deterministic finite automaton">DFA</span>). The DFA
+    filters input to output by looking 
+  for matches of all regular expressions in parallel,
+  calling their actions to reformat the text or to incrementally built up a
+  data structure.</p>
+
+  <p>The filtering speed is 1.5MB/s on P4 2.6GHz and is mostly
+  unrelated to the number of regex/action pairs.</p>
+
+  <h3>Download</h3>
+  <p>The software is available for download under the 
+    <a href="http://www.gnu.org/copyleft/gpl.html">GPL</a>
+    from our <a href="@FTP@">ftp site</a>.</p>
+  <ul>
+    <li><a href="@FTP@/monq.tar.gz">monq.tar.gz</a> (full source)</li>
+    <li><a href="@FTP@/monq.jar">monq.jar</a> (class library only)</li>
+    <li><a href="@FTP@/monq-doc.jar">monq-doc.jar</a> (documentation only)</li>
+  </ul>
+  
+  <h4>Documentation</h4>
+  <ul>
+    <li><a href="@FTP@/RELNOTES">release notes</a></li> 
+    <li><a href="@DOCHTML@/monq-doc/index.html">javadoc API documentation</a></li>
+    <li><a href="@DOCHTML@/JfaWiki/">wikified tutorial</a></li>
+  </ul>
+
+  <p>For bug reports, feature requests,
+    suggestions and patches, please contact <script language="javascript">makemail("kirsch", "externalDataLink");</script>
+  If you need a <b>GPL free</b> version of the software to use in closed
+  source projects, please <a
+  href="http://www.ebi.ac.uk/Rebholz/contact.html">contact us</a>.
+  </p>

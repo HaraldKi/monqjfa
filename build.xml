@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- DOCTYPE date SYSTEM "ant.dtd" -->
+
+<project name="monq" default="compile">
+  <description>
+    The MonQ library contains as its main contribution the
+    monq.jfa.* packages which implement fast and scalable regular
+    expression viz. NFA/DFA library.
+  </description>
+
+  <property name="build.sysclasspath" value="last" />
+  <property environment="env"/>
+  <property name="junit" value="${env.HOME}/tools/lib/junit.jar" />
+  <property name="NOT_stylefile" value="monq/jfa/ebistyle.css" />
+  <property name="stylefile" value="monq/jfa/docstyle.css" />
+
+  <property name="pubftp" value="/ebi/ftp/pub/software/textmining/monq" />
+  <property name="pubhtml" value="/homes/kirsch/public_html" />
+  <!-- these are our source files -->
+  <patternset id="jsrc" 
+	      excludes="monq/**/keep/** monq/**/doc-files/**"
+	      includes="monq/**/*.java"
+	      >
+    <exclude unless="xstream" name="monq/programs/DistFilter.java" />
+    <exclude unless="xstream" name="monq/net/Filter*Info.java" />
+    <exclude unless="jython" name="monq/jfa/JyFA.java" />
+    <exclude unless="jython" name="monq/programs/JythonFilter.java" />
+  </patternset>
+
+  <!-- Read the ant FAQ about nested classpath elements. It only tells -->
+  <!-- me that SNAFU. Another reason why I tend to call ant "the pest" -->
+  <path id="CLASSPATH">
+    <!-- not automatically added when compiling tests or running tests-->
+    <pathelement path="${basedir}/Classes" />
+    <pathelement path="${basedir}/Classes/tests" />
+    <pathelement path="${env.CLASSPATH}" />
+    <pathelement path="${junit}" />
+  </path>
+ 
+  <!-- *************************************************************** -->
+  <target name="findfeatures">
+    <available property="xstream" 
+      classname="com.thoughtworks.xstream.XStream" />
+    <available property="jython"
+      classname="org.python.util.PythonInterpreter" />
+  </target>
+  <!-- *************************************************************** -->
+  <target name="setup" depends="findfeatures">
+    <mkdir dir="Classes/tests" />
+    <loadfile property="version" srcfile="RELNOTES">
+      <!-- someone had a half decent idea with these filter chains,
+      but what is availabe is still bloody poor compared to a decent
+      grep/sed/awk combination -->
+      <filterchain>
+	<linecontainsregexp>
+	  <regexp pattern="VERSION +[a-z]*[0-9.]+" />
+	</linecontainsregexp>
+	<headfilter lines="1" />
+	<striplinebreaks />
+	<striplinebreaks linebreaks="VERSION&#xD;&#xA; " />
+      </filterchain>
+    </loadfile>
+  </target>
+  <!-- *************************************************************** -->
+
+  <!-- before compilation, delete all class files to make sure there
+  is no outdated stuff lurking -->
+  <target name="purgeClasses">
+    <dependset>
+      <srcfileset dir="."><patternset refid="jsrc"/></srcfileset>
+      <targetfileset dir="Classes" includes="**/*.class"/>
+    </dependset>
+  </target>
+
+  <!-- Main target is to compile all source files of the packages. 
+  -->
+  <target name="compile" depends="setup,purgeClasses"
+	  description="compile all Java source files to ./Classes">
+    <javac srcdir="."
+	   destdir="Classes" 
+	   source="1.4" listfiles="no"
+	   classpathref="CLASSPATH"
+	   fork="false"
+           debug="true"
+           deprecation="true"
+	   >
+      <patternset refid="jsrc"/>
+    </javac>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- packing a jar for the compiled distro -->
+  <target name="jar" depends="compile"
+	  description="creates the runtime library jar file">
+    <jar jarfile="monq.jar"
+	 basedir="Classes"
+	 includes="monq/**">
+      <manifest>
+	<attribute name="Monq-Version" value="${version}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- create the documentation -->
+  <target name="doc" depends="setup"
+    description="create the API documentation">
+
+    <!-- instead of using ExcludeDoclet, which most likely does not
+    exist on many machines, I use a copy of the source code with only
+    the files for which to generate the docs -->
+    <copy todir=".fordoc">
+      <fileset dir=".">
+	<include name="monq/**/*.html"/>
+	<!-- jsrc pattern set does not work, so do it by hand -->
+	<include name="monq/**/*.java"/>
+	<exclude name="monq/**/keep/**"/>
+      </fileset>
+    </copy>
+
+    <javadoc destdir="monq-doc"
+	     Protected="true" nodeprecated="false" 
+	     author="true" nohelp="true"
+	     source="1.4"
+	     Windowtitle="monq packages"
+      Header="monq-${version}"
+	     Bottom="&lt;div class=&quot;monqlink&quot;>download monq from&lt;br>&lt;a href=&quot;http://www.ebi.ac.uk/Rebholz-srv/whatizit/software&quot;>http://www.ebi.ac.uk/Rebholz-srv/whatizit/software&lt;/a>&lt;/div>"
+	     Overview="monq/overview.html"
+	     additionalparam="-quiet"
+	     verbose="false"
+	     stylesheetfile="${stylefile}"
+	     >
+      <packageset dir=".fordoc">
+	<include name="monq/**/*" />
+	<exclude name="monq/**/keep" />
+	<exclude name="monq/**/doc-files" />
+      </packageset>
+    </javadoc>
+
+    <delete dir=".fordoc/" />
+
+  </target>
+  <!-- *************************************************************** -->
+  <target name="docjar" depends="doc"
+    description="jar file of the api documentation created with javadoc">
+    <jar jarfile="monq-doc.jar" basedir="." includes="monq-doc/**" />
+  </target>
+  <!-- *************************************************************** -->
+  <!-- testing -->
+  <target name="test" depends="compileTests"
+    description="run junit tests, use e.g. -Dtest=Nfa to run single test">
+    <junit printsummary="off">
+      <classpath refid="CLASSPATH" />
+	  
+      <formatter type="brief" usefile="false"/>
+
+      <batchtest>
+	<fileset dir="Classes/tests">
+	  <include if="test" name="**/${test}Test.class" />
+	  <include unless="test" name="**/*Test.class" />
+	</fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+  <target name="compileTests" depends="purgeTest,compile">
+    <javac srcdir="tests" destdir="Classes/tests"
+      sourcepath="tests"
+	   source="1.4" listfiles="no"
+	   classpathref="CLASSPATH"
+           debug="true"
+	   >
+    </javac>
+  </target>
+
+  <target name="purgeTest"> 
+    <dependset>
+      <srcfileset dir="tests" includes="*Test.java"/>
+      <srcfileset dir="."><patternset refid="jsrc" /></srcfileset>
+      <targetfileset dir="Classes/tests" includes="*.class"/>
+    </dependset>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- Comment this part out if you do not have emma. -->
+  <taskdef resource="emma_ant.properties" />
+    
+  <macrodef name="runemma">
+    <attribute name="testClass" />
+    <sequential>
+      <emmajava classname="@{testClass}"
+	classpathref="CLASSPATH"
+	sourcepath="."
+	fullmetadata="true"
+	dumpsessiondata="true"
+	sessiondatafile="emma/coverage.es"
+	merge="true"
+	>
+	<filter includes="monq.jfa.*" />
+	<filter includes="monq.jfa.actions.*" />
+	<filter includes="monq.jfa.ctx.*" />
+	<filter includes="monq.net.*" />
+	<filter includes="monq.programs.DictFilter*" />
+	<filter includes="monq.stuff.Coder" />
+	<filter excludes="monq.jfa.*Test*" />
+      </emmajava>
+    </sequential>
+  </macrodef>
+
+  <!-- discontinued running emma in ant because Ant's handling of
+  CLASSPATH is breaking my karma. No use yrules.
+  -->
+  <target name="emma" depends="compileTests"
+    description="test with test coverage analysis using emma" >
+    
+    <runemma testClass="monq.jfa.JyFATest" />
+    <runemma testClass="DictFilterTest" />
+    <runemma testClass="CoderTest" />
+    <runemma testClass="PipeFilterTest" />
+    <runemma testClass="monq.jfa.ActionTest" />
+    <runemma testClass="monq.jfa.ByteCharSourceTest" />
+    <runemma testClass="monq.jfa.IntervalsTest" />
+    <runemma testClass="monq.jfa.MatchGroupTest" />
+    <runemma testClass="monq.jfa.NfaTest" />
+    <runemma testClass="monq.jfa.PrintfFormatterTest" />
+    <runemma testClass="monq.jfa.RegexpTest" />
+    <runemma testClass="monq.jfa.ReParserTest" />
+    <runemma testClass="monq.jfa.SetTest" />
+    <runemma testClass="monq.jfa.TextSplitterTest" />
+    <runemma testClass="monq.jfa.XmlTest" />
+    <runemma testClass="monq.jfa.CtxTest" />
+    <emma>
+      <report sourcepath="." columns="name,line,block,method"
+	sort="+line,+block,+method"
+	metrics="line:95">
+	<infileset file="emma/coverage.es" />
+	<html outfile="emma/index.html" />
+      </report>
+    </emma>
+  </target>
+  <!-- *************************************************************** -->
+  <!-- create a .tar.gz as for the source distribution -->
+  <target name="tgz" 
+	  description="create .tar.gz for shipping the source (only works for me:-)">
+    <exec executable="ship">
+      <arg line="-d ~/transfer -F -ver RELNOTES -s '2005-02-01'" />
+    </exec>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- copy the interesting stuff to a destination directory -->
+  <target name="pub" depends="jar,docjar,tgz"
+    description="publishes .tgz, .jar and -doc.jar to ${pubftp}, make sure to check VERSION in RELNOTES first.">    
+    <copy file="monq.jar" tofile="${pubftp}/monq-${version}.jar" />
+    <copy file="monq-doc.jar" tofile="${pubftp}/monq-doc-${version}.jar" />
+    <copy file="${env.HOME}/transfer/monq-${version}.tar.gz" 
+      todir="${pubftp}" />
+    <chmod dir="${pubftp}" perm="444" includes="*${version}*" />
+    <copy file="RELNOTES" tofile="${pubftp}/RELNOTES" />
+    <copy file="README" tofile="${pubftp}/README" />
+    <copy file="README.files" tofile="${pubftp}/README.files" />
+    <copy todir="${pubhtml}">
+      <fileset dir="." includes="monq-doc/**" />
+    </copy>
+    <exec executable="digestLog" output="${pubftp}/CHANGES" logError="true">
+      <arg line="-d 2005-02-01" />
+    </exec>
+    <echo file="${pubhtml}/monq-doc/.htaccess">
+      order deny,allow
+      deny from all
+      allow from all
+    </echo>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- create site.html in some given directory -->
+  <target name="sitehtml" depends="setup"
+    description="patch site.html with version data, write to -Dsitehtml">
+    <copy file="site.html" tofile="${sitehtml}">
+      <filterset>
+	<filter token="FTP" 
+	  value="ftp://ftp.ebi.ac.uk/pub/software/textmining/monq"/>
+	<filter token="DOCHTML" value="http://www.ebi.ac.uk/~kirsch"/>
+      </filterset>
+    </copy>
+  </target>
+  <!-- *************************************************************** -->
+  <!-- for debugging, show all properties -->
+  <target name="props" depends="setup">   
+    <echoproperties/>
+  </target>
+</project>
+ 

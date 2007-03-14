@@ -1,0 +1,37 @@
+
+===== Files in this Directory =====
+
+o) The following files are links to the latest stable release:
+
+monq.jar           class files only
+monq-doc.jar	   javadoc
+monq.tar.gz	   source files, nothing compiled
+
+
+o) Stable releases with a given version number. These distributions
+underwent testing and some quality control on the documentation.
+
+monq-${version}.jar
+monq-doc-${version}.jar
+monq-${version}.tar.gz
+
+
+o) Prerelease builts created frequently at random points in time. They
+are not necessarily tested and the documentation may not reflect the
+current state of the implementation.
+
+monq-pre${version}.jar
+monq-doc-pre${version}.jar
+monq-pre${version}.tar.gz
+
+
+o) CVS extracted description of changes to the software reflecting the
+prerelease builts.
+
+CHANGES
+
+
+o) Hand written summary of CHANGES leading to stable releases.
+
+RELNOTES
+

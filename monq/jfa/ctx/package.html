@@ -1,0 +1,100 @@
+  <body>
+
+    <p>
+      adds support for recursive parsing to jfa that in particular
+      allows easy XML parsing as an alternative to SAX. The classes
+      supplied do not rely on XML. Rather they provide a more general
+      concept of which XML is a special case. The concept implemented
+      is called a <em>parsing context</em>. It is defined by the
+      stretch of text between matches of two regular expressions for
+      the start and the end of the context. The classes in this
+      package set up and maintain a stack of such parsing
+      contexts. More importantly, they allow context specific action
+      callbacks via {@link monq.jfa.ctx.IfContext}.
+    </p>
+
+    <p>
+      Parsing contexts are set up by adding {@link
+      monq.jfa.ctx.Context} actions to a {@link monq.jfa.Nfa}. While
+      this could in principle be done directly with calls to {@link
+      monq.jfa.Nfa#or Nfa.or()}, it would be tedious and error
+      prone. Instead, a {@link monq.jfa.ctx.ContextManager} must be
+      used to populate the <code>Nfa</code>. A typical call to a
+      <code>ContextManager</code> looks like this:
+      </p>
+    <pre>
+  ContextManager cmgr = new ContextManager(nfa);
+  Context ctx = cmgr.addXml("server")</pre>
+    <p>
+      This will add two actions to <code>nfa</code> that push/pop a
+      context to/from a stack when matching an XML start/end tag with
+      the name <code>server</code>. The context can then be used in
+      combination with a conditional action:</p>
+    <pre>
+  nfa.or(Xml.GoofedElement("hostname"), 
+         new IfContext(ctx, new StoreHostname())</pre>
+    <p>
+      The <code>IfContext</code> action makes sure that
+      <code>StoreHostname</code> is only called if the
+      <code>hostname</code> XML element is found in the given context
+      <code>ctx</code>. Additional contexts can be added with {@link
+      monq.jfa.ctx.IfContext#ifthen IfContext.ifthen()} and {@link
+      monq.jfa.ctx.IfContext#elsedo 
+      IfContext.elsedo()}.
+    </p>
+    
+    <p>A context can be used as the parent of another context by
+      calling <code>addXml</code> with the parent context as a
+      parameter:
+    </p>
+    <pre>
+  Context child = cmgr.addXml(ctx, "propertyList")</pre>
+    <p>
+      This will wrap the push operation for the generated child
+      context into an <code>IfContext</code> action to make sure it is
+      only performed in the given parent context. The internally generated
+      <code>IfContext</code> object is not available for
+      direct manipulation, e.g. for adding an <code>elsdo()</code>, but it
+      is safe to directly add an unconditional action to
+      the <code>nfa</code> which will then serve as the default
+      action. Similarly, it is ok to add an additional
+      <code>IfContext</code> object for the same match but for a
+      different context.
+    </p>
+
+    <p>By default, the text matching the start and the end of a
+      context is copied untouched to the output. This can be generally
+      changed with {@link monq.jfa.ctx.ContextManager#setDefaultAction
+      ContextManager.setDefaultAction()}
+      and similar 
+      methods, as well as per context with {@link
+      monq.jfa.ctx.Context#setStartAction Context.setStartAction()} etc.
+    </p>
+
+    <h3>Where is the stack</h3>
+    <p>During operation of the automaton with a <code>DfaRun</code>,
+      the field {@link monq.jfa.DfaRun#clientData} must contain an
+      object which 
+      implements the {@link monq.jfa.ctx.ContextStackProvider}
+      interface. The <code>Context</code> actions use the
+      {@link java.util.List} provided by this interface as a
+      stack. Client actions added to a <code>Context</code> with
+      e.g. <code>Context.setStartAction()</code> may also use the
+      stack for their own business, as long as they perform paired
+      push and pop operations.
+    </p>
+    <p>For convenience, the method {@link
+      monq.jfa.ctx.ContextManager#createStackProvider} returns a
+      trivial implementation of a <code>ContextStackProvider</code>:
+    </p>
+    <pre>
+  DfaRun r = new DfaRun(dfa, ...);
+  r.clientData = ContextManager.createStackProvider();</pre>
+    <p>If, however, the <code>clientData</code> field has to carry
+      your own information, the object you store in
+      <code>clientData</code> need for example only contain an {@link
+      java.util.ArrayList} and the method {@link
+      monq.jfa.ctx.ContextStackProvider#getStack()} which returns it.
+    </p>
+  </body>
+

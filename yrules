@@ -1,0 +1,126 @@
+#!/bin/bash
+########################################################################
+#
+
+# This is a rules file for yruba (see http://pifpafpuf.de/yruba_page),
+# a simple and powerful enough rules system for bash.
+
+#
+# (C) 2005 Harald Kirsch
+#
+########################################################################
+# For now I only run emma test coverage here until I find the time to
+# completely switch to yruba.
+
+defaultTarget=compile
+
+# there is no good way to check whether we need to run ant to compile
+# the tests, but I make sure it is called only once.
+NEEDCOMPILE=true
+
+EMMASESSION=emma/coverage.es
+
+# This is a bit of a hack to be able to easily add/substract stuff
+# from CP. Currently it is just used as-is.
+CP=$CLASSPATH
+
+########################################################################
+#  compile all source files
+ydoc compile compiles all java source files into class files
+function test_compile() {
+  JSRC=$(find monq -type f -name '*.java'|grep -v doc-files)
+  local classes
+  time eval set -- $(mapFilenames '' Classes/ class $JSRC)
+  time old Classes/.compiled "$@" -d $JSRC
+}
+function cmd_compile() {
+  rm -rf Classes/monq Classes/.compiled
+  ${JAVAC:-javac} -d Classes -source 1.4 $JSRC
+  touch Classes/.compiled
+}
+########################################################################
+ydoc compileTest compiles the test suite into class files
+function dep_compileTest() { echo compile; }
+function test_compileTest() {
+  TSRC=$(find tests -type f -name '*.java')
+  # generate at least the class files for all source files
+  local classes
+  for x in $TSRC; do 
+    local y="${x%.java}"
+    classes="$classes Classes/${y}.class"
+  done
+  old Classes/.compiledTests $classes -d $TSRC \
+    $(find Classes/monq -type f -name '*.class')
+}
+function cmd_compileTest() {
+  rm -rf Classes/tests Classes/.compiledTests
+  mkdir Classes/tests
+  CLASSPATH=${CP} ${JAVAC:-javac} -d Classes/tests -source 1.4 $TSRC
+  touch Classes/.compiledTests
+}
+
+########################################################################
+ydoc checkEmmaJar tests if the environment EMMAJAR is set
+cmd_checkEmmaJar() {
+  if [ -z "$EMMAJAR" ]; then
+    cat <<EOF
+To be able to run tests under control of the test coverage analysis
+tool emma, we need the variable EMMAJAR to point to the file
+emma.jar. It does not work for me to put emma.jar in the CLASSPATH,
+because this produces hard to understand class loader conflicts.
+Emma can be found on http://sourceforge.net/projects/emma/.
+EOF
+    exit 1
+  fi  
+}
+########################################################################
+ydoc runEmma runs a specific test with emma to produce test coverage. \
+Don"'"t forget to specify a full class name like monq.jfa.NfaText.emma
+mapTarget '*Test.emma' runEmma
+function dep_runEmma() { echo checkEmmaJar compileTest; }
+function cmd_runEmma() {
+  local class=${1%.emma}
+  CLASSPATH=${CP} java -cp "$EMMAJAR" emmarun \
+    -cp "$CP" \
+    -quiet -sessiondata -out "$EMMASESSION" -merge=yes -fullmetadata \
+    -ix 'monq*' -ix '-*Test' \
+    -Dreport.txt.out.file=emma/unused.txt \
+    "$class"
+}
+########################################################################
+function cmd_emmaClean() {
+  #rm -rf emma/*
+  true
+}
+########################################################################
+ydoc emma runs the whole test suite with emma to produce test coverage
+function dep_emma() {
+  if ! [ -z "$test" ]; then 
+    echo "emmaClean ${test}Test.emma"; 
+    return 0; 
+  fi
+  echo 1>&2 "*** You can run an individual test only by setting"    
+  echo 1>&2 "*** environment test=your.class.here"
+  local x
+  local result=$(lappend "" emmaClean)
+  for x in $(find tests -type f -name '*Test.java'); do 
+    #echo $x| grep -q 'JyFA' && continue
+    x="${x##tests/}"
+    x=${x%%.java}
+    x=${x//\//.}
+    result=$(lappend "$result" "$x.emma")
+  done
+  echo "$result"
+}
+
+function cmd_emma() {
+  ## find all tests and run them
+  java -cp "Classes:Classes/tests:$EMMAJAR" emma report \
+    -quiet \
+    -sourcepath . -r html -input "$EMMASESSION" \
+    -Dreport.html.out.file=emma/index.html \
+    -Dreport.columns=name,line,block,method \
+    -Dreport.sort=+line,+block,+method \
+    -Dreport.metrics=line:95
+}
+########################################################################

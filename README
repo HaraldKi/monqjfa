@@ -1,0 +1,85 @@
+		   monq.jfa -- Java Finite Automata class library
+
+=== WHAT IS THIS? ===
+
+This is a class library for fast and flexible text filtering with
+regular expressions. In contrast to java.util.regex, monq.jfa allows
+to bind a regular expression to an action that is automatically called
+whenever a match is spotted in an input stream.
+
+In addition it is possible to combine several tenthousand
+regex/action pairs into one machinery (called "deterministic finite
+automaton" or DFA) for fast parallel text filtering.  The DFA filters
+input to output by calling the actions to reformat matching text. 
+Of course the actions can also built up an internal data structure
+instead of creating output, whereby effectively parsing the input.
+
+The filtering speed is fast and mostly unrelated to the number of
+regex/action pairs employed in parallel.
+
+It helps to read the API documentation. 
+                                  (Harald Kirsch: kirsch AT ebi ac uk)
+
+
+=== INSTALLATION ===
+
+   --- NOTE --- 
+   ! If you do not have emma test coverage analysis
+   ! (emma.sourceforge.net), please comment out the respective part in
+   ! build.xml.
+   ------------
+
+To create the jar file run: 
+  ant jar
+
+To create the documentation in ./javadoc run:
+  ant doc
+
+Copy to whereever it suits you and don't forget to put the jar file
+into your CLASSPATH environment variable.
+
+
+=== COMMAND LINE PROGRAMS ===
+
+Check documentation for package monq.programs. Definitely try 
+
+  java -cp Classes monq.programs.Grep -h
+
+
+=== EXAMPLE ===
+
+A trivial but complete example which implements part of the above
+mentioned monq.programs.Grep is monq/jfa/doc-files/Example.java. If
+you created the jar file by running "ant jar" above, you should be
+able to compile it like this:
+
+  javac -d . -classpath monq.jar monq/jfa/doc-files/Example.java 
+
+Now try it out:
+
+a) Use only the two builtin pattern/action pairs which mark up words
+and numbers.
+
+  echo there are 4 boxes | java -cp .:monq.jar Example
+
+
+b) Add another pattern/action pair on the command line to change the
+dot in float values to a comma.
+
+  echo '8 8.5 9' | java -cp .:monq.jar Example '(![0-9]+)[.](![0-9]+)' '%1,%2'
+
+Note that reporting subexpressions needed to make the %1 and %2 work
+have to be explicitly marked with the exclamation mark like in
+"(!...)".
+
+
+c) Try the shortest match operator to easily pick up a (non nested)
+XML element.
+
+echo "front <A>bla <b>.</b> bla</A> back" \
+   | java -cp monq.jar:. Example '<A>(.*</A>)!' '[%0(3,-4)]'
+
+The expression '(.*</A>)!' can be read as "jump over everything until
+the very first '</A>' you find. The format '%0(3,-4)' prints
+the whole match sans the first three and the last four characters.
+
