@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!-- DOCTYPE date SYSTEM "ant.dtd" -->
 
-<project name="monq" default="compile">
+<project name="monq" default="compile" basedir=".">
   <description>
     The MonQ library contains as its main contribution the
     monq.jfa.* packages which implement fast and scalable regular
     expression viz. NFA/DFA library.
   </description>
 
-  <property name="build.sysclasspath" value="last" />
-  <property environment="env"/>
-  <property name="junit" value="${env.HOME}/tools/lib/junit.jar" />
+  <!-- property environment="env"/ -->
   <property name="NOT_stylefile" value="monq/jfa/ebistyle.css" />
   <property name="stylefile" value="monq/jfa/docstyle.css" />
 
   <property name="pubftp" value="/ebi/ftp/pub/software/textmining/monq" />
   <property name="pubhtml" value="/homes/kirsch/public_html" />
+
   <!-- these are our source files -->
   <patternset id="jsrc" 
 	      excludes="monq/**/keep/** monq/**/doc-files/**"
@@ -27,14 +26,15 @@
     <exclude unless="jython" name="monq/programs/JythonFilter.java" />
   </patternset>
 
-  <!-- Read the ant FAQ about nested classpath elements. It only tells -->
-  <!-- me that SNAFU. Another reason why I tend to call ant "the pest" -->
-  <path id="CLASSPATH">
-    <!-- not automatically added when compiling tests or running tests-->
+  <!-- these are the test source files -->
+  <patternset id="testsrc" includes="monq/**/*.java">
+    <exclude unless="jython" name="monq/jfa/JyFATest.java"/>
+  </patternset>
+
+  <!-- how to find the freshly compiled stuff -->
+  <path id="CPLOCAL">
     <pathelement path="${basedir}/Classes" />
     <pathelement path="${basedir}/Classes/tests" />
-    <pathelement path="${env.CLASSPATH}" />
-    <pathelement path="${junit}" />
   </path>
  
   <!-- *************************************************************** -->
@@ -72,14 +72,23 @@
     </dependset>
   </target>
 
+  <target name="warnXstream" unless="xstream">
+    <echo>WARNING: com.thoughtworks.xstream.XStream not found, monq.programs.DistFilter will not be available.</echo>
+  </target>
+  <target name="warnJython" unless="jython">
+    <echo>WARNING: org.python.util.PythonInterpreter not found, monq.programs.JythonFilter will not be available.</echo>
+  </target>
+
   <!-- Main target is to compile all source files of the packages. 
   -->
-  <target name="compile" depends="setup,purgeClasses"
-	  description="compile all Java source files to ./Classes">
+  <target name="compile" 
+    depends="setup,warnXstream,warnJython,purgeClasses"
+    description="compile all Java source files to ./Classes">
+
     <javac srcdir="."
 	   destdir="Classes" 
-	   source="1.4" listfiles="no"
-	   classpathref="CLASSPATH"
+	   source="1.4"
+           listfiles="no"
 	   fork="false"
            debug="true"
            deprecation="true"
@@ -150,8 +159,8 @@
   <target name="test" depends="compileTests"
     description="run junit tests, use e.g. -Dtest=Nfa to run single test">
     <junit printsummary="off">
-      <classpath refid="CLASSPATH" />
-	  
+      <classpath refid="CPLOCAL"/>
+
       <formatter type="brief" usefile="false"/>
 
       <batchtest>
@@ -166,10 +175,12 @@
   <target name="compileTests" depends="purgeTest,compile">
     <javac srcdir="tests" destdir="Classes/tests"
       sourcepath="tests"
-	   source="1.4" listfiles="no"
-	   classpathref="CLASSPATH"
-           debug="true"
-	   >
+      classpathref="CPLOCAL"
+      source="1.4" 
+      listfiles="no"
+      debug="true"
+      >
+      <patternset refid="testsrc"/>
     </javac>
   </target>
 
