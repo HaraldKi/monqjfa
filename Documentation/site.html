@@ -1,45 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+  lang="en" xml:lang="en">
+      <head>
+	<title>monqJfa</title>
+	<script language=" javascript" type="text/javascript">
+	  <!--
+	  function makemail(where, title, who, name) {
+            document.write("<a href='mailto:" 
+	                   + who +"@"+ where.replace("#", ".") +"' "
+  	                   + "title='" + title+"'"
+	                   + ">"
+	                   + name
+	                   + "<\/a>");
+	  }
+	  -->
+	</script>
+        <link rel="stylesheet" type="text/css" href="style.css"></link>
+
+  </head>
+  <body>
+    <div class="main">
+	
+      <h1><code>monq.jfa</code> &mdash; Java Finite Automata class library</h1>
+
+	<p>The Java class library monq.jfa provides fast and flexible
+      text filtering with regular expressions. In contrast to
+      <code>java.util.regex</code>, <code>monq.jfa</code> allows a
+      regular expression to be bound to an action that is
+      automatically called whenever a match is spotted in an input
+      stream.</p>
+
+      <p>In addition it is possible to combine several tenthousand
+      regex/action pairs into one machinery (called <span
+      style="border-bottom: grey dashed 1px;" 
+	title="deterministic finite automaton">DFA</span>). The DFA filters input to output
+      by looking for matches of all regular expressions in parallel,
+      calling their actions to reformat the text or to incrementally
+      built up a data structure.</p>
+    
+      <p>The filtering speed is 1.5MB/s on P4 2.6GHz and is mostly
+      unrelated to the number of regex/action pairs.</p>
+
+      <p>A general purpose TCP server and associated classes in
+      <code>monq.net</code> allow the bigger DFAs to be run as servers.</p>
 
 
-  <h2><code>monq.jfa</code> &mdash; Java Finite Automata class library</h2>
+      <p>Please visit the <a
+      href="https://developer.berlios.de/projects/monqjfa/">project
+      management page at berlios</a> for <a
+      href="https://developer.berlios.de/bugs/?group_id=8239">bug
+      reports</a>, <a
+      href="https://developer.berlios.de/feature/?group_id=8239">feature
+      requests</a> or if you need <a
+      href="https://developer.berlios.de/support/?group_id=8239">support</a>.</p>
 
-  <p>This is the core Java class library used to implement
-  Whatizit. It allows for fast and flexible text filtering with
-  regular expressions. In contrast to java.util.regex, monq.jfa allows
-  to bind a regular expression to an action that is automatically
-  called whenever a match is spotted in an input stream.</p>
+      <p>If you need a <b>GPL free</b> version of the software to use
+      in closed source projects, please contact the <a
+      href="http://www.ebi.ac.uk/Rebholz/contact.html">Text Mining
+      Group at the EBI</a>.
+      </p>
 
-  <p>In addition it is possible to combine several tenthousand
-  regex/action pairs into one machinery (called 
-    <span style="border-bottom: grey dashed 1px;" 
-	  title="deterministic finite automaton">DFA</span>). The DFA
-    filters input to output by looking 
-  for matches of all regular expressions in parallel,
-  calling their actions to reformat the text or to incrementally built up a
-  data structure.</p>
 
-  <p>The filtering speed is 1.5MB/s on P4 2.6GHz and is mostly
-  unrelated to the number of regex/action pairs.</p>
+    <div class="logobar">
+	<h1>Sponsors</h1>
+      <p>The project's software is hosted by <a href="http://developer.berlios.de"><img src="http://developer.berlios.de/bslogo.php?group_id=8293" width="124" height="32" border="0" alt="BerliOS Logo" /></a>.</p>
 
-  <h3>Download</h3>
-  <p>The software is available for download under the 
-    <a href="http://www.gnu.org/copyleft/gpl.html">GPL</a>
-    from our <a href="@FTP@">ftp site</a>.</p>
-  <ul>
-    <li><a href="@FTP@/monq.tar.gz">monq.tar.gz</a> (full source)</li>
-    <li><a href="@FTP@/monq.jar">monq.jar</a> (class library only)</li>
-    <li><a href="@FTP@/monq-doc.jar">monq-doc.jar</a> (documentation only)</li>
-  </ul>
-  
-  <h4>Documentation</h4>
-  <ul>
-    <li><a href="@FTP@/RELNOTES">release notes</a></li> 
-    <li><a href="@DOCHTML@/monq-doc/index.html">javadoc API documentation</a></li>
-    <li><a href="@DOCHTML@/JfaWiki/">wikified tutorial</a></li>
-  </ul>
+      <p>The main development is sponsored by the <a
+	  href="http://www.ebi.ac.uk/Rebholz/"><img
+	    src="http://www.ebi.ac.uk/Groups/images/logo_rebholz.gif"
+	    border="0" alt="Rebholz Group Logo"/></a> at the <a
+	  href="http://www.ebi.ac.uk/"><img src="http://www.ebi.ac.uk/inc/images/ebi_logo.jpg" border="0" alt="EBI
+Logo"/></a>.</p>
+    </div>
 
-  <p>For bug reports, feature requests,
-    suggestions and patches, please contact <script language="javascript">makemail("kirsch", "externalDataLink");</script>
-  If you need a <b>GPL free</b> version of the software to use in closed
-  source projects, please <a
-  href="http://www.ebi.ac.uk/Rebholz/contact.html">contact us</a>.
-  </p>
+      <p style="font-size: xx-small;">Disclaimer: this page looks ugly
+	(&copy; Harald Kirsch).</p>
+    </div>
+
+
+    <!-- ******************************************************** -->
+    <div class="navi">
+      <h1>Links</h1>
+      <p><a href="https://developer.berlios.de/projects/monqjfa/">Project Management</a></p>
+
+      <p><a href="http://svn.berlios.de/wsvn/monqjfa/trunk/?rev=0&amp;sc=0">Source Code Browser</a></p>
+
+      <p><a href="https://developer.berlios.de/project/showfiles.php?group_id=8239">Download</a></p>
+
+      <p><a href="monqApiDoc/index.html">API Docs</a></p>
+    </div>
+    <!-- ******************************************************** -->
+
+
+    
+
+  </body>
+</html>

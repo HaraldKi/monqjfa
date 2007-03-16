@@ -1,0 +1,45 @@
+body { 
+  position: relative;
+  top: 0px;
+  left: 0px;
+}
+
+.main { 
+  position: absolute;
+  left: 20%;
+  top: 0px;
+}
+
+.navi { 
+  position: absolute;
+  left:0px;
+  top 0px;
+  width: 20%;
+}
+
+.navi h1 { 
+  font-size: medium;
+  font-variant: small-caps;
+  margin: 0px;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.navi p {
+  margin: 0px;
+  margin-bottom: 2px;
+}
+.logobar { 
+  background: #eeeeee;
+  padding: 3mm;
+  margin-top: 1cm;
+  border-top: 2px solid #dddddd;
+}
+
+.logobar h1 { 
+  margin: 0px;
+  font-size: medium;
+  position: relative;
+  top: -3mm;
+  left: -3mm;
+}
