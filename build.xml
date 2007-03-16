@@ -45,7 +45,9 @@
       classname="org.python.util.PythonInterpreter" />
   </target>
   <!-- *************************************************************** -->
-  <target name="setup" depends="findfeatures">
+  <target name="setVersion"
+    description="read current version to build from RELNOTES">
+
     <mkdir dir="Classes/tests" />
     <loadfile property="version" srcfile="Documentation/RELNOTES">
       <!-- someone had a half decent idea with these filter chains,
@@ -82,12 +84,12 @@
   <!-- Main target is to compile all source files of the packages. 
   -->
   <target name="compile" 
-    depends="setup,warnXstream,warnJython,purgeClasses"
+    depends="findfeatures,warnXstream,warnJython,purgeClasses"
     description="compile all Java source files to ./Classes">
 
     <javac srcdir="."
 	   destdir="Classes" 
-	   source="1.4"
+	   source="1.5"
            listfiles="no"
 	   fork="false"
            debug="true"
@@ -99,11 +101,14 @@
 
   <!-- *************************************************************** -->
   <!-- packing a jar for the compiled distro -->
-  <target name="jar" depends="compile"
-	  description="creates the runtime library jar file">
-    <jar jarfile="monq.jar"
-	 basedir="Classes"
-	 includes="monq/**">
+  <target name="jar" depends="compile, setVersion"
+    description="creates the runtime library jar file">
+
+    <mkdir dir="dist" />
+
+    <jar jarfile="dist/monq-${version}.jar"
+      basedir="Classes"
+      includes="monq/**">
       <manifest>
 	<attribute name="Monq-Version" value="${version}"/>
       </manifest>
@@ -112,48 +117,51 @@
 
   <!-- *************************************************************** -->
   <!-- create the documentation -->
-  <target name="doc" depends="setup"
-    description="create the API documentation">
+  <target name="apidoc" depends="setVersion"
+    description="create the API documentation in dist">
 
     <!-- instead of using ExcludeDoclet, which most likely does not
     exist on many machines, I use a copy of the source code with only
     the files for which to generate the docs -->
-    <copy todir=".fordoc">
+    <!-- copy todir=".fordoc">
       <fileset dir=".">
 	<include name="monq/**/*.html"/>
-	<!-- jsrc pattern set does not work, so do it by hand -->
 	<include name="monq/**/*.java"/>
 	<exclude name="monq/**/keep/**"/>
       </fileset>
-    </copy>
+    </copy -->
 
-    <javadoc destdir="monq-doc"
+    <javadoc destdir="dist/monqApiDoc"
 	     Protected="true" nodeprecated="false" 
 	     author="true" nohelp="true"
 	     source="1.4"
 	     Windowtitle="monq packages"
       Header="monq-${version}"
-	     Bottom="&lt;div class=&quot;monqlink&quot;>download monq from&lt;br>&lt;a href=&quot;http://www.ebi.ac.uk/Rebholz-srv/whatizit/software&quot;>http://www.ebi.ac.uk/Rebholz-srv/whatizit/software&lt;/a>&lt;/div>"
+	     Bottom="&lt;div class=&quot;monqlink&quot;>Download monq from &lt;a href=&quot;https://developer.berlios.de/project/showfiles.php?group_id=8239&quot;>developer.berlios.de&lt;/a>.&lt;/div>"
 	     Overview="monq/overview.html"
 	     additionalparam="-quiet"
 	     verbose="false"
 	     stylesheetfile="${stylefile}"
 	     >
-      <packageset dir=".fordoc">
+      <packageset dir=".">
 	<include name="monq/**/*" />
-	<exclude name="monq/**/keep" />
 	<exclude name="monq/**/doc-files" />
       </packageset>
     </javadoc>
 
-    <delete dir=".fordoc/" />
+    <!-- delete dir=".fordoc/" / -->
 
   </target>
   <!-- *************************************************************** -->
-  <target name="docjar" depends="doc"
+  <target name="apidocjar" depends="apidoc"
     description="jar file of the api documentation created with javadoc">
-    <jar jarfile="monq-doc.jar" basedir="." includes="monq-doc/**" />
+
+    <jar jarfile="dist/monqApiDoc-${version}.jar" 
+      basedir="dist" 
+      includes="monqApiDoc/**" />
+
   </target>
+
   <!-- *************************************************************** -->
   <!-- testing -->
   <target name="test" depends="compileTests"
@@ -250,17 +258,65 @@
     </emma>
   </target>
   <!-- *************************************************************** -->
-  <!-- create a .tar.gz as for the source distribution -->
-  <target name="tgz" 
-	  description="create .tar.gz for shipping the source (only works for me:-)">
-    <exec executable="ship">
-      <arg line="-d ~/transfer -F -ver RELNOTES -s '2005-02-01'" />
+  <!-- check whether svn status -u produces no output (except one line
+  and set property svnclean it this is so -->
+
+  <target name="svnclean"
+    description="check that svn status -u has no output">
+
+    <exec executable="svn">
+      <arg line="status -u" />
+      <redirector outputproperty="svnstatus">
+	<outputfilterchain>
+	  <tailfilter lines="-1" skip="1"/>
+	</outputfilterchain>
+      </redirector>
     </exec>
+
+    <condition property="svnclean">
+      <or>
+	<equals arg1="${svnstatus}" arg2="" trim="true"/>
+	<isset property="pretend"/>
+      </or>
+    </condition>
+    
   </target>
 
   <!-- *************************************************************** -->
+  <!-- create a .tar.gz as for the source distribution -->
+  <target name="tgz" 
+    description="create .tar.gz for shipping the source (basically an svn-export)">
+    <exec executable="svn" dir="dist">
+      <arg line="-d ~/transfer -F -ver RELNOTES -s '2005-02-01'" />
+    </exec>
+  </target>
+  
+  <!-- *************************************************************** -->
+  <target name="distftp" depends="svnclean,jar,apidocjar,apidoc">
+    <fail unless="svnclean">
+      The command svn status -u produces the output 
+${svnstatus}
+      Please make sure that everything is up to date and checked in
+      before publishing.      
+    </fail>
+
+    <!-- HINT: For ftp apt-get install libcommons-net-java or similar
+    is required here in addition consider a soft link in ~/.ant/lib
+    -->
+
+    <ftp server="ftp.berlios.de"
+      userid="anonymous"
+      password="monqJfaDeveloper"
+      remotedir="incoming">
+      <fileset dir="dist">
+	<include name="monq-${version}.jar"/>
+	<include name="monqApiDoc-${version}.jar"/>
+      </fileset>
+    </ftp>
+  </target>
+  <!-- *************************************************************** -->
   <!-- copy the interesting stuff to a destination directory -->
-  <target name="pub" depends="jar,docjar,tgz"
+  <target name="pub" depends="jar,apidocjar,tgz"
     description="publishes .tgz, .jar and -doc.jar to ${pubftp}, make sure to check VERSION in RELNOTES first.">    
     <copy file="monq.jar" tofile="${pubftp}/monq-${version}.jar" />
     <copy file="monq-doc.jar" tofile="${pubftp}/monq-doc-${version}.jar" />
@@ -285,7 +341,7 @@
 
   <!-- *************************************************************** -->
   <!-- create site.html in some given directory -->
-  <target name="sitehtml" depends="setup"
+  <target name="sitehtml" depends="setVersion"
     description="patch site.html with version data, write to -Dsitehtml">
     <copy file="site.html" tofile="${sitehtml}">
       <filterset>
@@ -297,7 +353,7 @@
   </target>
   <!-- *************************************************************** -->
   <!-- for debugging, show all properties -->
-  <target name="props" depends="setup">   
+  <target name="props" depends="setVersion,findfeatures,svnclean">   
     <echoproperties/>
   </target>
 </project>

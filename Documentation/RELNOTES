@@ -1,3 +1,9 @@
+VERSION 1.0
+
+This version is functionally equivalent to version 0.19. With version
+1.0 we celebrate the move to berlios.de and the entry of 6 developers.
+
+
 VERSION 0.19
 
 IMPORTANT: The communication between Dist(Pipe)?Filter and
