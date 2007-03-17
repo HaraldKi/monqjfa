@@ -26,7 +26,7 @@ Nfa nfa =
 Dfa dfa = nfa.compile({@link monq.jfa.DfaRun#UNMATCHED_COPY}); </pre>
 	A <code>Dfa</code> is a data structure that allows to match
 	the regular expessions which where stuck into the
-	<code>Nfa</code>. The running time depends only linearly only on the
+	<code>Nfa</code>. The running time depends only linearly on the
 	length of the input string. The parameter given to
 	<code>compile()</code> specifies how non-matching input shall
 	be treated. In this case it is copied unchanged to the output.
