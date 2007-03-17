@@ -1,45 +1,75 @@
+
+/*****
+  The body positioning is necessary to allow positioning of
+  the children.
+*****/
 body { 
   position: relative;
   top: 0px;
   left: 0px;
+  margin: 0px;
+  background: url("bg.png");
+  background-repeat: repeat-y;
+  /* background-position: right; */
 }
 
 .main { 
   position: absolute;
-  left: 20%;
+  left: 140px;
   top: 0px;
+  max-width: 18cm;
+  /* border-left: 1px solid grey; */
+  padding-left: 1em;
+  padding-right: 1em;
+  background: url("bg.png");
+  background-repeat: repeat-y;
 }
 
 .navi { 
   position: absolute;
   left:0px;
-  top 0px;
-  width: 20%;
+  top: 0px;
+  width: 135px;
+  margin: 0px;
+  margin-bottom: 3mm;
+  padding: 2px;
+  overflow: auto;
 }
 
 .navi h1 { 
-  font-size: medium;
+  font-size: larger;
   font-variant: small-caps;
   margin: 0px;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin-top: 1em;
+  margin-bottom: 0em;
 }
 
 .navi p {
   margin: 0px;
+  margin-left: 3px;
   margin-bottom: 2px;
 }
-.logobar { 
-  background: #eeeeee;
-  padding: 3mm;
-  margin-top: 1cm;
-  border-top: 2px solid #dddddd;
-}
 
-.logobar h1 { 
+a:link { color: #a00000 }
+a:visited { color:  #CD4444}
+a:active { color: #FF6347 }
+
+
+.footer { 
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  border-top: 1px solid orange;
+  background: white url("bg.png");
+  background-repeat: repeat-y;
+  z-index: 1;
+}
+.footcont { 
+  padding: 3px
+}
+.footcont p {
   margin: 0px;
-  font-size: medium;
-  position: relative;
-  top: -3mm;
-  left: -3mm;
+  font-size: smaller;
+  text-align: right;
 }

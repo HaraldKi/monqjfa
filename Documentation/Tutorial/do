@@ -10,7 +10,15 @@
 ########################################################################
 
 # Just run pdflatex often enough:-)
+needRun() {
+  test MonqJfaTutorial.tex -nt MonqJfaTutorial.pdf \
+   || grep -qsi 'label.s. may have ch' MonqJfaTutorial.log
+}
+
+needRun || exit 0
 pdflatex MonqJfaTutorial
 bibtex MonqJfaTutorial
-pdflatex MonqJfaTutorial
-pdflatex MonqJfaTutorial
+
+while needRun; do 
+  pdflatex MonqJfaTutorial
+done

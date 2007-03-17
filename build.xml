@@ -137,7 +137,7 @@
 	     source="1.4"
 	     Windowtitle="monq packages"
       Header="monq-${version}"
-	     Bottom="&lt;div class=&quot;monqlink&quot;>Download monq from &lt;a href=&quot;https://developer.berlios.de/project/showfiles.php?group_id=8239&quot;>developer.berlios.de&lt;/a>.&lt;/div>"
+	     Bottom="&lt;div class=&quot;monqlink&quot;>download: &lt;a href='https://developer.berlios.de/project/showfiles.php?group_id=8239' target='_top'>developer.berlios.de&lt;/a>&lt;br/>home page: &lt;a href=&quot;http://monqjfa.berlios.de/&quot; target='_top'>monqjfa.berlios.de&lt;/a>&lt;/div>"
 	     Overview="monq/overview.html"
 	     additionalparam="-quiet"
 	     verbose="false"
@@ -314,6 +314,53 @@ ${svnstatus}
       </fileset>
     </ftp>
   </target>
+  <!-- *************************************************************** -->
+  <target name="packsite" depends="apidoc,tutorial"
+    description="create a tgz of the home page files">
+    
+    <tar destfile="dist/site.tar.gz" compression="gzip">
+      <tarfileset dir="Documentation" 
+	includes="index.html style.css *.png" />
+      <tarfileset dir="dist" includes="monqApiDoc/**" />
+      <tarfileset dir="Documentation/Tutorial"
+	includes="MonqJfaTutorial.pdf" />
+      <tarfileset dir="Documentation/Tutorial" prefix="examples"
+	includes="*.java"/>
+    </tar>
+  </target>
+  <!-- *************************************************************** -->
+  <target name="pubsite" depends="packsite"
+    description="upload home page, only works for hk">
+    <exec executable="scp" dir="dist" failonerror="true">
+      <arg line="site.tar.gz pifpafpuf@shell.berlios.de:/home/groups/monqjfa/htdocs"/>
+    </exec>
+    <exec executable="ssh" failonerror="true">
+      <arg line="pifpafpuf@shell.berlios.de 'cd /home/groups/monqjfa/htdocs; tar xzf site.tar.gz'"/>
+    </exec>
+  </target>
+  <!-- *************************************************************** -->
+  <target name="tutorial">
+    <exec dir="Documentation/Tutorial" 
+      executable="/bin/sh"
+      failonerror="true"
+      >
+      <arg line="do"/>
+    </exec>
+  </target>
+  <!-- *************************************************************** -->
+  <target name="packtut" depends="tutorial">
+    <tar destfile="dist/MonqJfaTutorial.tar.gz" compression="gzip">
+      <tarfileset dir="Documentation/Tutorial" prefix="MonqJfaTutorial"
+	includes="*.java MonqJfaTutorial.pdf"/>
+    </tar>
+  </target>
+  <!-- *************************************************************** -->
+
+  <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  THE FOLLOWING STUFF IS OLD AND WILL SOON BE DELETED
+  hk: 2007-03-18 
+  -->
+
   <!-- *************************************************************** -->
   <!-- copy the interesting stuff to a destination directory -->
   <target name="pub" depends="jar,apidocjar,tgz"
