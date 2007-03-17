@@ -1,0 +1,16 @@
+#!/bin/sh
+########################################################################
+#
+# This is a bit of a hack, but I feel that it is much easier and
+# better to understand than forcing people to download all kind of
+# fancy stuff for ant, just to run pdflatex and bibtex a few times.
+#
+# (C) 2007 Harald Kirsch
+#
+########################################################################
+
+# Just run pdflatex often enough:-)
+pdflatex MonqJfaTutorial
+bibtex MonqJfaTutorial
+pdflatex MonqJfaTutorial
+pdflatex MonqJfaTutorial
