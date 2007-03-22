@@ -3,6 +3,9 @@
   The body positioning is necessary to allow positioning of
   the children.
 *****/
+html { 
+  margin: 0px;
+}
 body { 
   position: relative;
   top: 0px;
@@ -11,13 +14,11 @@ body {
   background: url("bg.png");
   background-repeat: repeat-y;
   /* background-position: right; */
+  height: 100%;
 }
 
 .main { 
-  position: absolute;
-  left: 140px;
-  top: 0px;
-  max-width: 18cm;
+  max-width: 55em;
   /* border-left: 1px solid grey; */
   padding-left: 1em;
   padding-right: 1em;
@@ -26,18 +27,17 @@ body {
 }
 
 .navi { 
-  position: absolute;
-  left:0px;
-  top: 0px;
-  width: 135px;
-  margin: 0px;
-  margin-bottom: 3mm;
-  padding: 2px;
+  float: left;
+  margin: 0 1em 1em 0.5em;
+  padding: 0px 1em 0px 0px;
+  border-right: 1px solid #ffd712;
+  border-bottom: 1px solid #ffd712;
   overflow: auto;
+/*   background: grey; */
 }
 
-.navi h1 { 
-  font-size: larger;
+.navi h1 {
+  font-size: inherit;
   font-variant: small-caps;
   margin: 0px;
   margin-top: 1em;
@@ -45,6 +45,7 @@ body {
 }
 
 .navi p {
+  font-size: smaller;		/* relative to .navi */
   margin: 0px;
   margin-left: 3px;
   margin-bottom: 2px;
@@ -60,7 +61,7 @@ a:active { color: #FF6347 }
   bottom: 0px;
   left: 0px;
   width: 100%;
-  border-top: 1px solid orange;
+  border-top: 1px solid #ffd712;
   background: white url("bg.png");
   background-repeat: repeat-y;
   z-index: 1;
