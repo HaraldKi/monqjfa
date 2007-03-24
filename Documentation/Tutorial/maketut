@@ -14,11 +14,30 @@ needRun() {
   test MonqJfaTutorial.tex -nt MonqJfaTutorial.pdf \
    || grep -qsi 'label.s. may have ch' MonqJfaTutorial.log
 }
+haveErr() {
+  ! test -f MonqJfaTutorial.log \
+  || grep -m 1 -B 1 -iE '^l[.][0-9]+' MonqJfaTutorial.log
+}
 
-needRun || exit 0
-pdflatex MonqJfaTutorial
+P='pdflatex -interaction batchmode'
+
+needRun || haveErr || exit 0
+$P MonqJfaTutorial
 bibtex MonqJfaTutorial
 
-while needRun; do 
-  pdflatex MonqJfaTutorial
+if  err=$(haveErr) ; then
+  echo "ERROR: $err"
+  exit 1
+fi
+
+needRun || exit 0
+
+i=10
+while needRun && test $i -gt 0; do 
+  i=$((i-1))
+  $P MonqJfaTutorial
 done
+
+if [ $i = 0 ]; then
+  echo "***** still not finished after 10 rounds *****"
+fi
