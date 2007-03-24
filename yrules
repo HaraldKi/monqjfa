@@ -35,6 +35,7 @@ function test_compile() {
 }
 function cmd_compile() {
   rm -rf Classes/monq Classes/.compiled
+  echo $CLASSPATH
   ${JAVAC:-javac} -d Classes -source 1.4 $JSRC
   touch Classes/.compiled
 }

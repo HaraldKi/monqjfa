@@ -8,13 +8,14 @@
     expression viz. NFA/DFA library.
   </description>
 
-  <!-- property environment="env"/ -->
+  <property environment="env" />
   <property name="NOT_stylefile" value="monq/jfa/ebistyle.css" />
   <property name="stylefile" value="monq/jfa/docstyle.css" />
 
   <property name="pubftp" value="/ebi/ftp/pub/software/textmining/monq" />
   <property name="pubhtml" value="/homes/kirsch/public_html" />
 
+  <!-- *************************************************************** -->
   <!-- these are our source files -->
   <patternset id="jsrc" 
 	      excludes="monq/**/keep/** monq/**/doc-files/**"
@@ -38,17 +39,18 @@
   </path>
  
   <!-- *************************************************************** -->
+  <!-- check existence of certain features -->
   <target name="findfeatures">
     <available property="xstream" 
       classname="com.thoughtworks.xstream.XStream" />
     <available property="jython"
       classname="org.python.util.PythonInterpreter" />
   </target>
-  <!-- *************************************************************** -->
-  <target name="setVersion"
-    description="read current version to build from RELNOTES">
 
-    <mkdir dir="Classes/tests" />
+  <!-- *************************************************************** -->
+  <!-- read current version to build from RELNOTES -->
+
+  <target name="setVersion">
     <loadfile property="version" srcfile="Documentation/RELNOTES">
       <!-- someone had a half decent idea with these filter chains,
       but what is availabe is still bloody poor compared to a decent
@@ -81,8 +83,7 @@
     <echo>WARNING: org.python.util.PythonInterpreter not found, monq.programs.JythonFilter will not be available.</echo>
   </target>
 
-  <!-- Main target is to compile all source files of the packages. 
-  -->
+  <!-- Main target is to compile all source files of the packages. -->
   <target name="compile" 
     depends="findfeatures,warnXstream,warnJython,purgeClasses"
     description="compile all Java source files to ./Classes">
@@ -120,17 +121,6 @@
   <target name="apidoc" depends="setVersion"
     description="create the API documentation in dist">
 
-    <!-- instead of using ExcludeDoclet, which most likely does not
-    exist on many machines, I use a copy of the source code with only
-    the files for which to generate the docs -->
-    <!-- copy todir=".fordoc">
-      <fileset dir=".">
-	<include name="monq/**/*.html"/>
-	<include name="monq/**/*.java"/>
-	<exclude name="monq/**/keep/**"/>
-      </fileset>
-    </copy -->
-
     <javadoc destdir="dist/monqApiDoc"
 	     Protected="true" nodeprecated="false" 
 	     author="true" nohelp="true"
@@ -148,8 +138,6 @@
 	<exclude name="monq/**/doc-files" />
       </packageset>
     </javadoc>
-
-    <!-- delete dir=".fordoc/" / -->
 
   </target>
   <!-- *************************************************************** -->
@@ -181,10 +169,11 @@
   </target>
 
   <target name="compileTests" depends="purgeTest,compile">
+    <mkdir dir="Classes/tests" />
     <javac srcdir="tests" destdir="Classes/tests"
       sourcepath="tests"
       classpathref="CPLOCAL"
-      source="1.4" 
+      source="1.5" 
       listfiles="no"
       debug="true"
       >
@@ -201,37 +190,43 @@
   </target>
 
   <!-- *************************************************************** -->
-  <!-- Comment this part out if you do not have emma. -->
-  <taskdef resource="emma_ant.properties" />
-    
+  <!-- NEVER, EVER again waste your time in trying to get emma going
+  as an ant task. It is a pain already to get it going on the command
+  line, and what it found out the very hard way seems to be this:
+
+  a) start the jvm with only exactly emma.jar in the classpath
+  b) put everything else necessary to run the test in emma's -cp
+  c) use explicit includes to prevent silly emma messages
+
+  All other combinations produce nerve wrecking and #$@#$ (put in your
+  favorite swear word here) class loader problems.
+  -->
+
   <macrodef name="runemma">
     <attribute name="testClass" />
     <sequential>
-      <emmajava classname="@{testClass}"
-	classpathref="CLASSPATH"
-	sourcepath="."
-	fullmetadata="true"
-	dumpsessiondata="true"
-	sessiondatafile="emma/coverage.es"
-	merge="true"
-	>
-	<filter includes="monq.jfa.*" />
-	<filter includes="monq.jfa.actions.*" />
-	<filter includes="monq.jfa.ctx.*" />
-	<filter includes="monq.net.*" />
-	<filter includes="monq.programs.DictFilter*" />
-	<filter includes="monq.stuff.Coder" />
-	<filter excludes="monq.jfa.*Test*" />
-      </emmajava>
+      <java classname="emmarun" fork="true">
+	<jvmarg line="-cp ${env.EMMAJAR}" />
+	<arg line="-cp ${env.CLASSPATH} -quiet"/>
+	<arg line="-sessiondata -out emma/coverage.es -fullmetadata" />
+	<arg line="-ix monq* -ix -*Test"/>
+	<arg line="-Dreport.txt.out.file=emma/unused.txt"/>
+	<arg line="@{testClass}"/>
+      </java>
     </sequential>
   </macrodef>
 
-  <!-- discontinued running emma in ant because Ant's handling of
-  CLASSPATH is breaking my karma. No use yrules.
-  -->
+  <!-- *************************************************************** -->
   <target name="emma" depends="compileTests"
     description="test with test coverage analysis using emma" >
-    
+
+    <fail unless="env.EMMAJAR">Cannot run emma without the environment variable EMMAJAR set to contain the full path to emma.jar</fail>
+    <available property="haveEmma" classpath="${env.EMMAJAR}" 
+      classname="emma"/>
+    <fail unless="haveEmma">Environment variable EMMAJAR does not seem to properly indicate the path to emma.jar, because class emma cannot be found.</fail>
+
+    <delete file="emma/coverage.es"/>
+
     <runemma testClass="monq.jfa.JyFATest" />
     <runemma testClass="DictFilterTest" />
     <runemma testClass="CoderTest" />
@@ -248,18 +243,21 @@
     <runemma testClass="monq.jfa.TextSplitterTest" />
     <runemma testClass="monq.jfa.XmlTest" />
     <runemma testClass="monq.jfa.CtxTest" />
-    <emma>
-      <report sourcepath="." columns="name,line,block,method"
-	sort="+line,+block,+method"
-	metrics="line:95">
-	<infileset file="emma/coverage.es" />
-	<html outfile="emma/index.html" />
-      </report>
-    </emma>
+
+    <!-- As for not using an emma task, see above under runemma. -->
+    <java classname="emma" fork="true">
+      <jvmarg line="-cp ${env.EMMAJAR}" />
+      <arg line="report -sp . -quiet -r html -input emma/coverage.es"/>
+      <arg line="-Dreport.html.out.file=emma/index.html" />
+      <arg line="-Dreport.columns=name,line,block,method" />
+      <arg line="-Dreport.sort=+line,+block,+method" />
+      <arg line="-Dreport.metrics=line:95" />
+    </java>
   </target>
-  <!-- *************************************************************** -->
-  <!-- check whether svn status -u produces no output (except one line
-  and set property svnclean it this is so -->
+
+  <!-- ***************************************************************
+  --> <!-- check whether svn status -u produces no output (except one
+  line) and set property svnclean if this is so -->
 
   <target name="svnclean"
     description="check that svn status -u has no output">
@@ -285,14 +283,16 @@
   <!-- *************************************************************** -->
   <!-- create a .tar.gz as for the source distribution -->
   <target name="tgz" 
-    description="create .tar.gz for shipping the source (basically an svn-export)">
+    description="create .tar.gz for shipping the source (basically an svn-export) !!! not yet operational">
     <exec executable="svn" dir="dist">
       <arg line="-d ~/transfer -F -ver RELNOTES -s '2005-02-01'" />
     </exec>
   </target>
   
   <!-- *************************************************************** -->
-  <target name="distftp" depends="svnclean,jar,apidocjar,apidoc">
+  <target name="distftp" depends="svnclean,jar,apidocjar,apidoc"
+    description="upload software distro files to berlios">
+
     <fail unless="svnclean">
       The command svn status -u produces the output 
 ${svnstatus}
@@ -300,8 +300,9 @@ ${svnstatus}
       before publishing.      
     </fail>
 
-    <!-- HINT: For ftp apt-get install libcommons-net-java or similar
-    is required here in addition consider a soft link in ~/.ant/lib
+    <!-- HINT: For ftp, apt-get install libcommons-net-java or similar
+    is required here in addition consider a soft link in ~/.ant/lib to
+    this library.
     -->
 
     <ftp server="ftp.berlios.de"
@@ -314,10 +315,10 @@ ${svnstatus}
       </fileset>
     </ftp>
   </target>
+
   <!-- *************************************************************** -->
-  <target name="packsite" depends="apidoc,tutorial"
-    description="create a tgz of the home page files">
-    
+  <!-- create a tgz of the home page files -->
+  <target name="packsite" depends="apidoc,tutorial,emma">
     <tar destfile="dist/site.tar.gz" compression="gzip">
       <tarfileset dir="Documentation" 
 	includes="index.html style.css *.png" />
@@ -326,6 +327,8 @@ ${svnstatus}
 	includes="MonqJfaTutorial.pdf" />
       <tarfileset dir="Documentation/Tutorial" prefix="examples"
 	includes="*.java"/>
+      <tarfileset dir="emma" prefix="coverage"
+	includes="index.html _files/**"/>
     </tar>
   </target>
   <!-- *************************************************************** -->
@@ -339,68 +342,20 @@ ${svnstatus}
     </exec>
   </target>
   <!-- *************************************************************** -->
+  <!-- run pdflatex to create the tutorial -->
   <target name="tutorial">
     <exec dir="Documentation/Tutorial" 
       executable="/bin/sh"
       failonerror="true"
       >
-      <arg line="do"/>
+      <arg line="maketut"/>
     </exec>
   </target>
   <!-- *************************************************************** -->
-  <target name="packtut" depends="tutorial">
-    <tar destfile="dist/MonqJfaTutorial.tar.gz" compression="gzip">
-      <tarfileset dir="Documentation/Tutorial" prefix="MonqJfaTutorial"
-	includes="*.java MonqJfaTutorial.pdf"/>
-    </tar>
-  </target>
-  <!-- *************************************************************** -->
 
-  <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  THE FOLLOWING STUFF IS OLD AND WILL SOON BE DELETED
-  hk: 2007-03-18 
-  -->
-
-  <!-- *************************************************************** -->
-  <!-- copy the interesting stuff to a destination directory -->
-  <target name="pub" depends="jar,apidocjar,tgz"
-    description="publishes .tgz, .jar and -doc.jar to ${pubftp}, make sure to check VERSION in RELNOTES first.">    
-    <copy file="monq.jar" tofile="${pubftp}/monq-${version}.jar" />
-    <copy file="monq-doc.jar" tofile="${pubftp}/monq-doc-${version}.jar" />
-    <copy file="${env.HOME}/transfer/monq-${version}.tar.gz" 
-      todir="${pubftp}" />
-    <chmod dir="${pubftp}" perm="444" includes="*${version}*" />
-    <copy file="RELNOTES" tofile="${pubftp}/RELNOTES" />
-    <copy file="README" tofile="${pubftp}/README" />
-    <copy file="README.files" tofile="${pubftp}/README.files" />
-    <copy todir="${pubhtml}">
-      <fileset dir="." includes="monq-doc/**" />
-    </copy>
-    <exec executable="digestLog" output="${pubftp}/CHANGES" logError="true">
-      <arg line="-d 2005-02-01" />
-    </exec>
-    <echo file="${pubhtml}/monq-doc/.htaccess">
-      order deny,allow
-      deny from all
-      allow from all
-    </echo>
-  </target>
-
-  <!-- *************************************************************** -->
-  <!-- create site.html in some given directory -->
-  <target name="sitehtml" depends="setVersion"
-    description="patch site.html with version data, write to -Dsitehtml">
-    <copy file="site.html" tofile="${sitehtml}">
-      <filterset>
-	<filter token="FTP" 
-	  value="ftp://ftp.ebi.ac.uk/pub/software/textmining/monq"/>
-	<filter token="DOCHTML" value="http://www.ebi.ac.uk/~kirsch"/>
-      </filterset>
-    </copy>
-  </target>
-  <!-- *************************************************************** -->
   <!-- for debugging, show all properties -->
-  <target name="props" depends="setVersion,findfeatures,svnclean">   
+  <target name="props" depends="setVersion,findfeatures,svnclean"
+    description="debug aid: prints all defined properties">   
     <echoproperties/>
   </target>
 </project>
