@@ -266,7 +266,7 @@ public class ActionTest extends TestCase {
     DfaRun r = new DfaRun(env);
     String s = "blabla<xxx>bla BLA 123 bla</xxx> bla "+
       "<xxx>aa<lower />blUrb BLA</xxx>blurb";
-    r.setIn(s);
+    r.setIn(new CharSequenceCharSource(s));
     s = r.filter(s);
     assertEquals("BLA BLA 123 BLAAA<lower />blurb bla", s);
   }

@@ -137,8 +137,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /**
    * is the error text used in a <code>IllegalArgumentException</code>
    * if a <code>DfaRun</code> shall be created with a
-   * <code>Dfa</code> which matches the empty string.
-   * @deprecated used only by deprecated methods
+   * <code>Dfa</code> that matches the empty string.
    */
   public static final String EEPSMATCHER = "dfa matches the empty string";
 
@@ -218,18 +217,37 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * Dfa}. The behaviour on unmatched input and on EOF is initialized
    * from the <code>Dfa</code>.</p>
    *
+   * <p>Because in nearly all cases it is a mistake to run a {@link
+   * Dfa} that matches the empty string, such a <code>Dfa</code> is
+   * not allowed and throws an
+   * <code>IllegalArgumentException</code>. In the rare case that
+   * a <code>Dfa</code> matching the empty string must be run, you
+   * have to first create a <code>DfaRun</code> with a proper
+   * <code>Dfa</code> and then replace it with {@link #setDfa}. It is
+   * a hassle, but this is intended.</p>
+   *
    * @see #setOnFailedMatch
    * @param dfa is the automaton to operate initially. Callbacks may
    * change it.
    * @param in is the initial input source. 
+   *
+   * @throws IllegalArgumentException if the given <code>dfa</code>
+   * matches the empty string, i.e. if {@link Dfa#matchesEmpty} returns
+   * <code>true</code>. 
    */
   public DfaRun(Dfa dfa, CharSource in) {
-    setSaneDfa(dfa);
+    if( dfa.matchesEmpty() ) {
+      throw new java.lang.IllegalArgumentException(EEPSMATCHER);
+    }
+    setDfa(dfa);
     setIn(in);
   }
 
   /**
-   * <p>creates a <code>DfaRun<code> with empty initial input.</p>
+   * <p>creates a <code>DfaRun</code> with empty initial input. This
+   * method calls the 2 parameter constructur with an empty
+   * <code>CharSource</code>.</p> 
+   *
    * @see #DfaRun(Dfa,CharSource)
    */
   public DfaRun(Dfa dfa) {
@@ -266,48 +284,48 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    */
   public CharSource getIn() { return in; }
 
-  /** changes the input source. 
-   * @deprecated Create a suitable <code>CharSource</code> object and
-   * call {@link #setIn(CharSource)}.
-   */
-  public void setIn(CharSequence in) {
-    setIn(new CharSequenceCharSource(in));
-  }
-  /** changes the input source. 
-   * @deprecated Create a suitable <code>CharSource</code> object and
-   * call {@link #setIn(CharSource)}.
-   * @see #setIn(CharSource)
-   */
-  public void setIn(CharSequence in, int startAt) {
-    setIn(new CharSequenceCharSource(in, startAt));
-  }
-  /** changes the input source.
-   * @deprecated Create a suitable <code>CharSource</code> object and
-   * call {@link #setIn(CharSource)}.
-   * @see #setIn(CharSource)
-   */
-  public void setIn(InputStream in) {
-    setIn(new ReaderCharSource(in));
-  }
+//   /** changes the input source. 
+//    * @deprecated Create a suitable <code>CharSource</code> object and
+//    * call {@link #setIn(CharSource)}.
+//    */
+//   public void setIn(CharSequence in) {
+//     setIn(new CharSequenceCharSource(in));
+//   }
+//   /** changes the input source. 
+//    * @deprecated Create a suitable <code>CharSource</code> object and
+//    * call {@link #setIn(CharSource)}.
+//    * @see #setIn(CharSource)
+//    */
+//   public void setIn(CharSequence in, int startAt) {
+//     setIn(new CharSequenceCharSource(in, startAt));
+//   }
+//   /** changes the input source.
+//    * @deprecated Create a suitable <code>CharSource</code> object and
+//    * call {@link #setIn(CharSource)}.
+//    * @see #setIn(CharSource)
+//    */
+//   public void setIn(InputStream in) {
+//     setIn(new ReaderCharSource(in));
+//   }
 
-  /**
-   * <p>changes the {@link Dfa} this machinery operates on. Changing
-   * the DFA in a callback action is permissable. In particular, this
-   * allows to filter different parts of the input with different
-   * automata.</p>
-   *
-   * @throws java.lang.IllegalArgumentException if
-   * <code>dfa.matchesEmpty()</code> returns <code>true</code>.
-   * @deprecated This method does not initialize the behaviour of the
-   * DfaRun in case no match is found from the given Dfa. Use {@link
-   * #setDfa} instead.
-   */
-  public void setSaneDfa(Dfa dfa) {
-    if( dfa.matchesEmpty() ) {
-      throw new java.lang.IllegalArgumentException(EEPSMATCHER);
-    }
-    setAnyDfa(dfa);
-  }
+//   /**
+//    * <p>changes the {@link Dfa} this machinery operates on. Changing
+//    * the DFA in a callback action is permissable. In particular, this
+//    * allows to filter different parts of the input with different
+//    * automata.</p>
+//    *
+//    * @throws java.lang.IllegalArgumentException if
+//    * <code>dfa.matchesEmpty()</code> returns <code>true</code>.
+//    * @deprecated This method does not initialize the behaviour of the
+//    * DfaRun in case no match is found from the given Dfa. Use {@link
+//    * #setDfa} instead.
+//    */
+//   public void setSaneDfa(Dfa dfa) {
+//     if( dfa.matchesEmpty() ) {
+//       throw new java.lang.IllegalArgumentException(EEPSMATCHER);
+//     }
+//     setAnyDfa(dfa);
+//   }
   /**
    * <p>changes the {@link Dfa} to run. In addition the way to handle
    * unmatched input is (re)initialized from the given {@link
@@ -325,12 +343,12 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     this.onFailedMatch = dfa.fmb;
   }
 
-  /**
-   * @deprecated This method does not initialize the behaviour of the
-   * DfaRun in case no match is found from the given Dfa. Use {@link
-   * #setDfa} instead.
-   */
-  public void setAnyDfa(Dfa dfa) { this.dfa = dfa; }
+//   /**
+//    * @deprecated This method does not initialize the behaviour of the
+//    * DfaRun in case no match is found from the given Dfa. Use {@link
+//    * #setDfa} instead.
+//    */
+//   public void setAnyDfa(Dfa dfa) { this.dfa = dfa; }
 
   /**
    * returns the {@link Dfa} operated by <code>this</code>.
@@ -775,7 +793,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     throws java.io.IOException
   {
     readBuf.setLength(0);
-    setIn(in);
+    setIn(new CharSequenceCharSource(in));
     while( crunch(readBuf) ) /**/;
     return readBuf.toString();
   }    

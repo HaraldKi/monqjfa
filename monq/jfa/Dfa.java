@@ -107,7 +107,7 @@ public class Dfa implements Serializable {
     return new DfaRun(this);
   }
   /**********************************************************************/
-  /**
+  /*  *
    * <p>convenience function to get a <code>DfaRun</code> for this
    * automaton.
    *
@@ -158,27 +158,27 @@ public class Dfa implements Serializable {
   }
   ///CLOVER:ON
 
-  /**
+  /* FINALLY REMOVED *
    * @see #match(CharSource,StringBuffer)
    *
    * @deprecated Use one of the methods of {@link Regexp} or {@link
    * DfaRun}, please.
    */
-  public FaAction match(CharSequence s, StringBuffer out) 
-    //throws java.io.IOException
-  {
-    CharSource in = new CharSequenceCharSource(s);
+//   public FaAction match(CharSequence s, StringBuffer out) 
+//     //throws java.io.IOException
+//   {
+//     CharSource in = new CharSequenceCharSource(s);
 
-    // We now that there will be no IOException coming from a
-    // CharSequenceCharSource 
-    try {
-      return match(in, out);
-    } catch( java.io.IOException e ) {
-      throw new Error("impossible", e);
-    }
-  }
+//     // We now that there will be no IOException coming from a
+//     // CharSequenceCharSource 
+//     try {
+//       return match(in, out);
+//     } catch( java.io.IOException e ) {
+//       throw new Error("impossible", e);
+//     }
+//   }
   /**********************************************************************/
-  /**
+  /* FINALLY REMOVED *
    * <p>tests whether a prefix of the input source can be matched and
    * adds the matched string to <code>out</code>.</p>
    *
@@ -194,11 +194,11 @@ public class Dfa implements Serializable {
    * @deprecated Use one of the methods of {@link Regexp} or {@link
    * DfaRun}, please.
    */
-  public FaAction match(CharSource in, StringBuffer out) 
-    throws java.io.IOException
-  {
-    return match(in, out, dummySmd);
-  }
+//   public FaAction match(CharSource in, StringBuffer out) 
+//     throws java.io.IOException
+//   {
+//     return match(in, out, dummySmd);
+//   }
   /**********************************************************************/
 
   /**
@@ -257,7 +257,7 @@ public class Dfa implements Serializable {
     return a;
   }
   /**********************************************************************/
-  /**
+  /* FINALLY REMOVED *
    * <p>tests whether a prefix of the input starting at the given
    * position can be matched. The automaton tries to find the longest
    * match possible.</p>
@@ -269,26 +269,26 @@ public class Dfa implements Serializable {
    * @deprecated Use {@link Regexp} instead. This method may even
    * return wrong results as it is no longer maintained.
    */
-  public int match(CharSequence in, int pos)   {
-    int startPos = pos;
-    int lastStopPos = startPos;
-    FaState lastStopState = null;
+//   public int match(CharSequence in, int pos)   {
+//     int startPos = pos;
+//     int lastStopPos = startPos;
+//     FaState lastStopState = null;
 
-    FaState current = startState;
-    while( current!=null ) {
-      if( null!=current.getAction() ) {
-	lastStopState = current;
-	lastStopPos = pos;
-      }
-      if( pos>=in.length() ) break;
-      int ch = in.charAt(pos);
-      pos += 1;
-      current = current.follow((char)ch);
-    }
+//     FaState current = startState;
+//     while( current!=null ) {
+//       if( null!=current.getAction() ) {
+// 	lastStopState = current;
+// 	lastStopPos = pos;
+//       }
+//       if( pos>=in.length() ) break;
+//       int ch = in.charAt(pos);
+//       pos += 1;
+//       current = current.follow((char)ch);
+//     }
     
-    if( lastStopState==null ) return -1;
-    return lastStopPos-startPos;
-  }
+//     if( lastStopState==null ) return -1;
+//     return lastStopPos-startPos;
+//   }
 
 }
  

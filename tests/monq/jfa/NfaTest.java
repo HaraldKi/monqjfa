@@ -162,11 +162,13 @@ public class NfaTest extends TestCase {
     String s = "aaa";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer();
-    
-    assertEquals(Drop.DROP, dfa.match(cs, sb));
-    assertEquals(Drop.DROP, dfa.match(cs, sb));
-    assertEquals(Drop.DROP, dfa.match(cs, sb));
-    assertEquals(DfaRun.EOF, dfa.match(cs, sb));
+    DfaRun r = new DfaRun(dfa);
+    r.setIn(cs);
+
+    assertEquals(Drop.DROP, r.next(sb));
+    assertEquals(Drop.DROP, r.next(sb));
+    assertEquals(Drop.DROP, r.next(sb));
+    assertEquals(DfaRun.EOF, r.next(sb));
     assertEquals(s, sb.toString());
   }
   public void testCompileOr() 
@@ -177,15 +179,18 @@ public class NfaTest extends TestCase {
     String s =  "abcdcdab";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer();
-    assertEquals(Drop.DROP, dfa.match(cs, sb));
+    DfaRun r = new DfaRun(dfa);
+    r.setIn(cs);
+
+    assertEquals(Drop.DROP, r.next(sb));
     assertEquals(2, sb.length());
-    assertEquals(Drop.DROP, dfa.match(cs, sb));
+    assertEquals(Drop.DROP, r.next(sb));
     assertEquals(4, sb.length());
-    assertEquals(Drop.DROP, dfa.match(cs, sb));
+    assertEquals(Drop.DROP, r.next(sb));
     assertEquals(6, sb.length());
-    assertEquals(Drop.DROP, dfa.match(cs, sb));
+    assertEquals(Drop.DROP, r.next(sb));
     assertEquals(8, sb.length());
-    assertEquals(DfaRun.EOF, dfa.match(cs, sb));
+    assertEquals(DfaRun.EOF, r.next(sb));
     assertEquals(8, sb.length());
     assertEquals(s, sb.toString());
   }
@@ -310,7 +315,7 @@ public class NfaTest extends TestCase {
     // we have to do tricks to get an epsmatcher into a DfaRun
     Dfa dummy = rep.parse("x").compile(DfaRun.UNMATCHED_THROW);
     DfaRun r = new DfaRun(dummy);
-    r.setAnyDfa(dfa);
+    r.setDfa(dfa);
     String s = r.filter("yyaayy");
     assertEquals("bbaabb", s);
   }
@@ -326,8 +331,11 @@ public class NfaTest extends TestCase {
     String s = "abcdefghijklmnopqrstuvwxyz";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer(32);
+    DfaRun r = new DfaRun(dfa);
+    r.setIn(cs);
+
     for(int i=0; i<s.length(); i++) {
-      assertEquals(Drop.DROP, dfa.match(cs, sb));
+      assertEquals(Drop.DROP, r.next(sb));
       assertEquals(i+1, sb.length());
     }
     assertEquals(s, sb.toString());
@@ -347,8 +355,11 @@ public class NfaTest extends TestCase {
     String s = "abcderstuvwxyz";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer(32);
+    DfaRun r = new DfaRun(dfa);
+    r.setIn(cs);
+
     for(int i=0; i<s.length(); i++) {
-      assertEquals(Drop.DROP, dfa.match(cs, sb));
+      assertEquals(Drop.DROP, r.next(sb));
       assertEquals(i+1, sb.length());
     }
     assertEquals(s, sb.toString());
@@ -540,13 +551,23 @@ public class NfaTest extends TestCase {
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
   {
-    Dfa r = rep.parse("a*", Copy.COPY).compile();
+    Dfa dummy = rep.parse("x", Copy.COPY).compile();
+
+    Dfa dfa = rep.parse("a*", Copy.COPY).compile();
     StringBuffer sb = new StringBuffer();
-    assertEquals(Copy.COPY, r.match("x", sb));
+    DfaRun r = new DfaRun(dummy);
+    r.setDfa(dfa);
+
+    r.setIn(new CharSequenceCharSource("x"));
+    assertEquals(Copy.COPY, r.next(sb));
     assertEquals(0, sb.length());
-    assertEquals(Copy.COPY, r.match("ax", sb));
+
+    r.setIn(new CharSequenceCharSource("ax"));
+    assertEquals(Copy.COPY, r.next(sb));
     assertEquals(1, sb.length());
-    assertEquals(Copy.COPY, r.match("aax", sb));
+
+    r.setIn(new CharSequenceCharSource("aax"));
+    assertEquals(Copy.COPY, r.next(sb));
     assertEquals(3, sb.length());
     assertEquals("aaa", sb.toString());
   }
@@ -1006,7 +1027,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       ;
-    r.setIn("bla99bla88dong");
+    r.setIn(new CharSequenceCharSource("bla99bla88dong"));
     ByteArrayOutputStream bao = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(bao, true, "UTF-8");
     r.filter(out);
