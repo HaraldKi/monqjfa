@@ -28,7 +28,7 @@
   </patternset>
 
   <!-- these are the test source files -->
-  <patternset id="testsrc" includes="monq/**/*.java">
+  <patternset id="testsrc" includes="monq/**/*.java *.java">
     <exclude unless="jython" name="monq/jfa/JyFATest.java"/>
   </patternset>
 
