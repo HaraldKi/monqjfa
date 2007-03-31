@@ -16,9 +16,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import monq.jfa.actions.*;
 import java.io.Serializable;
-import java.io.InputStream;
 import java.io.PrintStream;
 
 /**
@@ -97,7 +95,6 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     }
     int i;
     private FailedMatchBehaviour(int i) {}
-    private static FailedMatchBehaviour get(int i) {return  all[i];}
     private Object readResolve() throws java.io.ObjectStreamException {
       return all[i];
     }

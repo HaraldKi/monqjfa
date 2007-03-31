@@ -17,8 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import java.io.IOException;
-
 /**
  * <p>is the exception thrown by methods in {@link DfaRun} whenever no
  * match can be found at the current input position.

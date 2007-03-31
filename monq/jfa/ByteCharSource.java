@@ -354,12 +354,6 @@ public class ByteCharSource extends EmptyCharSource {
     return posCache[(posFirst+p)%posCache.length];
   }
   /********************************************************************/
-  private void showBuf(String name, Buffer b) {
-    System.err.println(name+", position="+b.position()+
-		       ", limit="+b.limit()+
-		       ", cap="+b.capacity());
-  }
-  /********************************************************************/
   // only meant to be called by read() just after one character was
   // properly decoded into outBuf. Just before returning this
   // character, we update the position cache, i.e. posCache and the

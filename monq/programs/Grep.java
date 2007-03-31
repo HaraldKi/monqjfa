@@ -22,7 +22,6 @@ import monq.clifj.*;
 import monq.net.*;
 
 import java.io.*;
-import java.util.*;
 
 /**
  * <p>is a class and a command line program to copy input to output
@@ -341,8 +340,6 @@ public class Grep implements ServiceFactory {
   // roi, switches to collect mode and has a boolean which will
   // finally decide whether to ship the ROI
   private static class Hold extends AbstractFaAction {
-    private int holdStart;
-    private boolean ship;
     private FaAction a;
     public Hold(FaAction a) { this.a = a; }
     public void invoke(StringBuffer yytext, int start, DfaRun r) 
@@ -350,7 +347,6 @@ public class Grep implements ServiceFactory {
       Com com = (Com)r.clientData;
       com.ship = false;
       com.holdStart = start;
-      ship = false;
       r.collect = true;
       a.invoke(yytext, start, r);
     }

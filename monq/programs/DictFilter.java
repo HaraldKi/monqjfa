@@ -20,6 +20,7 @@ import monq.jfa.*;
 import monq.jfa.actions.*;
 import monq.clifj.*;
 import monq.jfa.ctx.*;
+import monq.jfa.xml.StdCharEntities;
 import monq.net.*;
 import monq.stuff.*;
 import monq.ie.*;
@@ -416,7 +417,7 @@ public class DictFilter implements ServiceFactory {
 	int l = yytext.length();
 	
 	yytext.append(m.get(Xml.CONTENT));
-	rh.helper.toChar(yytext, l);
+	StdCharEntities.toChar(yytext, l);
 	
 	try {
 	  rh.recentTemplate = new PrintfFormatter(yytext, l);
@@ -494,14 +495,14 @@ public class DictFilter implements ServiceFactory {
 	  // transform standard XML character entities to characters
 	  // while misusing yytext as a buffer
 	  yytext.append(pAttrib);
-	  rh.helper.toChar(yytext, l+1);
+	  StdCharEntities.toChar(yytext, l+1);
 	  fsp.appendPart(yytext, l+1, yytext.length());
 	  yytext.setLength(l+1);
 	}
 	yytext.setLength(l);
 	
 	
-	String re = rh.helper.toChar((String)m.remove(Xml.CONTENT));
+	String re = StdCharEntities.toChar((String)m.remove(Xml.CONTENT));
 	
 	int tc = 0;		// length of trailing context
 	if( isTerm ) {

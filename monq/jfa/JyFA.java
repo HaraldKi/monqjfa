@@ -19,10 +19,7 @@ package monq.jfa;
 import org.python.core.*; 
 import org.python.util.PythonInterpreter; 
 
-import monq.jfa.*;
-import monq.net.*;
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.regex.*;
 
 /**

@@ -16,17 +16,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.net;
 
-import monq.stuff.*;
-
 import java.util.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.InetSocketAddress;
 import java.net.InetAddress;
 import java.io.*;
-import java.nio.*;
-import java.nio.charset.*;
-import java.nio.channels.*;
 
 /**
  * a simple socket server able to serve multiple client
@@ -304,8 +298,8 @@ public class TcpServer implements Runnable {
 	}
       } 
 
-      if( Thread.currentThread().interrupted() ) {
-	shutdown();
+      if( Thread.interrupted() ) {
+        shutdown();
 	return;
       }
 

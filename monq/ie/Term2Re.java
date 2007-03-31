@@ -61,17 +61,6 @@ public class Term2Re {
   private static String stopWords =
     "ii|iii|iv|vi|it|up|of|and|the|to|or|with|due|in|other|as|by|without";
 
-  // a string containing exactly akk the characters for which
-  // isLetter() is true;
-  private static String letters;
-  static {
-    StringBuffer sb = new StringBuffer(46000);
-    for(int i=Character.MIN_VALUE; i<=Character.MAX_VALUE; i++) {
-      if( Character.isLetter((char)i) ) sb.append((char)i);
-    }
-    letters = sb.toString();
-  }
-
   // automaton to replace ae by a?e. Used within a word
   private static DfaRun aeAut;
 

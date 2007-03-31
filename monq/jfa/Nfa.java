@@ -142,7 +142,6 @@ public class Nfa  {
    * #or(CharSequence,FaAction)}. </p>
    */
   public Nfa(CharSequence s, FaAction a) throws ReSyntaxException {
-    int l = s.length();
     setRegex(s);
     addAction(a);
   }

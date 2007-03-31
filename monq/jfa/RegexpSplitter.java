@@ -16,8 +16,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import java.io.Serializable;
-
 /**
  *  <p>implements a {@link TextSplitter} to split text according to a
  *  regular expression.</p>

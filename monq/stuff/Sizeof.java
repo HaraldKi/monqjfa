@@ -16,7 +16,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.stuff;
 
-import monq.jfa.*;
 import java.util.*;
 import java.lang.reflect.*;
 import java.io.PrintStream;

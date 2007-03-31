@@ -47,8 +47,6 @@ class FilterConnection {
   private Socket socket = null;
 
   /**********************************************************************/
-  private static final Regexp iskey = new Regexp(PipelineRequest.KEYRE);
-
   // we create one instance of a Dfa to parse connection request read
   // from an input stream
   private static final Dfa requestParser;
@@ -74,7 +72,6 @@ class FilterConnection {
 		}
 
 		// find the equal sign which we are sure to find
-		int L = yytext.length();
 		int eqpos = start;
 		while( yytext.charAt(eqpos)!='=' ) eqpos+=1;
 

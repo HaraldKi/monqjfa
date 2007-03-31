@@ -17,7 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,9 +32,6 @@ import java.io.Serializable;
 abstract class AbstractFaState 
   implements FaState, Serializable
 {
-  // a source for an empty
-  private static Iterator nullIterator = new HashSet(0).iterator();
-
   // A state can be part of several subgraphs. Subgraphs are
   // identified by a pair (FaAction, FaSubinfo.id). The FaAction is
   // used in this map as a key. The values will be of type

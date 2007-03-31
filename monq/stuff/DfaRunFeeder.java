@@ -31,7 +31,6 @@ import java.nio.charset.*;
  * @author &copy; 2005 Harald Kirsch
  */
 public class DfaRunFeeder extends AbstractPipe {
-  private DfaRun dfa;
   private String csname;
   private DfaRun runner;
 

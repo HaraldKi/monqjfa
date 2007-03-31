@@ -17,8 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.net;
 
 import java.io.*;
-import java.net.Socket;
-import java.util.Hashtable;
 
 /**
  * <p>sets up a filter service as returned by any {@link
@@ -126,7 +124,6 @@ public class FilterServiceFactory implements ServiceFactory {
     private InputStream controlIn;
     private OutputStream filterOut;
     private ServiceFactory fac;
-    private Service svc;
     private Exception e = null;
 
     public FilterService(InputStream controlIn, OutputStream filterOut, 
