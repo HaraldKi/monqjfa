@@ -66,6 +66,6 @@ public abstract class AbstractFaAction implements Serializable, FaAction {
    * <p>although this class is abstract, the constructor is needed to create
    * anonymous subclasses.</p>
    */
-  public AbstractFaAction() {}
+  public AbstractFaAction() {/*silly eclipse doesn't get it*/}
   /**********************************************************************/
 }

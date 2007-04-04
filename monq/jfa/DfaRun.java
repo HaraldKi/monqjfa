@@ -94,7 +94,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
       all[2] = new FailedMatchBehaviour(2);
     }
     int i;
-    private FailedMatchBehaviour(int i) {}
+    FailedMatchBehaviour(int i) {this.i = i;}
     private Object readResolve() throws java.io.ObjectStreamException {
       return all[i];
     }

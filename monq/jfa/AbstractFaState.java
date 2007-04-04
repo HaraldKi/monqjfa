@@ -37,7 +37,7 @@ abstract class AbstractFaState
   // used in this map as a key. The values will be of type
   // FaSubinfo[], sorted according to FaSubinfo.id (see
   // FaSubinfo.compareTo()).
-  private Map subinfos = null;	// keys are FaAction objects
+  private Map<FaAction,FaSubinfo[]> subinfos = null;	// keys are FaAction objects
 
   public  Map getSubinfos() {
     return subinfos;
@@ -55,7 +55,7 @@ abstract class AbstractFaState
    * </ol>
    */
   void mergeSub(FaAction a, FaSubinfo sfi) {
-    if( subinfos==null ) subinfos = new HashMap();
+    if( subinfos==null ) subinfos = new HashMap<FaAction,FaSubinfo[]>();
     FaSubinfo[] ary;
 
     // If there is nothing yet for a, simply enter what we have as a
@@ -106,7 +106,7 @@ abstract class AbstractFaState
    */
   public void reassignSub(FaAction from, FaAction to) {
     if( subinfos==null ) return;
-    Object o = subinfos.get(from);
+    FaSubinfo[] o = subinfos.get(from);
 
     // since we never store null as a value, o==null means there was
     // no sugraph info for null and we don't have anything to assign.
@@ -208,7 +208,7 @@ abstract class AbstractFaState
     private int eps_i = 0;
     private int eps_L = 0;
       
-    private ChildIterator() {
+    ChildIterator() {
       FaState[] eps = getEps();
       if( eps!=null ) eps_L = eps.length;
       CharTrans t = getTrans();

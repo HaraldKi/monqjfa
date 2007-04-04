@@ -120,7 +120,7 @@ public class PrintfFormatter implements Formatter {
   int numOps = 0;
 
   /**********************************************************************/
-  private void addtoFormat(Formatter op) {
+  void addtoFormat(Formatter op) {
     // if op is a FixedString and the last op in the list is also a
     // FixedString, we join them
     if( numOps>0 
@@ -140,7 +140,7 @@ public class PrintfFormatter implements Formatter {
     ops[numOps++] = op;
   }
   /********************************************************************/
-  private static int chewInt(StringBuffer yytext, int start) {
+  static int chewInt(StringBuffer yytext, int start) {
     int i=start;
     int L = yytext.length();
     if( i<L && '-'==yytext.charAt(i) ) i+=1;
