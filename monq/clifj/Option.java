@@ -60,6 +60,11 @@ public class Option {
     this.usage = usage;
     this.cmin = cmin;
     this.cmax = cmax;
+    
+    if( cmin>cmax ) {
+      throw new IllegalArgumentException("cmin="+cmin
+          +" greater than cmax="+cmax);
+    }
     if( defalt!=null ) {
       this.defalt = new Vector(defalt.length);
       for(int i=0; i<defalt.length; i++) this.defalt.add(defalt[i]);
@@ -118,10 +123,10 @@ public class Option {
 	 +L+" but need "+cmin);
     }
 
-    if( L<cmin ) {
+    if( L>cmax ) {
       throw new CommandlineException
 	("to many `"+name+"' arguments (option '"+opt+"'), found "+L
-	 +" but want no more than "+cmin);
+	 +" but want no more than "+cmax);
     }
     this.values = v;
   }
