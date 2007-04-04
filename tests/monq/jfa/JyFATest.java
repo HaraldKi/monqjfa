@@ -16,9 +16,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import monq.jfa.ctx.*;
-import monq.jfa.actions.*;
-
 import org.python.util.PythonInterpreter; 
 
 import junit.framework.TestCase;
@@ -145,7 +142,7 @@ public class JyFATest extends TestCase {
     out.print
       ("from monq.jfa.actions import Embed, Replace\n"+
        "from java.lang import String\n"+
-       "eofAction = Replace('... und Tschüß')\n"+
+       "eofAction = Replace('... und Tsch')\n"+
        "def populate(nfa): #{\n"+
        "  nfa.or(String('[a-z]+'), Embed('<i>', '</i>'))\n"+
        "#}\n");
@@ -153,7 +150,7 @@ public class JyFATest extends TestCase {
     JyFA jy = new JyFA(pyModuleName);
     DfaRun r = jy.createRun();
     String s = r.filter("aaa bbb 888");
-    assertEquals("<i>aaa</i> <i>bbb</i> 888... und Tschüß", s);
+    assertEquals("<i>aaa</i> <i>bbb</i> 888... und Tsch", s);
   }
   /**********************************************************************/
   public void test_populateMissing() throws Exception {

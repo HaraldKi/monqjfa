@@ -19,14 +19,9 @@ package monq.jfa;
 //import jfa.*;
 import monq.jfa.actions.*;
 
-import java.lang.Class;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import java.util.Vector;
-import java.util.Iterator;
-import java.io.StringReader;
-import java.io.PrintStream;
-import java.io.ByteArrayOutputStream;
+
 
 /**
  *
@@ -47,7 +42,7 @@ public class MatchGroupTest extends TestCase {
   public void test_Basic1a() 
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     String s = new 
-      Nfa("a(!b+)c", new Printf(true, "%0-%1-", 0))
+      Nfa("a(!b+)c", new Printf(true, "%0-%1-"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("abc abbbbbc");
@@ -72,7 +67,7 @@ public class MatchGroupTest extends TestCase {
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     String s = new 
       Nfa("x(!ab*)(!abc)X", 
-	  new Printf(true, "%0, [%1], [%2]", 0))
+	  new Printf(true, "%0, [%1], [%2]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("xaabcX|xababcX|xabbbabcX");
@@ -100,7 +95,7 @@ public class MatchGroupTest extends TestCase {
   public void test_Overlap2a() 
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     String s = new 
-      Nfa("x(!(ab)*)(!abc)X", new Printf(true, "%0, [%1], [%2]", 9))
+      Nfa("x(!(ab)*)(!abc)X", new Printf(true, "%0, [%1], [%2]").setPriority(9))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("xabcX|xababcX");
@@ -127,7 +122,7 @@ public class MatchGroupTest extends TestCase {
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     String s = new 
       Nfa("x(!(ab)+)(!abc)X", 
-	  new Printf(true, "%0, [%1], [%2]", 0))
+	  new Printf(true, "%0, [%1], [%2]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("xabcX|xababcX");
@@ -155,7 +150,7 @@ public class MatchGroupTest extends TestCase {
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     String s = new
       Nfa("x(!ab)cR|x(!abc)S", 
-	  new Printf(true, "%0 [%1] [%2]", 0))
+	  new Printf(true, "%0 [%1] [%2]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("xabcR|xabcS");
@@ -191,8 +186,8 @@ public class MatchGroupTest extends TestCase {
     // we will exactly not have the possibility to separate the two
     // cases 
     Dfa dfa = new
-      Nfa("x(!ab)cR", new Printf(true, "%0 [%1]", 0))
-      .or("x(!abc)S", new Printf(true, "%0 [%1]", 0))
+      Nfa("x(!ab)cR", new Printf(true, "%0 [%1]"))
+      .or("x(!abc)S", new Printf(true, "%0 [%1]"))
       .compile(DfaRun.UNMATCHED_COPY);
     //dfa.toDot(new java.io.PrintStream(new java.io.FileOutputStream("bla.txt")));
 
@@ -219,7 +214,7 @@ public class MatchGroupTest extends TestCase {
   public void test_Or3a() 
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     Nfa nfa = new Nfa(Nfa.NOTHING);
-    nfa.or("(!(cat=1b)+)cat=2b(!WRONG)", new Printf(true, "%1", 0));
+    nfa.or("(!(cat=1b)+)cat=2b(!WRONG)", new Printf(true, "%1"));
 
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
     String s;
@@ -244,7 +239,7 @@ public class MatchGroupTest extends TestCase {
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     Nfa nfa = new Nfa(Nfa.NOTHING);
     nfa.or("(!([a-z]+)) *(!([0-9]*)) *(!([a-z]+))", 
-	   new Printf(true, "[%1] [%2] [%3]", 0));
+	   new Printf(true, "[%1] [%2] [%3]"));
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
     String s;
     s = dfa.createRun().filter("a 99 c");
@@ -265,7 +260,7 @@ public class MatchGroupTest extends TestCase {
   public void test_Challenge2a()  
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
     Nfa nfa = new Nfa(Nfa.NOTHING);
-    nfa.or("((!([a-z]*))abc)!x", new Printf(true, "[%1]", 0));
+    nfa.or("((!([a-z]*))abc)!x", new Printf(true, "[%1]"));
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
     String s;
     s = dfa.createRun().filter("#zzzabcx--");
@@ -286,7 +281,7 @@ public class MatchGroupTest extends TestCase {
 
   public void test_Screwed1a()
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
-    Nfa nfa = new Nfa("[XY](!A|M)", new Printf(true, "[%1]", 0));
+    Nfa nfa = new Nfa("[XY](!A|M)", new Printf(true, "[%1]"));
     DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP));
     // the buggy code will throw an Error here
     String s = r.filter("XA");
@@ -299,7 +294,7 @@ public class MatchGroupTest extends TestCase {
     for(int i=0; i<256; i++) s.append("(!a)x");
     Exception e = null;
     try {
-      Nfa nfa = new Nfa(s, Copy.COPY);
+      new Nfa(s, Copy.COPY);
     } catch( ReSyntaxException _e ) {
       // we want this to happen
       e = _e;

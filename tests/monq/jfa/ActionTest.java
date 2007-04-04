@@ -68,18 +68,18 @@ public class ActionTest extends TestCase {
   /**********************************************************************/
   public void test_Casechange() throws Exception {
     String s = new
-      Nfa("[a-z‰ˆ¸ÈË]", UpperCase.UPPERCASE)
-      .or("[A-Zƒ÷‹…»]", LowerCase.LOWERCASE)
+      Nfa("[a-z]", UpperCase.UPPERCASE)
+      .or("[A-Z]", LowerCase.LOWERCASE)
       .or("[a-z][0-9]*", new UpperCase(-1))
       .or("[A-Z][0-9]*", new LowerCase(-1))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
-      .filter("abcdefghijklmnopqrstuvwxyz‰ˆ¸ÈË "
-	      +"-- ABCDEFGHIJKLMNOPQRSTUVWXYZƒ÷‹…»"
+      .filter("abcdefghijklmnopqrstuvwxyz "
+	      +"-- ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	      +"-- a0B1")
       ;
-    assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZƒ÷‹…» "
-		 +"-- abcdefghijklmnopqrstuvwxyz‰ˆ¸ÈË"
+    assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZ "
+		 +"-- abcdefghijklmnopqrstuvwxyz"
 		 +"-- A0b1", s);
   }
   /**********************************************************************/
@@ -184,8 +184,7 @@ public class ActionTest extends TestCase {
       .compile(DfaRun.UNMATCHED_DROP)
       .createRun()
       ;
-    MapProvider mp;
-    r.clientData = mp = new MapProvider() {
+    r.clientData = new MapProvider() {
 	Map m = new HashMap();
 	public Map getMap() { return m; }
       };
@@ -207,8 +206,7 @@ public class ActionTest extends TestCase {
 	})
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun();
-    MapProvider mp;
-    r.clientData = mp = new MapProvider() {
+    r.clientData = new MapProvider() {
 	Map m = new HashMap();
 	public Map getMap() { return m; }
       };
@@ -222,8 +220,7 @@ public class ActionTest extends TestCase {
       Nfa("xxxx", h.ship())
       .compile(DfaRun.UNMATCHED_DROP)
       .createRun();
-    MapProvider mp;
-    r.clientData = mp = new MapProvider() {
+    r.clientData = new MapProvider() {
 	Map m = new HashMap();
 	public Map getMap() { return m; }
       };

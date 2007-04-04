@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.io.*;
-import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
 import junit.framework.TestCase;
