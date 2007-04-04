@@ -243,6 +243,7 @@
     <runemma testClass="monq.jfa.TextSplitterTest" />
     <runemma testClass="monq.jfa.XmlTest" />
     <runemma testClass="monq.jfa.CtxTest" />
+    <runemma testClass="monq.clifj.CommandlineTest" />
 
     <!-- As for not using an emma task, see above under runemma. -->
     <java classname="emma" fork="true">
