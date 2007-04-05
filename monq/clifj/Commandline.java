@@ -202,19 +202,62 @@ public class Commandline {
     return ((Option)options.get(opt)).getValue();
   }
   /**********************************************************************/
+  /**
+   * <p>
+   * returns the first element of the vector returned by
+   * {@link #getValues(String)} and casted to <code>String</code>. Use this
+   * method only if you are sure that the requested value indeed exists (by
+   * definition and/or checking with {@link #available(String)}.
+   * </p>
+   * 
+   * @return first element of the options casted to String.
+   */
+  public String getStringValue(String opt) {
+    return (String)getValue(opt);
+  }
+  /**********************************************************************/
+  /**
+   * <p>
+   * returns the first element of the vector returned by
+   * {@link #getValues(String)} and casted and converted to <code>long</code>.
+   * Use this method only if you are sure that the requested value indeed exists
+   * (by definition and/or checking with {@link #available(String)}.
+   * </p>
+   * 
+   * @return first element of the options casted to String.
+   */
+  public long getLongValue(String opt) {
+    return ((Long)getValue(opt)).longValue();
+  }
+  /**********************************************************************/
+  /**
+   * @deprecated defaults can be provided in the declaration of an option. If a
+   *             dynamic default is needed, test first with
+   *             {@link #available(String)}.
+   */ 
   public String getStringValue(String opt, String defalt) {
     if( !available(opt) ) return defalt;
     return (String)getValue(opt);
   }
   /**********************************************************************/
+  /**
+   * @deprecated defaults can be provided in the declaration of an option. If a
+   *             dynamic default is needed, test first with
+   *             {@link #available(String)}.
+   */ 
   public long getLongValue(String opt, long defalt) {
     if( !available(opt) ) return defalt;
     return ((Long)getValue(opt)).longValue();
   }
   /**********************************************************************/
   /**
-   * returns true if the option was found on the command line or has
-   * default values.
+   * <p>
+   * returns true if the option was found on the command line or has default
+   * values.
+   * </p>
+   * 
+   * @throws NullPointerException
+   *           if <code>opt</code> does not denote a defined option
    */
   public boolean available(String opt) {
     return ((Option)options.get(opt)).available();
