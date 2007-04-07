@@ -37,7 +37,7 @@ import java.util.*;
  */
 
 class FilterConnection {
-  private Map m = new HashMap();
+  private Map<String,String> m = new HashMap<String,String>();
 
   private String host;
   private int port = -1;
@@ -62,9 +62,12 @@ class FilterConnection {
       requestParser = new
 	Nfa("[.]?"+PipelineRequest.KEYRE+"=([^;\n]|\\\\;|\\\\\n)*",
 	    new AbstractFaAction() {
-	      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	      public void invoke(StringBuffer yytext, 
+				 int start, DfaRun r) {
 		//System.out.println(">>>"+ts);
-		Map h = (Map)r.clientData;
+		@SuppressWarnings("unchecked")
+		  Map<String,String> h = (Map)r.clientData;
+
 		if( h.size()>=MAXPARAMS ) {
 		  r.setIn(new CharSequenceCharSource
 			  (">>to many params<<"));

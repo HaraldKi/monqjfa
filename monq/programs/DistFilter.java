@@ -102,7 +102,7 @@ public class DistFilter {
     // We have to invert the order of the servers listed on the
     // command line for the convenience of the user
     String[] tmp = cmd.getStringValues("--");
-    ArrayList reqs = new ArrayList();
+    List<PipelineRequest> reqs = new ArrayList<PipelineRequest>();
 
     String tailre = "(;(!"+PipelineRequest.KEYRE+")=(!([^;]|\\\\;)+))*";
     Regexp hostportre = new Regexp("host=(![^;]+);port=(![0-9]+)"+tailre);
@@ -167,8 +167,7 @@ public class DistFilter {
 
     }
 
-    PipelineRequest[] address = 
-      (PipelineRequest[])reqs.toArray(new PipelineRequest[reqs.size()]);
+    PipelineRequest[] address = reqs.toArray(new PipelineRequest[reqs.size()]);
 
     DistPipeFilter df;
     if( cmd.available("-v") ) df = new DistPipeFilter(port, 10, System.err);

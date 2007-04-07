@@ -67,7 +67,7 @@ public class Count extends AbstractFaAction {
   /**********************************************************************/
   private Int getCounter(DfaRun r) {
     MapProvider mp = (MapProvider)r.clientData;
-    Map m = mp.getMap();
+    Map<Object,Object> m = mp.getMap();
     Int i = (Int)m.get(key);
     if( i==null ) m.put(key, i=new Int());
     return i;

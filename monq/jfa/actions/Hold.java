@@ -18,8 +18,7 @@ package monq.jfa.actions;
 
 import monq.jfa.*;
 
-import java.util.Map;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <p>hold back output until a decision can be made whether to ship or
@@ -77,9 +76,10 @@ public class Hold extends AbstractFaAction {
   }
   /**********************************************************************/
   public void invoke(StringBuffer yytext, int start, DfaRun r) {
-    Map m = ((MapProvider)(r.clientData)).getMap();
-    ArrayList stack = (ArrayList)m.get(this);
-    if( stack==null ) m.put(this, stack=new ArrayList());
+    Map<Object,Object> m = ((MapProvider)(r.clientData)).getMap();
+    @SuppressWarnings("unchecked")
+    List<StackElem> stack = (List)m.get(this);
+    if( stack==null ) m.put(this, stack=new ArrayList<StackElem>());
     stack.add(new StackElem(r.collect, start));
     r.collect = true;
   }

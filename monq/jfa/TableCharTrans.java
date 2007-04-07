@@ -16,7 +16,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author &copy; 2004 Harald Kirsch
@@ -47,7 +47,7 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
    * We do not support emtpy transitions here. Consequently there
    * should be at least one range in <code>sb</code>
    */
-  public TableCharTrans(StringBuffer sb, ArrayList values) {
+  public TableCharTrans(StringBuffer sb, List<Object> values) {
     int L = sb.length();
     first = sb.charAt(0);
     last = sb.charAt(L-1);

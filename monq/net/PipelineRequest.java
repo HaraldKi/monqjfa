@@ -43,7 +43,7 @@ public class PipelineRequest {
    */
   public static final String KEYRE = "[A-Za-z_][A-Za-z_0-9]*";
 
-  private Map m = new HashMap();
+  private Map<String,String> m = new HashMap<String,String>();
   private final String host;
   private final String port;
   private final String name;
@@ -160,7 +160,7 @@ public class PipelineRequest {
    * <p>puts all key/value pairs that were stored via {@link #put
    * put()} into <code>params</code>.</p>
    */
-  public void putParams(Map params) { params.putAll(m); }
+  public void putParams(Map<String,String> params) { params.putAll(m); }
   /**********************************************************************/
   /**
    * <p>deletes all key/value pairs that were stored with {@link #put

@@ -195,10 +195,10 @@ public class FilterPipeInfo {
    * @throws FileNotFoundException if the given name does not denote a
    * directory or cannot be accessed.
    */
-  public static Map readAll(String directory, Map servers)
+  public static Map<String,FilterPipeInfo> readAll(String directory, Map servers)
     throws FileNotFoundException 
   {
-    Map m = new HashMap();
+    Map<String,FilterPipeInfo> m = new HashMap<String,FilterPipeInfo>();
     
     File dir = new File(directory);
     final File[] files = dir.listFiles();

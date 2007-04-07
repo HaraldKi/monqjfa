@@ -693,8 +693,8 @@ public final class Xml {
    * allocate it yourself and call {@link
    * #splitElement(Map,StringBuffer,int)} directly.</p>
    */
-  public static HashMap splitElement(StringBuffer s, int start) {
-    HashMap h = new HashMap();
+  public static Map<String,String> splitElement(StringBuffer s, int start) {
+    Map<String,String> h = new HashMap<String,String>();
     splitElement(h, s, start);
     return h;
   }
@@ -719,7 +719,7 @@ public final class Xml {
    * input is not a well formed according to the allowed input listed
    * above. An exception is trailing space.</p>
    */
-  public static void splitElement(Map dst, StringBuffer s, int start) {
+  public static void splitElement(Map<String,String> dst, StringBuffer s, int start) {
     // use tail of s as scratch area, need start of that area for reset
     int l = s.length();
 

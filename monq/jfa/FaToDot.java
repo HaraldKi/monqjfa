@@ -60,7 +60,7 @@ public class FaToDot {
   private static void print(FaState s, 
 			    PrintStream out, 
 			    FaState start, FaState last, 
-			    HashSet known) {
+			    HashSet<FaState> known) {
     known.add(s);
 
     String id = getID(s);
@@ -147,7 +147,7 @@ public class FaToDot {
    */
   public static void print(PrintStream out, FaState start, FaState last) {
     out.println("digraph hallo {");
-    print(start, out, start, last, new HashSet());
+    print(start, out, start, last, new HashSet<FaState>());
     out.println("}");
   }
   /**********************************************************************/

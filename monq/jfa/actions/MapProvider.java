@@ -33,5 +33,5 @@ public interface MapProvider {
    * The <code>Map</code> may be used for other tasks as long as it
    * is not totally cleared.</p>
    */
-  Map getMap(); 
+  Map<Object,Object> getMap(); 
 }

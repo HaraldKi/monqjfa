@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
   <p>an implementation of interface <code>CharTrans</code> based on
@@ -59,7 +59,7 @@ class ArrayCharTrans implements Serializable, CharTrans {
   }
   ///CLOVER:ON
   /**********************************************************************/
-  public ArrayCharTrans(StringBuffer sb, ArrayList values) {
+  public ArrayCharTrans(StringBuffer sb, List<Object> values) {
     this.ranges = new char[sb.length()];
     sb.getChars(0, sb.length(), ranges, 0);
     //this.size = values.size();
@@ -100,7 +100,7 @@ class ArrayCharTrans implements Serializable, CharTrans {
 
     // access via getLastAt
     // 20.8%  1109  +     0    monq.jfa.ArrayCharTrans.getPos
-    // Ist im Rahmen der Meßungenauigkeit identisch.
+    // Ist im Rahmen der Meï¿½ungenauigkeit identisch.
   *****/
   private int getPos(char ch) {
     int lo, hi; 

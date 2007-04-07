@@ -36,9 +36,9 @@ public class Sizeof {
   // no need for this to show up in the docs
   private Sizeof() {}
 
-  static final Hashtable pSizes;
+  static final Map<Object,Integer> pSizes;
   static {
-    pSizes = new Hashtable();
+    pSizes = new HashMap<Object,Integer>();
     pSizes.put(Boolean.TYPE, new Integer(1));
     pSizes.put(Character.TYPE, new Integer(2));
     pSizes.put(Byte.TYPE, new Integer(1));
@@ -51,18 +51,18 @@ public class Sizeof {
   }
   private static final class Root {}
 
-  private static void sizeof(Object obj, IdentityHashMap known, 
-			     Hashtable types) 
+  private static void sizeof(Object obj, IdentityHashMap<Object,Object> known, 
+			     Map<Class,Map<Class,Pair>> types) 
   {
     // The stack always contains a parent class and an object. The
     // parent class may be null
-    Stack stack = new Stack();
+    Stack<Object> stack = new Stack<Object>();
     stack.push(new Root().getClass());
     stack.push(obj);
     int rounds = 0;
     while( !stack.empty() ) {
       Object o = stack.pop();
-      Object parentClass = stack.pop();
+      Class parentClass = (Class)stack.pop();
       known.put(o, o);
       rounds += 1;
       if( rounds%100000==0 ) {
@@ -134,8 +134,8 @@ public class Sizeof {
 	
       }
      
-      Map parents = (Map)types.get(oc);
-      if( parents==null ) types.put(oc, parents=new HashMap());
+      Map<Class,Pair> parents = types.get(oc);
+      if( parents==null ) types.put(oc, parents=new HashMap<Class,Pair>());
       Pair p = (Pair)parents.get(parentClass);
       if( p==null ) {
 	p = new Pair();
@@ -158,20 +158,18 @@ public class Sizeof {
    * other words: within the object graph, objects of type <em>r</em>
    * are parents of objects of type <em>k</em>.</p>
    */
-  public static Hashtable sizeof(Object o) {
-    Hashtable types = new Hashtable();
-    sizeof(o, new IdentityHashMap(), types);
+  public static Map<Class, Map<Class,Pair>> sizeof(Object o) {
+    Map<Class, Map<Class,Pair>> types = new HashMap<Class, Map<Class,Pair>>();
+    sizeof(o, new IdentityHashMap<Object,Object>(), types);
     return types;
   }
   /**
    * prints the result produced with {@link #sizeof sizeof()}.
    */
-  public static void printTypes(PrintStream out, Hashtable types) {
-    Enumeration it = types.keys();
+  public static void printTypes(PrintStream out, Map<Class, Map<Class,Pair>> types) {
     long count=0, size=0;
-    while( it.hasMoreElements() ) {
-      Class c = (Class)it.nextElement();
-      Map parents = (Map)types.get(c);
+    for(Class c: types.keySet()) {
+      Map<Class,Pair> parents = types.get(c);
 
       Iterator pit = parents.keySet().iterator();
       while( pit.hasNext() ) {

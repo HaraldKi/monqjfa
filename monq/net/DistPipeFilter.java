@@ -75,7 +75,7 @@ public class DistPipeFilter {
   private Feeder[] pending;
   private TcpServer serv = null;
   private boolean running = false;
-  private Map connections = new HashMap();
+  private Map<InputStream,Job> connections = new HashMap<InputStream,Job>();
   
   /**********************************************************************/
   /**
@@ -316,7 +316,7 @@ public class DistPipeFilter {
   public void close(InputStream is) throws IOException {
     Job job;
     synchronized(connections) {
-      job = (Job)connections.remove(is);
+      job = connections.remove(is);
     }
     
     // if this is a fake or was closed before, get angry

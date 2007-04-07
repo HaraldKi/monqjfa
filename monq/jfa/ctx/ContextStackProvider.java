@@ -16,5 +16,5 @@ public interface ContextStackProvider {
   /**
    * <p>returns the {@link List} provided as a stack.</p>
    */
-  List getStack();
+  List<Object> getStack();
 }

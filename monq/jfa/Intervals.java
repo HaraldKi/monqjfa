@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>Used to construct {@link CharTrans} objects of different
@@ -30,11 +31,11 @@ class Intervals {
   // character and reaching up to just before the next character or
   // Character.MAX_VALUE.
   private StringBuffer ivals = new StringBuffer();
-  private ArrayList values = new ArrayList();
+  private List<Object> values = new ArrayList<Object>();
 
   // used during conversion to CharTrans
   private StringBuffer ranges = new StringBuffer();
-  private ArrayList vtmp = new ArrayList();
+  private List<Object> vtmp = new ArrayList<Object>();
 
   public static long[] stats = new long[4];
   /**********************************************************************/

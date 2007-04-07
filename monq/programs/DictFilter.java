@@ -22,6 +22,7 @@ import monq.clifj.*;
 import monq.jfa.ctx.*;
 import monq.jfa.xml.StdCharEntities;
 import monq.net.*;
+import monq.stuff.Sizeof.Pair;
 import monq.stuff.*;
 import monq.ie.*;
 
@@ -134,7 +135,7 @@ public class DictFilter implements ServiceFactory {
   /**********************************************************************/
   // used while parsing the mwt file.
   private static final class ReadHelper implements ContextStackProvider {
-    private List stack = new ArrayList();
+    private List<Object> stack = new ArrayList<Object>();
 
     // used during setup of the mwt filter, records most recently seen
     // <template> 
@@ -154,7 +155,7 @@ public class DictFilter implements ServiceFactory {
     monq.jfa.xml.StdCharEntities helper 
       = new monq.jfa.xml.StdCharEntities();
     
-    public List getStack() { return stack; }
+    public List<Object> getStack() { return stack; }
 
     public ReadHelper(boolean verbose) { this.verbose = verbose; }
   }
@@ -324,7 +325,7 @@ public class DictFilter implements ServiceFactory {
     }
 
     if( memDebug ) {
-      java.util.Hashtable h;
+      Map<Class, Map<Class,Pair>> h;
       System.err.println("# Size of Nfa");
       h = monq.stuff.Sizeof.sizeof(nfa);
       monq.stuff.Sizeof.printTypes(System.err, h);
@@ -399,7 +400,7 @@ public class DictFilter implements ServiceFactory {
   }
   /********************************************************************/
   private static final FaAction do_template = new AbstractFaAction() {
-      Map m = new HashMap();
+    Map<String,String>  m = new HashMap<String,String>();
       public void invoke(StringBuffer yytext, int start, DfaRun r) 
 	throws CallbackException
       {
@@ -431,7 +432,7 @@ public class DictFilter implements ServiceFactory {
     };
   /********************************************************************/
   private static final FaAction do_t_r = new AbstractFaAction() {
-      Map m = new HashMap();
+      Map<String,String>  m = new HashMap<String,String>();
       DfaRun convert;
       {
 	try {

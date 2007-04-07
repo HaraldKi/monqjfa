@@ -164,7 +164,7 @@ public class Context extends AbstractFaAction {
     // of the stack when we are done here.
     if( startAction!=null ) startAction.invoke(yytext, start, r);
 
-    List stack = ((ContextStackProvider)r.clientData).getStack(); 
+    List<Object> stack = ((ContextStackProvider)r.clientData).getStack(); 
     stack.add(r.getFailedMatchBehaviour());
     stack.add(this);
 

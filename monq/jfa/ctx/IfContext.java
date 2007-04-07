@@ -24,7 +24,8 @@ import java.util.*;
  * actions into one.</p>
  */
 public class IfContext extends AbstractFaAction {
-  private Map m = new HashMap();
+  // in which Context will we do what?
+  private Map<Context,FaAction> m = new HashMap<Context,FaAction>();
 
   // used as a key into `m' above for the else case
   private static final Context ELSE = new Context().setName("#ELSE#");
@@ -73,7 +74,7 @@ public class IfContext extends AbstractFaAction {
   /**********************************************************************/
   private IfContext copy() {
     IfContext result = new IfContext();
-    result.m = (HashMap)((HashMap)m).clone();
+    result.m = new HashMap<Context,FaAction>(m);
     return result;
   }
   /**********************************************************************/
@@ -102,10 +103,10 @@ public class IfContext extends AbstractFaAction {
     IfContext newIf = copy();
     //System.err.println("***"+this+": merging content");
 
-    for(Iterator it=other.m.keySet().iterator(); it.hasNext(); /**/) {
-      Object key = it.next();
-      FaAction aOther = (FaAction)other.m.get(key);
-      FaAction a = (FaAction)newIf.m.get(key);
+    for(Iterator<Context> it=other.m.keySet().iterator(); it.hasNext(); /**/) {
+      Context key = it.next();
+      FaAction aOther = other.m.get(key);
+      FaAction a = newIf.m.get(key);
       if( a==null ) {
 	a = aOther;
       } else {

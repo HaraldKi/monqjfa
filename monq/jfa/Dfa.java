@@ -128,14 +128,16 @@ public class Dfa implements Serializable {
    */
   public Nfa toNfa() {
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
-    addLastState(startState, newLast, new IdentityHashMap());
+    addLastState(startState, newLast, new IdentityHashMap<FaState, Object>());
     Nfa nfa = new Nfa(startState, newLast);
     startState = null;
     return nfa;
   }
   private void addLastState(FaState state, 
 			    FaState newLast,
-			    IdentityHashMap known) {
+			    IdentityHashMap<FaState,Object> known) {
+    // NOTE: We only need the key part of the map, too bad there is no
+    // IdentitySet.
     known.put(state, null);
 
     Iterator i = state.getChildIterator();
@@ -147,7 +149,6 @@ public class Dfa implements Serializable {
     }
   }
   /**********************************************************************/
-  ///CLOVER:OFF
   /**
    * prints a graph representation of the Dfa in the
    * <code>graphviz</code> format.

@@ -83,7 +83,7 @@ public class FilterSvrInfo {
    * <p>Any environment variables which must be set before the command
    * can be run.</p>
    */
-  public HashMap environment = new HashMap();
+  public Map<String,String> environment = new HashMap<String,String>();
 
   /** 
    * The sh command to start the server on the machine given by
@@ -216,8 +216,8 @@ public class FilterSvrInfo {
    * @throws FileNotFoundException if the given name does not denote a
    * directory or cannot be accessed.
    */
-  public static Map readAll(String directory) throws FileNotFoundException {
-    Map m = new HashMap();
+  public static Map<String,FilterSvrInfo> readAll(String directory) throws FileNotFoundException {
+    Map<String,FilterSvrInfo> m = new HashMap<String,FilterSvrInfo>();
     
     File dir = new File(directory);
     final File[] files = dir.listFiles();

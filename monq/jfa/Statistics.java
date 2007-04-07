@@ -39,7 +39,7 @@ public class Statistics {
   public int longestPathlen = -1;
 
   /** type and number of CharTrans implementations used */
-  public Map charTransTypes = new HashMap();
+  public Map<Class,Int> charTransTypes = new HashMap<Class,Int>();
 
   private int currentDepth = 0;
   private StringBuffer sb = new StringBuffer();
@@ -83,7 +83,7 @@ public class Statistics {
     throws IOException 
   {
     Statistics s = new Statistics();
-    s.get(nfa.getStart(), w, new PlainSet());
+    s.get(nfa.getStart(), w, new HashSet<FaState>());
     return s;
   }
   /**
@@ -94,11 +94,11 @@ public class Statistics {
     throws IOException 
   {
     Statistics s = new Statistics();
-    s.get(dfa.getStart(), w, new PlainSet());
+    s.get(dfa.getStart(), w, new HashSet<FaState>());
     return s;
   }
   /********************************************************************/
-  private void get(FaState s, Writer w, Set known) throws IOException {
+  private void get(FaState s, Writer w, Set<FaState> known) throws IOException {
     known.add(s);
 
     numStates += 1;
@@ -121,7 +121,7 @@ public class Statistics {
     // prepare a set of all child states in order to be able to create
     // a complete regular expression describing the shortest string
     // necessary to reach the node
-    Map m = new HashMap();
+    Map<FaState,TrivTupel> m = new HashMap<FaState,TrivTupel>();
     FaState[] epsChildren = s.getEps();
     if( epsChildren!=null ) {
       int l = epsChildren.length;
