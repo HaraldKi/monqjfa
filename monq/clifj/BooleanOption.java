@@ -24,11 +24,7 @@ package monq.clifj;
 public class BooleanOption extends Option {
 
   public BooleanOption(String opt, String usage) {
-    this.name = null;
-    this.cmin = 0;
-    this.cmax = 0;
-    this.opt = opt;
-    this.usage = usage;
+    super(opt, null, usage, 0, 0);
   }
   public String getTypeName() {return null;}
 }

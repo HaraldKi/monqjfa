@@ -19,20 +19,46 @@ package monq.clifj;
 /**
  * is a command line option with <code>long</code> valued arguments.
  *
- * @author &copy; 2005 Harald Kirsch
+ * @author &copy; 2005-2007 Harald Kirsch
  */
 public class LongOption extends Option {
-  long min;
-  long max;
+  private long min;
+  private long max;
+  /**
+   * <p>
+   * creates a command line option with default.
+   * </p>
+   * 
+   * @throws CommandlineException
+   *           if the number of defaults is wrong or they are not of type
+   *           <code>Long</code> or <code>String</code> or they fall outside
+   *           the given ranges.
+   */
+  //**********************************************************************/
   public LongOption(String opt, String name, String usage,
 		    int cmin, int cmax, long min, long max,
-		    Object[] defalt) {
-    super(opt, name, usage, cmin, cmax, defalt);
+		    Object[] defalt) throws CommandlineException {
+    this(opt, name, usage, cmin, cmax, min, max);
+    setDefalt(defalt);
+  }
+  // **********************************************************************/
+  public LongOption(String opt, String name, String usage, int cmin, int cmax,
+                    long min, long max) {
+    super(opt, name, usage, cmin, cmax);
     this.min = min;
     this.max = max;
   }
+  //**********************************************************************/
   public String getTypeName() {return "long";}
-  public Object check(String s) throws CommandlineException {
+  //**********************************************************************/
+  public Object check(Object v) throws CommandlineException {
+    if( v instanceof Long ) return v;
+    
+    if( !(v instanceof String) ) {
+      throw new CommandlineException("value must be either Long or String");
+    }
+
+    String s = (String)v;    
     long l;
     try {
       l = Long.parseLong(s);
@@ -50,10 +76,12 @@ public class LongOption extends Option {
     }
     return new Long(l);
   }
+  //**********************************************************************/
   public String addRestrictions(String s) {
     if( min>Long.MIN_VALUE || max<Long.MAX_VALUE ) {
       s = s + " in the range ["+min+", "+max+"]";
     }
     return s;
   }
+  //**********************************************************************/
 }

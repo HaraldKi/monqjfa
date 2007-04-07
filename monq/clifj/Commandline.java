@@ -16,9 +16,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.clifj;
 
-import java.util.Hashtable;
+import java.util.*;
 import java.util.Vector;
-import java.util.Enumeration;
 
 /**
  * describes the structure of the command line with options. Use
@@ -30,8 +29,8 @@ import java.util.Enumeration;
  */
 public class Commandline {
 
-  Hashtable options = new Hashtable();
-  Vector optOrder = new Vector();
+  private Map<String,Option> options = new HashMap<String,Option>();
+  Vector<String> optOrder = new Vector<String>();
   public String ProgramName;
   String usage;
 
@@ -64,7 +63,7 @@ public class Commandline {
     // option. In particular we block "--" to be the name of an
     // option.
     if( cmax>0 ) {
-      Option rest = new Option("--", restName, restInfo, cmin, cmax, null);
+      Option rest = new Option("--", restName, restInfo, cmin, cmax);
       if( cmin>0 ) rest.required();
       addOption(rest);
     }
@@ -119,7 +118,7 @@ public class Commandline {
     StringBuffer s = new StringBuffer();
     s.append("usage: ").append(ProgramName);
 
-    Vector lines = new Vector();
+    Vector<String> lines = new Vector<String>();
 
     for(int i=0; i<optOrder.size(); i++) {
       String opt = (String)optOrder.get(i);
@@ -172,12 +171,12 @@ public class Commandline {
    * <code>"--"</code>.</p>
    * 
    */
-  public Vector getValues(String opt) {
-    return ((Option)options.get(opt)).getValues();
+  public Vector<Object> getValues(String opt) {
+    return options.get(opt).getValues();
   }
   /**********************************************************************/
   public String[] getStringValues(String opt) {
-    Vector v = getValues(opt);
+    Vector<Object> v = getValues(opt);
     String[] res = new String[v.size()];
     return (String[])v.toArray(res);
   }
@@ -278,12 +277,12 @@ public class Commandline {
    */
 
   public void parse(String[] argv) throws CommandlineException {
-    Vector rest = new Vector();
+    Vector<String> rest = new Vector<String>();
     if( optOrder.size()>0 && "--".equals(optOrder.get(0)) ) {
       optOrder.remove(0);
       optOrder.add("--");
     }
-
+      
     for(int i=0; i<argv.length; /**/) {
       if( argv[i].equals("--") ) {
 	i += 1;
@@ -299,12 +298,19 @@ public class Commandline {
 	throw new CommandlineException
 	  (ProgramName+": unknown option `"+argv[i]+"'\n\n"+usage());
       }
-      i = ((Option)options.get(argv[i])).parse(argv, i+1);
+      i = options.get(argv[i]).parse(argv, i+1);
     }
     
     if( options.containsKey("--") ) {
-      Option orest = (Option)(options.get("--"));
-      orest.setValues(rest);
+      Option orest = options.get("--");
+      int i = orest.parse(rest.toArray(new String[rest.size()]), 0);
+      if( i<rest.size() ) {
+        throw new 
+        CommandlineException("to many `"+orest.name
+                             +"' arguments, found "
+                             +rest.size()+" but want no more than "+orest.cmax);
+        
+      }
     } else if( rest.size()>0 ) {
       throw new CommandlineException
 	(ProgramName+": non-option arguments not allowed\n\n"+usage());
@@ -328,9 +334,9 @@ public class Commandline {
   }
   /**********************************************************************/
   public void showParsed() {
-    Enumeration e = options.keys();
-    while( e.hasMoreElements() ) {
-      Object key = e.nextElement();
+    Iterator it = options.keySet().iterator();
+    while( it.hasNext() ) {
+      Object key = it.next();
       System.out.print(key+":");
       Option opt = (Option)(options.get(key));
       Vector v = opt.getValues();

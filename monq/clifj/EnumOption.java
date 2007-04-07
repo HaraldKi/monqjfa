@@ -16,6 +16,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.clifj;
 
+import java.util.*;
+
 /**
  * <p>is a command line option with <code>String</code> valued arguments
  * from a small set of given strings.</p>
@@ -23,7 +25,7 @@ package monq.clifj;
  * @author &copy; 2005 Harald Kirsch
  */
 public class EnumOption extends Option {
-  private String[] allowed;
+  private Set<String> allowed = new HashSet<String>();
 
   /**
    * <p>creates an option which accepts string values from small
@@ -42,29 +44,41 @@ public class EnumOption extends Option {
    * <li>A trailing separator or two consecutive separators generate
    * the empty string.</li>
    * </ul>
+   * @throws CommandlineException if the defaults don't match the requirements
    */
   public EnumOption(String opt, String name, String usage,
 		    int cmin, int cmax, String allowed,
-		    String[] deFault) {
-    super(opt, name, usage, cmin, cmax, deFault);
-    java.util.Vector v = new java.util.Vector();
+		    String[] deFault) throws CommandlineException {
+    this(opt, name, usage, cmin, cmax, allowed);
+
+     setDefault(deFault);
+  }
+  //**********************************************************************/
+  public EnumOption(String opt, String name, String usage,
+                    int cmin, int cmax, String allowed) {
+    super(opt, name, usage, cmin, cmax);
+
+    // don't use String.split to avoid escaping hell for sep.
     char sep = allowed.charAt(0);
     int end = allowed.length();
-    while( end>0 ) {
-      int start=end-1;
-      while( allowed.charAt(start)!=sep ) start-=1;
-      v.add(allowed.substring(start+1, end));
-      end = start;
-    }
-    int L = v.size();
-    this.allowed = new String[L];
-    for(int i=0; i<L; i++) this.allowed[i] = (String)v.get(L-i-1);
+    int start = 1;
+
+    while( start<end ) {
+      int t = allowed.indexOf(sep, start);
+      if( t<0 ) t=end;
+      this.allowed.add(allowed.substring(start, t));
+      start = t+1;
+    }   
   }
-  /**********************************************************************/
-  public Object check(String s) throws CommandlineException {
-    for(int i=0; i<allowed.length; i++) {
-      if( s.equals(allowed[i]) ) return allowed[i];
+  //**********************************************************************/
+  public Object check(Object v) throws CommandlineException {
+    if( !(v instanceof String) ) {
+      throw new CommandlineException("value must be of type String");
     }
+
+    String s = (String)v;
+    if( allowed.contains(s) ) return s;
+
     throw new CommandlineException
       ("option `"+opt+"' does not accept the value `"+s+
        "'; allowed values are `"+allowedUsage()+"'");
@@ -77,9 +91,10 @@ public class EnumOption extends Option {
   /**********************************************************************/
   private String allowedUsage() {
     StringBuffer b = new StringBuffer();
-    b.append(allowed[0]);
-    for(int i=1; i<allowed.length; i++) {
-      b.append(", ").append(allowed[i]);
+    String sep = "";
+    for(String s: allowed) {
+      b.append(sep).append(s);
+      sep = ", ";
     }
     return b.toString();
   }

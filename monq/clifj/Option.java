@@ -21,17 +21,17 @@ import java.util.Vector;
 /**
  * is a general command line option with zero or more string values.
  *
- * @author &copy; 2005 Harald Kirsch
+ * @author &copy; 2005-2007 Harald Kirsch
  */
 public class Option {
-  String opt;
-  String usage;
-  String name;
-  int cmin;
-  int cmax;
-  Vector values = null;
-  Vector defalt = null;
-  boolean required = false;
+  protected String opt;
+  protected String name;
+  protected int cmax;
+  private int cmin;
+  private String usage;
+  private Vector<Object> values = null;
+  private Vector<Object> defalt = null;
+  private boolean required = false;
 
   protected Option() {}
   /**********************************************************************/
@@ -49,12 +49,9 @@ public class Option {
    * this option
    * @param cmax is the maximum number of command line arguments for
    * this option
-   * @param defalt is a list of objects which are used if the option
-   * does not appear on the command line, may be null to indicate that
-   * no default is given.
    */
   public Option(String opt, String name, String usage,
-		int cmin, int cmax, Object[] defalt) {
+                int cmin, int cmax) {
     this.opt = opt;
     this.name = name;
     this.usage = usage;
@@ -63,12 +60,102 @@ public class Option {
     
     if( cmin>cmax ) {
       throw new IllegalArgumentException("cmin="+cmin
-          +" greater than cmax="+cmax);
+                                         +" greater than cmax="+cmax);
     }
-    if( defalt!=null ) {
-      this.defalt = new Vector(defalt.length);
-      for(int i=0; i<defalt.length; i++) this.defalt.add(defalt[i]);
+  }
+  //**********************************************************************/
+  /**
+   * <p>
+   * creates a command line option with default. This constructor first calls
+   * the constructor without default and then calls {@link #setDefalt} to set
+   * the default values.
+   * </p>
+   * 
+   * @throws CommandlineException
+   *           if the number of default values is wrong or if they are not of
+   *           type String.
+   */
+  public Option(String opt, String name, String usage,
+                int cmin, int cmax, Object[] defalt) throws CommandlineException {
+    this(opt, name, usage, cmin, cmax);
+    
+    if( defalt==null ) return;
+    setDefalt(defalt);
+  }
+  //**********************************************************************/
+  /**
+   * <p>
+   * defines default values for this <code>Option</code>.
+   * </p>
+   * @return <code>this</code>
+   * @throws CommandlineException
+   *           if the value does not conform to {@link #check} or if there are
+   * @throws IllegalArgumentException
+   *           if <code>defalt</code> contains too many values
+    */
+  public final Option setDefault(String[] defalt) throws CommandlineException {
+    return setDefalt(defalt);
+  }
+  // **********************************************************************/
+  /**
+   * <p>
+   * convenience method to be called by {@link #setDefault()} methods of
+   * subclasses.
+   * </p>
+   */
+  protected final Option setDefalt(Object[] defalt) throws CommandlineException {
+    // save whatever is already available in values
+    Vector<Object> keep = values;
+    values = null;
+    
+    for(Object o: defalt) addValue(o);
+    assertCmin();
+    
+    this.defalt = values;
+    values = keep;
+    return this;
+  }
+  //**********************************************************************/
+  /**
+   * <p>
+   * adds the given <code>Object</code> to <code>this</code>.
+   * </p>
+   * 
+   * @throws CommandlineException
+   *           if the values does not conform to {@link #check}.
+   * 
+   * @throws IllegalArgumentException
+   *           if <code>this</code> contains already enough elements.
+   */
+  private void addValue(Object v) throws CommandlineException {
+    if( values==null ) {
+      values= new Vector<Object>();
+    } else if( values.size()>=cmax ) {
+      throw new IllegalArgumentException("to many arguments for option `"+opt+
+                                         ", only "+cmax+" are allowed");
     }
+    values.add(check(v));
+  }
+  /**********************************************************************/
+  /**
+   * <p>
+   * checks if the given <code>Object</code> is a valid value for this option
+   * or can be converted to one. This method converts the value, if possible and
+   * necessary and returns the resulting <code>Object</code>.
+   * </p>
+   * <p>
+   * <b>Hint:</b> Subclasses must override this method to make sure the right
+   * objects are stored.
+   * </p>
+   * 
+   * @throws CommandlineException
+   *           if the value does not meet the requirements for this option (e.g.
+   *           wrong type, value too large) and cannot be (easily) converted.
+   */
+  protected Object check(Object v) throws CommandlineException {
+    if( v instanceof String ) return v;
+    
+    throw new CommandlineException("value must be of type String");
   }
   /**********************************************************************/
   protected String getTypeName() {return "string";}
@@ -100,7 +187,7 @@ public class Option {
    * the constructor. For subclasses of <code>Option</code>, different
    * types may be returned.
    */
-  public Vector getValues() {
+  public Vector<Object> getValues() {
     return values==null ? defalt : values;
   }
   /**
@@ -115,51 +202,34 @@ public class Option {
     return v.get(0);
   }
   /**********************************************************************/
-  protected void setValues(Vector v) throws CommandlineException {
-    int L = v.size();
-    if( L<cmin ) {
-      throw new CommandlineException
-	("not enough `"+name+"' arguments (option '"+opt+"'), found "
-	 +L+" but need "+cmin);
-    }
-
-    if( L>cmax ) {
-      throw new CommandlineException
-	("to many `"+name+"' arguments (option '"+opt+"'), found "+L
-	 +" but want no more than "+cmax);
-    }
-    this.values = v;
-  }
-  /**********************************************************************/
-  protected Object check(String s) throws CommandlineException { 
-    return s; 
-  }
-  /**********************************************************************/
   protected int parse(String[] argv, int startAt) throws CommandlineException {
     int i = startAt;
     if( values!=null ) {
       throw new CommandlineException
 	("option `"+opt+"' used more than once");
     }
-    values = new Vector();
+    values = new Vector<Object>();
     while( i<argv.length && values.size()<cmax 
 	   && (!argv[i].startsWith("-") || values.size()<cmin) ) {
       //System.err.println(opt+i);
       String s;
       if( argv[i].startsWith("@") ) s = argv[i].substring(1);
       else s = argv[i];
-      values.add(check(s));
+      addValue(s);
       i += 1;
     }
-
-    if( values.size()<cmin ) {
-      throw new CommandlineException
-	("not enough `"+name+"' arguments (option '"+opt+"'), found "
-	 +values.size()+" but want "+cmin);
-    }
+    assertCmin();
     return i;
   }
-  /**********************************************************************/
+  //**********************************************************************/
+  private void assertCmin() throws CommandlineException {
+    if( values.size()<cmin ) {
+      throw new CommandlineException
+      ("not enough `"+name+"' arguments (option '"+opt+"'), found "
+       +values.size()+" but want "+cmin);
+    }    
+  }
+  //**********************************************************************/
   protected String shortUsage() {
     String s = "";
     if( !required ) s = s+"[";
