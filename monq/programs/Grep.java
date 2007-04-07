@@ -537,7 +537,7 @@ public class Grep implements ServiceFactory {
 
     if( cmd.available("-p") ) {
       FilterServiceFactory fsf = new FilterServiceFactory(grep);
-      int port = (int)cmd.getLongValue("-p", -1);
+      int port = (int)cmd.getLongValue("-p");
       new TcpServer(port, fsf, 20).setLogging(System.out).serve();
     } else {
       DfaRun r = grep.createRun();

@@ -592,7 +592,8 @@ public class DictFilter implements ServiceFactory {
    * run on the commandline with <code>-h</code> to get a description.
    */
   public static void main(String[] argv) 
-    throws java.io.IOException, CompileDfaException, ReSyntaxException 
+    throws java.io.IOException, CompileDfaException, ReSyntaxException,
+    CommandlineException
   {
     String prog = System.getProperty("argv0", "DictFilter");
 
@@ -654,7 +655,7 @@ public class DictFilter implements ServiceFactory {
     String[] eopts = {"-ie", "-oe"};
     for(int i=0; i<eopts.length; i++) {
       if( !cmd.available(eopts[i]) ) continue;
-      String s = enc[i] = cmd.getStringValue(eopts[i], null);
+      String s = enc[i] = cmd.getStringValue(eopts[i]);
       try {
 	java.nio.charset.Charset.forName(s);
       } catch( java.nio.charset.UnsupportedCharsetException e ) {
@@ -684,7 +685,7 @@ public class DictFilter implements ServiceFactory {
 
 
     if( cmd.available("-c") ) {
-      String dfaFileName = cmd.getStringValue("-c", null);
+      String dfaFileName = cmd.getStringValue("-c");
       ObjectOutputStream out = 
 	new ObjectOutputStream(new FileOutputStream(dfaFileName));
       if( verbose ) { 

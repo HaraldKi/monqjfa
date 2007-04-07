@@ -96,8 +96,8 @@ public class DistFilter {
     if( cmd.available("-p") ) port = ((Long)cmd.getValue("-p")).intValue();
 
     // Read configuration data
-    Map serverConfig = FilterSvrInfo.readAll(cmd.getStringValue("-c", null));
-    Map pipeConfig = FilterPipeInfo.readAll(cmd.getStringValue("-c", null), 
+    Map serverConfig = FilterSvrInfo.readAll(cmd.getStringValue("-c"));
+    Map pipeConfig = FilterPipeInfo.readAll(cmd.getStringValue("-c"), 
 					    serverConfig);
     // We have to invert the order of the servers listed on the
     // command line for the convenience of the user

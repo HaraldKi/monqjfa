@@ -168,10 +168,10 @@ public class JythonFilter implements ServiceFactory {
     JythonFilter jf = new JythonFilter(py.length);
 
     if( cmd.available("-ie") ) {
-      jf.setInputEncoding(cmd.getStringValue("-ie", null));
+      jf.setInputEncoding(cmd.getStringValue("-ie"));
     }
     if( cmd.available("-oe") ) {
-      jf.setInputEncoding(cmd.getStringValue("-oe", null));
+      jf.setInputEncoding(cmd.getStringValue("-oe"));
     }
     
     for(int i=0; i<py.length; i++) { 
@@ -181,7 +181,7 @@ public class JythonFilter implements ServiceFactory {
     if( cmd.available("-p") ) {
       //go into server mood
       FilterServiceFactory fsf = new FilterServiceFactory(jf);
-      int port = (int)cmd.getLongValue("-p", -1);
+      int port = (int)cmd.getLongValue("-p");
       new TcpServer(port, fsf, 20).setLogging(System.out).serve();
     } else {
       // prefer to use a plain OutputStream from the FileDescriptor
