@@ -16,9 +16,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.clifj;
 
-//import monq.jfa.*;
-import monq.jfa.actions.*;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -70,6 +67,7 @@ public class CommandlineTest extends TestCase {
     String[] argv = {"furp1", "glurp2", "blarg3", "murf4"};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
+    //e.printStackTrace();
     assertTrue(e.getMessage().contains("want no more than 2"));
     assertTrue(e.getMessage().contains("found 4"));
   }
@@ -81,7 +79,8 @@ public class CommandlineTest extends TestCase {
     String[] argv = {};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
-    assertTrue(e.getMessage().contains("but need 1"));
+    //e.printStackTrace();
+    assertTrue(e.getMessage().contains("but want 1"));
     assertTrue(e.getMessage().contains("found 0"));
   }
 
@@ -109,7 +108,7 @@ public class CommandlineTest extends TestCase {
   public void test_required() {
     Commandline cmd = new Commandline("TestProg", "do the test");
     cmd.addOption(new Option("-a", "anopt", 
-        "test an option", 0, 19999, null).required());
+        "test an option", 0, 19999).required());
     String[] argv = { "-a", "blarg", "varg" };
     Exception e = parse(cmd, argv);
     assertNull(e);
@@ -121,7 +120,7 @@ public class CommandlineTest extends TestCase {
   public void test_requiredFail() {
     Commandline cmd = new Commandline("TestProg", "do the test");
     cmd.addOption(new Option("-a", "anopt", 
-        "test an option", 0, 19999, null).required());
+        "test an option", 0, 19999).required());
     String[] argv = {};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
@@ -133,9 +132,9 @@ public class CommandlineTest extends TestCase {
   public void test_requiredFail2() {
     Commandline cmd = new Commandline("TestProg", "do the test");
     cmd.addOption(new Option("-a", "anopt", 
-        "test an option", 0, 19999, null).required());
+        "test an option", 0, 19999).required());
     cmd.addOption(new Option("-b", "anopt", 
-        "test an option", 0, 19999, null).required());
+        "test an option", 0, 19999).required());
     String[] argv = {};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
@@ -149,7 +148,7 @@ public class CommandlineTest extends TestCase {
     Commandline cmd = new Commandline("TestProg", "do the test");
     cmd.addOption(new BooleanOption("-v", "verbose"));
     cmd.addOption(new BooleanOption("-w", "wwwww"));
-    cmd.addOption(new Option("-x", "xxxxopt", "do the x", 0, 1, null));
+    cmd.addOption(new Option("-x", "xxxxopt", "do the x", 0, 1));
     String[] argv = {"-v", "-x", "jocko"};
     Exception e = parse(cmd, argv);
     assertNull(e);
@@ -189,7 +188,7 @@ public class CommandlineTest extends TestCase {
   public void testGetValueMethods() {
     Commandline cmd = new Commandline("TestProg", "do the test");
     cmd.addOption(new LongOption("-l", "longstuff", "do the long trick", 1, 5,
-                                 10, 20, null));
+                                 10, 20));
     String[] argv = {"-l", "12", "13", "18"};
     Exception e = parse(cmd, argv);
     assertNull(e);
@@ -212,20 +211,19 @@ public class CommandlineTest extends TestCase {
   /*+********************************************************************/
   public void testGetValueMethods2() {
     Commandline cmd = new Commandline("TestProg", "do the test");
-    cmd.addOption(new Option("-s", "stringstuff", "do the long trick", 1, 5,
-                             null));
+    cmd.addOption(new Option("-s", "stringstuff", "do the long trick", 1, 5));
     String[] argv = {"-s", "bla", "ri", "lulatsch"};
     Exception e = parse(cmd, argv);
     assertNull(e);
     assertEquals(argv[1], cmd.getStringValue("-s"));
   }
   /* +******************************************************************* */
-  public void testUsage() {
+  public void testUsage() throws Exception {
     Commandline cmd = new Commandline("TestProg", "do the test", "rest",
         "all non-option params", 3, 99);
     cmd.addOption(new BooleanOption("-v", "verbose"));
     cmd.addOption(new Option("-f", "input", "all input files", 1,
-                             Integer.MAX_VALUE, null));
+                             Integer.MAX_VALUE));
     Long dflt[] = {-1L, 12L};
     cmd.addOption(new LongOption("-l", "weight", 
                                  "weight vector to cast the blaselfaster "+ 
@@ -249,7 +247,7 @@ public class CommandlineTest extends TestCase {
     cmd.addOption(new Option("-o", "option", 
                              "we test this option with the word "
                              + "voodooomasterblasterwonderwuzzelsuperdazzeledgargleblaster, "
-                             + "which is just the right stuff", 0, 1, null));
+                             + "which is just the right stuff", 0, 1));
     String[] argv = {"-h"};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
@@ -270,7 +268,7 @@ public class CommandlineTest extends TestCase {
   /* +******************************************************************* */
   public void testFewArgs() {
     Commandline cmd =  new Commandline("TestProg", "do the test");
-    cmd.addOption(new Option("-s", "pair", "a pair of values", 2, 2, null));
+    cmd.addOption(new Option("-s", "pair", "a pair of values", 2, 2));
     String[] argv = {"-s", "1"};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
@@ -283,8 +281,8 @@ public class CommandlineTest extends TestCase {
   public void testOverflowTorest() {
     Commandline cmd =  new Commandline("TestProg", "do the test", "rest",
                                        "all other args", 0, Integer.MAX_VALUE);
-    cmd.addOption(new Option("-s", "pair", "a pair of values", 2, 2, null));
-    cmd.addOption(new Option("-t", "values", "some values", 0, 100, null));
+    cmd.addOption(new Option("-s", "pair", "a pair of values", 2, 2));
+    cmd.addOption(new Option("-t", "values", "some values", 0, 100));
     String[] argv = {"-t", "hicks", "clicks", "-s", "1", "1", "doo"};
     Exception e = parse(cmd, argv);
     assertNull(e);
@@ -294,7 +292,7 @@ public class CommandlineTest extends TestCase {
   public void testForceMinuxValue() {
     Commandline cmd =  new Commandline("TestProg", "do the test", "rest",
                                        "all other args", 0, Integer.MAX_VALUE);
-    cmd.addOption(new Option("-s", "pair", "a pair of values", 2, 2, null));
+    cmd.addOption(new Option("-s", "pair", "a pair of values", 2, 2));
     String[] argv = {"-s", "-1", "-2", "hallo"};
     Exception e = parse(cmd, argv);
     assertNull(e);
@@ -302,7 +300,7 @@ public class CommandlineTest extends TestCase {
     assertEquals("hallo", cmd.getStringValue("--"));
   }
   /* +******************************************************************* */
-  public void testDefault() {
+  public void testDefault() throws Exception {
     Commandline cmd =  new Commandline("TestProg", "do the test");
     String[] dflt = {"boo", "duu"};
     cmd.addOption(new Option("-s", "pair", "a pair of values", 2, 2, dflt));
@@ -315,7 +313,7 @@ public class CommandlineTest extends TestCase {
   public void testLongWrong() {
     Commandline cmd =  new Commandline("TestProg", "do the test");
     cmd.addOption(new LongOption("-l", "longs", "some long values",
-                                 1, Integer.MAX_VALUE, 0, 10, null));
+                                 1, Integer.MAX_VALUE, 0, 10));
     String[] argv = {"-l", "kaput"};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
@@ -325,7 +323,7 @@ public class CommandlineTest extends TestCase {
   public void testLongSmall() {
     Commandline cmd =  new Commandline("TestProg", "do the test");
     cmd.addOption(new LongOption("-l", "longs", "some long values",
-                                 1, Integer.MAX_VALUE, 0, 10, null));
+                                 1, Integer.MAX_VALUE, 0, 10));
     String[] argv = {"-l", "-134"};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
@@ -336,7 +334,7 @@ public class CommandlineTest extends TestCase {
   public void testLongLarge() {
     Commandline cmd =  new Commandline("TestProg", "do the test");
     cmd.addOption(new LongOption("-l", "longs", "some long values",
-                                 1, Integer.MAX_VALUE, 0, 10, null));
+                                 1, Integer.MAX_VALUE, 0, 10));
     String[] argv = {"-l", "134"};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
@@ -347,7 +345,7 @@ public class CommandlineTest extends TestCase {
   public void testEnum() {
     Commandline cmd =  new Commandline("TestProg", "do the test");
     cmd.addOption(new EnumOption("-e", "anenum", "do the enum",
-                                 1, 5, "|eins|zwei|drei|vier", null));
+                                 1, 5, "|eins|zwei|drei|vier"));
     String[] argv = {"-e", "zwei", "vier"};
     Exception e = parse(cmd, argv);
     assertNull(e);
@@ -358,13 +356,42 @@ public class CommandlineTest extends TestCase {
    public void testEnumException() {
     Commandline cmd =  new Commandline("TestProg", "do the test");
     cmd.addOption(new EnumOption("-e", "anenum", "do the enum",
-                                 1, 5, "|eins|zwei|drei|vier", null));
+                                 1, 5, "|eins|zwei|drei|vier"));
     String[] argv = {"-e", "zwei", "xvier"};
     Exception e = parse(cmd, argv);
     assertNotNull(e);
     assertTrue(e.getMessage().contains("not accept the value `xvier'"));
   }
-  /* +******************************************************************* */
+   /* +******************************************************************* */
+   public void testWrongDefault1() {
+     Option o = new Option("-e", "erg", "do the thing", 2, 2);
+     String[] dflt = {"do"};
+     Exception e = null;
+     try {
+       o.setDefault(dflt);
+     } catch( Exception ex ) {
+       e = ex;
+     }
+     assertNotNull(e);
+     //e.printStackTrace();
+     assertTrue(e.getMessage().contains("found 1 but want 2"));
+   }
+   /* +******************************************************************* */
+   public void testWrongDefault2() {
+     Option o = new Option("-e", "erg", "do the thing", 2, 2);
+     String[] dflt = {"do", "di", "da"};
+     Exception e = null;
+     try {
+       o.setDefault(dflt);
+     } catch( Exception ex ) {
+       e = ex;
+     }
+     assertNotNull(e);
+     //e.printStackTrace();
+     assertTrue(e.getMessage().contains("only 2 are allowed"));
+   }
+   /* +******************************************************************* */
+   /* +******************************************************************* */
   public static void main(String[] argv) {
     junit.textui.TestRunner.run(new TestSuite(CommandlineTest.class));
   }
