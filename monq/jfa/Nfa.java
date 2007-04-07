@@ -16,15 +16,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import java.util.Vector;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Iterator;
-import java.util.Stack;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.IdentityHashMap;
+import java.util.*;
 import java.io.PrintStream;
 
 /**
@@ -159,17 +151,17 @@ public class Nfa  {
 //   private static Set newSet(int s) { return new LeanSet(s); }
 //   private static Set newSet(Collection c) { return new LeanSet(c); }
 
-  private static Set newSet() { return new PlainSet(); }
-  private static Set newSet(int s) { return new PlainSet(s); }
-  private static Set newSet(Collection c) { return new PlainSet(c); }
+//  private static Set newSet() { return new PlainSet(); }
+//  private static Set newSet(int s) { return new PlainSet(s); }
+//  private static Set newSet(Collection c) { return new PlainSet(c); }
 
-//   private static Set newSet() { return new HashSet(16, 1.0F); }
-//   private static Set newSet(int s) { return new HashSet(s, 1.0F); }
-//   private static Set newSet(Collection c) { 
-//     HashSet h = new HashSet(c.size()+1, 1.0F);
-//     h.addAll(c);
-//     return h;
-//   }
+   private static <E> Set<E> newSet() { return new HashSet<E>(16, 1.0F); }
+   private static <E> Set<E> newSet(int s) { return new HashSet<E>(s, 1.0F); }
+   private static <E> Set<E> newSet(Collection<E> c) { 
+     Set<E> h = new HashSet<E>(c.size()+1, 1.0F);
+     h.addAll(c);
+     return h;
+   }
   
   /**********************************************************************/
   /**
@@ -226,7 +218,7 @@ public class Nfa  {
     newLast = new AbstractFaState.EpsStopState(a);
     lastState.addEps(newLast);
     lastState = newLast;
-    addSubAction(start, a, newSet());
+    addSubAction(start, a, Nfa.<FaState>newSet());
     
     // All unbound subgraphs are now bound to an action. Since a
     // subgraph is identified by a pair (FaAction a, byte id), now is
@@ -234,7 +226,7 @@ public class Nfa  {
     rep.resetSubGraphCounter();
     return this;
   }
-  private void addSubAction(FaState s, FaAction a, Set known) {
+  private void addSubAction(FaState s, FaAction a, Set<FaState> known) {
     s.reassignSub(null, a);
     known.add(s);
     Iterator children = s.getChildIterator();
@@ -392,7 +384,7 @@ public class Nfa  {
    * regular expression contains an <code>@</code>-marked atom.</p>
    */
   Nfa markAsSub(byte id) {
-    Set known = newSet();
+    Set<FaState> known = newSet();
 
     FaSubinfo startInfo = FaSubinfo.start(id);
     FaSubinfo stopInfo = FaSubinfo.stop(id);
@@ -415,7 +407,7 @@ public class Nfa  {
   // here.
   private void _markAsSub(FaState parent, 
 			  FaSubinfo innerInfo, boolean innerValid,
-			  Set known) {
+			  Set<FaState> known) {
     known.add(parent);
 
     // iterate of character transitions
@@ -504,7 +496,8 @@ public class Nfa  {
     boolean isPruned = false;
   }
   
-  private char isUseful(FaState s, IdentityHashMap known, boolean top) {
+  private char isUseful(FaState s, IdentityHashMap<FaState,Useful> known,
+                        boolean top) {
     Useful u = (Useful)known.get(s);
     if( u==null ) {
       u = new Useful();
@@ -544,7 +537,7 @@ public class Nfa  {
    * deletes states which have no path to neither a stop state nor to
    * lastState. 
    */
-  private void deleteUseless(FaState s, IdentityHashMap known) {
+  private void deleteUseless(FaState s, IdentityHashMap<FaState,Useful> known) {
     //System.err.println("dU"+s);
     Useful u = (Useful)known.get(s);
     if( u==null ) {
@@ -603,7 +596,7 @@ public class Nfa  {
    * transitions are traversed because the automaton was compiled just
    * before.
    */
-  private void invertState(FaState s, Set known, 
+  private void invertState(FaState s, Set<FaState> known, 
 			   FaState sink, FaState last,
 			   Intervals worker) {
     known.add(s);
@@ -659,7 +652,7 @@ public class Nfa  {
     sinkState.setTrans(worker.complete(sinkState).toCharTrans());
 
     sinkState.addEps(newLast);
-    invertState(dfaStart, newSet(), sinkState, newLast, worker);
+    invertState(dfaStart, Nfa.<FaState>newSet(), sinkState, newLast, worker);
 
     start = new AbstractFaState.EpsState();
     start.addEps(dfaStart);
@@ -667,7 +660,7 @@ public class Nfa  {
     
     // all this can have produced useless state. We don't want to keep
     // them.
-    deleteUseless(start, new IdentityHashMap());
+    deleteUseless(start, new IdentityHashMap<FaState,Useful>());
     return this;
   }
   /**********************************************************************/
@@ -751,7 +744,7 @@ public class Nfa  {
    * used below by <code>shortest</code> to recursively prune outgoing
    * transitions of stop states.
    */
-  private void trimStopState(FaState s, Set known, 
+  private void trimStopState(FaState s, Set<FaState> known, 
 			     FaState newLast, FaAction mark) {
     known.add(s);
     FaAction a = s.getAction();
@@ -815,7 +808,7 @@ public class Nfa  {
     // pain). However, we cannot live with dead states, i.e. states
     // from which we cannot reach any stop state
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
-    trimStopState(newStart, newSet(), newLast, mark);
+    trimStopState(newStart, Nfa.<FaState>newSet(), newLast, mark);
 
     start = newStart;
     lastState = newLast;
@@ -873,35 +866,11 @@ public class Nfa  {
     other.invalidate();
     return this;
   }
-  /**
-   * <p>a convenience function which generates a {@link RegexpSplitter} from
-   * <code>split</code>, and <code>what</code>, a {@link
-   * PrintfFormatter} from 
-   * <code>format</code>, and combines them both into a {@link
-   * monq.jfa.actions.Printf} action. This action is then attached to
-   * <code>re</code>. For the meaning of parameter
-   * <code>what</code> see {@link RegexpSplitter#RegexpSplitter
-   * RegexpSplitter()}.<p> 
-   *
-   * <p>To match a line of text, split it at blank space and then print
-   * the first and second elements separated by a '|', use:<pre>
-   *  .or("[^\n]*\n", " +", RegexpSplitter.SPLIT, "%1|%2\n")</pre>
-   * </p>
-   */
-//   public Nfa or(CharSequence re, 
-// 		CharSequence split, int what,
-// 		String format) 
-//     throws ReSyntaxException
-//   {
-//     FaAction a = new monq.jfa.actions.Printf(new RegexpSplitter(split, what),
-// 					new PrintfFormatter(format), 0);
-//     return or(re, a);
-//   }
   /**********************************************************************/
   // is a convenience wrapper around findAction for use in findPath
   private boolean hasAction(Set nfaStates) {
-    Vector clashes = new Vector(3);
-    HashSet actions = new HashSet(3);
+    Vector<Object[]> clashes = new Vector<Object[]>(3);
+    Set<FaAction> actions = new HashSet<FaAction>(3);
     StringBuffer sb = new StringBuffer();
     return null!=findAction(sb, 'a', 'a', clashes, actions, nfaStates);
   }
@@ -912,8 +881,8 @@ public class Nfa  {
    */
   int findPath(String s) {
     int lastMatch;
-    Set current = newSet(100);
-    Set other = newSet(100);
+    Set<FaState> current = Nfa.<FaState>newSet(100);
+    Set<FaState> other = Nfa.<FaState>newSet(100);
 
     current.add(start);
     eclosure(current);
@@ -930,7 +899,7 @@ public class Nfa  {
 	  other.add(state);
 	}
       }
-      Set tmp = current; current = other; other = tmp;
+      Set<FaState> tmp = current; current = other; other = tmp;
       other.clear();
       eclosure(current);
       if( hasAction(current) ) lastMatch = i+1;
@@ -965,10 +934,10 @@ public class Nfa  {
     removing unimportant states, i.e. states which are no stop states
     and have no outgoing non-epsilons.
   *****/
-  private static void eclosure(Set states) {
-    ArrayList stack = new ArrayList(states.size()+20);
+  private static void eclosure(Set<FaState> states) {
+    List<FaState> stack = new ArrayList<FaState>(states.size()+20);
     stack.addAll(states);
-    Set tmpResult = newSet(states.size()+20);
+    Set<FaState> tmpResult = Nfa.<FaState>newSet(states.size()+20);
     states.clear();
 
     while( stack.size()>0 ) {
@@ -1012,7 +981,8 @@ public class Nfa  {
   // more non-identical highest priority actions.
   private static FaAction findAction(StringBuffer dfaPath, 
 				     char first, char last,
-				     Vector clashes, Set actions, 
+				     Vector<Object[]> clashes,
+				     Set<FaAction> actions, 
 				     Set nfaStates) 
     //throws CompileDfaException 
   {
@@ -1096,7 +1066,8 @@ public class Nfa  {
     } else {
       // Need a fresh Set for the new interval pos, which starts with
       // ch
-      Set s = (Set)v.getAt(from);
+      @SuppressWarnings("unchecked") 
+      Set<FaState> s = (Set<FaState>)v.getAt(from);
       if( s!=null ) v.setAt(from, newSet(s));
     }
 
@@ -1106,7 +1077,8 @@ public class Nfa  {
       if( to<0 ) {
 	to = -(to+1);
       } else {
-	Set s = (Set)v.getAt(to);
+        @SuppressWarnings("unchecked") 
+	Set<FaState> s = (Set<FaState>)v.getAt(to);
 	if( s!=null ) v.setAt(to, newSet(s));
       }
     }
@@ -1114,7 +1086,8 @@ public class Nfa  {
     // now we are sure that interval borders nicely fit with first and
     // last
     for(int i=from; i<to; i++) {
-      Set s = (Set)v.getAt(i);
+      @SuppressWarnings("unchecked") 
+      Set<FaState> s = (Set<FaState>)v.getAt(i);
       if( s==null ) s = newSet();
       s.add(dst);
       v.setAt(i, s);
@@ -1185,10 +1158,10 @@ public class Nfa  {
     // If we find multiple actions on some stop states, these are
     // registered as clashes here and will finally result in an
     // exception. 
-    Vector clashes = new Vector(3);
+    Vector<Object[]>clashes = new Vector<Object[]>(3);
 
     // reusable container for findAction()
-    Set actions = newSet(3);
+    Set<FaAction> actions = newSet(3);
   
     // If no stop state shows up during compilation, an exception is
     // thrown. This guards against an automaton which recognizes
@@ -1198,7 +1171,7 @@ public class Nfa  {
 
     // Generate the representative set of nfa states for the start
     // state of the dfa
-    Set starters = newSet(100);
+    Set<FaState> starters = newSet(100);
     starters.add(start);
     eclosure(starters);
 
@@ -1223,7 +1196,7 @@ public class Nfa  {
 
     // The map 'known' stores unique sets of NFA states as keys and
     // maps them to their assigned DFA state
-    HashMap known = new HashMap();
+    Map<Set<FaState>,FaState> known = new HashMap<Set<FaState>,FaState>();
     known.put(starters, dfaStart);
 
 
@@ -1236,7 +1209,7 @@ public class Nfa  {
     // 2) a Set of nfa states representing the dfa state
     // 3) a dfa state which does not have its transition table
     // constructed.
-    Stack stack = new Stack();
+    Stack<Object> stack = new Stack<Object>();
     int[] step0 = {0, 0, 0};	// a dummy
     stack.push(step0);
     stack.push(starters);
@@ -1283,7 +1256,8 @@ public class Nfa  {
       int L = currentTrans.size();
       //System.out.println(">>> "+currentTrans);
       for(int i=0; i<L; i++) {
-	Set stateSet = (Set)currentTrans.getAt(i);
+        @SuppressWarnings("unchecked")
+        Set<FaState> stateSet = (Set<FaState>)currentTrans.getAt(i);
 	if( stateSet==null ) continue;
 	eclosure(stateSet);
 	FaState dst = (FaState)known.get(stateSet);
