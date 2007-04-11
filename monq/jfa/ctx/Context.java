@@ -136,6 +136,7 @@ public class Context extends AbstractFaAction {
    * action is independent of the context.
    */
   FaAction getPop() { return pop; }
+
   /**
    * <p>this method is not implemented and will always throw an
    * exception. It is only kept as a refence for the rare cases
@@ -150,6 +151,13 @@ public class Context extends AbstractFaAction {
    * @throws UnsupportedOperationException whenever called.
    */
   public Context setPopPriority(int p) {
+    // Why this does not work anyway: ContextManager.add() creates a
+    // Context object, say ctx, and passes ctx.getPop() as the action
+    // to an IfContext. Only then add() returns the
+    // Context. Consequently setting the popPriority later would not
+    // help, because the priority has to be set on the IfContext
+    // actually, not on the Pop. Any solution to get around this is
+    // non-trivial. 
     throw new UnsupportedOperationException("read the docs, please");
   }
   /**********************************************************************/
