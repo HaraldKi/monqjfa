@@ -430,7 +430,7 @@ public class Grep implements ServiceFactory {
 		  +"Matches are only searched for in the roi. If no "
 		  +"roi is "
 		  +"given, the whole input is searched",
-		  2, 2, null));
+		  2, 2));
     cmd.addOption
       (new BooleanOption("-d", 
 			 "delete non-matching text within roi. "
@@ -452,7 +452,7 @@ public class Grep implements ServiceFactory {
 		   +"what to do with the matches defining the roi. By "
 		   +"default, they are copied to the output with "
 		   +"the matching roi",
-		   2, 2, null));
+		   2, 2));
     cmd.addOption(new LongOption
 		  ("-p", "port",
 		   "instead of filtering stdin to stdout, go into server "
@@ -460,7 +460,7 @@ public class Grep implements ServiceFactory {
 		   +"is implemented by class monq.jfa.DistPipeFilter. The "
 		   +"program DistFilter can be used on the "
 		   +"command line to make a contact",
-		   1, 1, 0, 65535, null));
+		   1, 1, 0, 65535));
 
     try {
       cmd.parse(argv);
