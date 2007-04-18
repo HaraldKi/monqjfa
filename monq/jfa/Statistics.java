@@ -66,11 +66,13 @@ public class Statistics {
     pw.println("         shortest path to stop state: "+shortestPathlen);
     pw.println("longest loop free path to stop state: "+longestPathlen);
     pw.println("the following transition table types are used:");
-    Iterator it = charTransTypes.keySet().iterator();
-    while( it.hasNext() ) {
-      Class c = (Class)it.next();
+    for(Class c: charTransTypes.keySet()) {
+      long stats = 0;
+      try {
+        stats = c.getField("stats").getLong(c);
+      } catch( Exception e) { e.printStackTrace(); }
       Int count = (Int)charTransTypes.get(c);
-      pw.println("   "+c.getName()+": "+count.i);
+      pw.printf("%33s: %4d, used: %8d\n", c.getName(), count.i, stats);
     }
   }
   /********************************************************************/
