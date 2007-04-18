@@ -91,11 +91,12 @@
     <javac srcdir="."
 	   destdir="Classes" 
 	   source="1.5"
-           listfiles="no"
+       listfiles="no"
 	   fork="false"
-           debug="true"
-           deprecation="true"
+       debug="true"
+       deprecation="true"
 	   >
+      <compilerarg value="-Xlint:unchecked"/>
       <patternset refid="jsrc"/>
     </javac>
   </target>
