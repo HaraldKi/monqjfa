@@ -21,6 +21,8 @@ import monq.jfa.actions.*;
 
 import java.io.StringReader;
 import java.lang.Class;
+import java.util.*;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -144,50 +146,6 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.ECHARUNEX, e.emsg);
   }
 
-//   public void testEATDIGIT() throws java.io.IOException {
-//     ReSyntaxException e = null;
-//     String s = "a@x";
-//     try {
-//       rep.parse(s);
-//     } catch( ReSyntaxException _e ) {
-//       e = _e;
-//       //System.out.println(e);
-//       assertEquals(s, e.text);
-//       assertEquals(3, e.column);
-//     }
-//     assertEquals(ReSyntaxException.EATDIGIT, e.emsg);
-//   }
-
-//   public void testEATRANGE() throws java.io.IOException {
-//     ReSyntaxException e = null;
-//     String s = "a@1234";
-//     try {
-//       rep.parse(s);
-//     } catch( ReSyntaxException _e ) {
-//       e = _e;
-//       //System.out.println(e);
-//       assertEquals(s, e.text);
-//       assertEquals(6, e.column);
-//     }
-//     assertEquals(ReSyntaxException.EATRANGE, e.emsg);
-//   }
-
-//   public void testEATMISSAT() throws java.io.IOException {
-//     ReSyntaxException e = null;
-//     String s = "a@123x";
-//     try {
-//       rep.parse(s);
-//     } catch( ReSyntaxException _e ) {
-//       e = _e;
-//       //System.out.println(e);
-//       assertEquals(s, e.text);
-//       assertEquals(6, e.column);
-//     }
-//     assertEquals(ReSyntaxException.EATMISSAT, e.emsg);
-//   }
-
-
-
   public void testCleanReset() throws java.io.IOException {
     ReSyntaxException e = null;
     String s = "[a-";
@@ -267,7 +225,58 @@ public class ReParserTest extends TestCase {
     assertEquals("  x?[", wrongText);
     assertEquals("    ^", marker);
   }
-  /********************************************************************/
+  // ********************************************************************
+  // try to make sure that all characters except the special characters match
+  // themselves and check that special characters have a special meaning.
+  public void testAllChars() throws Exception {
+    String[] tests = {
+        "[", "[a1]+", "a11ab", "a11a",
+        "]", "[x]", "x", "x",
+        "(", "(a)", "a", "a",
+        ")", "(b)", "b", "b",
+        "?", "a?b", "b", "b",
+        "*", "a*", "aaab", "aaa",
+        "+", "a+", "aaab", "aaa",
+	"|", "(a|b)+", "aaabbbc", "aaabbb",
+	".", ".+", "ai9q87b5098q", "ai9q87b5098q",
+	"!", "a!", "a", "a",
+	"^", "a^", "xxxxxxx", "xxxxxxx",
+	"-", "[3-5]+", "345432", "34543",
+	"\\", "a\\!", "a!", "a!",
+	"~", "a~", "aaa", "aaa",
+	// '@' should disappear soon, it is deprecated
+	"@", "[@]", "@", "@",
+    };
+    Map<Character,Integer> m = new HashMap<Character,Integer>();
+    for(int i=0; i<tests.length; i+=4) {
+      m.put(new Character(tests[i].charAt(0)), new Integer(i));
+    }
+
+    // now run the test for each character
+    char c = Character.MIN_VALUE;
+    do {
+      Character ch = new Character(c);
+      String str, expected;
+      Regexp re;
+      if( m.containsKey(ch) ) {
+	int i = m.get(ch).intValue();
+	re = new Regexp(tests[i+1]);
+	str = tests[i+2];
+	expected = tests[i+3];
+      } else {
+	re = new Regexp("" + ch + "+");
+	str = ""+ ch + ch + ch;
+	expected = str;
+      }
+      assertTrue("checking `"+c+"'", re.atStartOf(str)!=-1);
+      int len = re.length();
+      String match = str.substring(0, len);
+      assertEquals(expected, match);
+      c += 1;
+    } while( c!=Character.MAX_VALUE);
+    
+  }
+  //********************************************************************
 
   public static void main(String[] argv) {
     //ReParser rep = new ReParser();
