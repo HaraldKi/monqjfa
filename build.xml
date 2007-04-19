@@ -155,7 +155,8 @@
   <!-- testing -->
   <target name="test" depends="compileTests"
     description="run junit tests, use e.g. -Dtest=Nfa to run single test">
-    <junit printsummary="off" haltonfailure="true">
+    <junit printsummary="off" haltonfailure="true" 
+      dir="${basedir}" fork="true">
       <classpath refid="CPLOCAL"/>
 
       <formatter type="brief" usefile="false"/>
@@ -358,6 +359,7 @@ ${svnstatus}
   <!-- for debugging, show all properties -->
   <target name="props" depends="setVersion,findfeatures,svnclean"
     description="debug aid: prints all defined properties">   
+    <property name="copy-of-CPLOCAL" refid="CPLOCAL"/>
     <echoproperties/>
   </target>
 </project>
