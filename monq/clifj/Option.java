@@ -99,7 +99,7 @@ public class Option {
   // **********************************************************************/
   /**
    * <p>
-   * convenience method to be called by {@link #setDefault()} methods of
+   * convenience method to be called by <code>setDefalt</code> methods of
    * subclasses.
    * </p>
    */
