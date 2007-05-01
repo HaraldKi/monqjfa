@@ -1,3 +1,20 @@
+VERSION 1.1
+
+With this version, monqjfa made the move to Java 1.5. When compiling,
+there is only one 'unchecked' warning left. Where necessary, generic
+parameters were added and in the process, a few loops turned out to be
+more readable with 1.5 syntax.
+
+In addition, there is a new FaAction called monq.jfa.actions.Call. It
+simplifies writing applications a lot, because all callbacks for a Dfa
+can be combined as methods in one class and need not be implemented as
+individual (anonymous) classes.
+
+Some minor improvements and some cleanup leads to slightly
+incompatible changes in monq.clifj. The necessary changes should be
+obvious from compiler output.
+
+
 VERSION 1.0
 
 This version is functionally equivalent to version 0.19. With version
