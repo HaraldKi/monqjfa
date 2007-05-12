@@ -92,8 +92,6 @@ interface FaState {
 
   /** 
    * mark this state part of the subautomaton <code>sfi</code>.
-   *
-   * @see #assignSub
    */
   void addUnassignedSub(FaSubinfo sfi);
 

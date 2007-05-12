@@ -231,8 +231,17 @@ public class DictFilter implements ServiceFactory {
     ReadHelper rh = new ReadHelper(verbose);
     DfaRun r;
 
-    // create the Dfa with which we read the input file.
     try {
+      // initialize the dictionary with a catch all word to prevent
+      // matching of dictionary terms in the middle of words.
+      if( defaultWord ) {
+	rh.dict = new Nfa("[A-Za-z0-9]+", new Copy(Integer.MIN_VALUE));
+      } else {
+	rh.dict = new Nfa(Nfa.NOTHING);
+      }
+
+
+      // create the Dfa with which we read the input file.
       Nfa nfa = new Nfa(Nfa.NOTHING);
       ContextManager mgr = new ContextManager(nfa)
 	.setDefaultAction(Drop.DROP)
@@ -240,6 +249,10 @@ public class DictFilter implements ServiceFactory {
 	;
       Context mwt = mgr.addXml((Context)null, "mwt");
 
+      // Do_t_r translates strings read into regexps for
+      // rh.dict. Consequently it needs to know how to escape the
+      // characters for the parser of rh.dict
+      Do_t_r dtr = new Do_t_r(rh.dict.getReParser());
       nfa.or(Xml.S, Drop.DROP)
        	.or(Xml.XMLDecl, 
 	    // FIX ME: should extract the encoding
@@ -249,10 +262,10 @@ public class DictFilter implements ServiceFactory {
 	    new IfContext(mwt, do_template)
 	    .elsedo(new Fail("`template' must be child of `mwt'")))
 	.or(Xml.GoofedElement("t"), 
-	    new IfContext(mwt, do_t_r)
+	    new IfContext(mwt, dtr)
 	    .elsedo(new Fail("`t' must be child of `mwt'")))
 	.or(Xml.GoofedElement("r"), 
-	    new IfContext(mwt, do_t_r)
+	    new IfContext(mwt, dtr)
 	    .elsedo(new Fail("`r' must be child of `mwt'")))	
 	//.or(Xml.GoofedElement("rx", do_rx))
 	.or(Xml.Comment, Drop.DROP)
@@ -274,13 +287,6 @@ public class DictFilter implements ServiceFactory {
 
       r = new DfaRun(dfa, new ReaderCharSource(mwtFile));
 
-      // initialize the dictionary with a catch all word to prevent
-      // matching of dictionary terms in the middle of words.
-      if( defaultWord ) {
-	rh.dict = new Nfa("[A-Za-z0-9]+", new Copy(Integer.MIN_VALUE));
-      } else {
-	rh.dict = new Nfa(Nfa.NOTHING);
-      }
     } catch( ReSyntaxException e ) {
       throw new Error("this cannot happen", e);
     } catch( CompileDfaException e ) {
@@ -431,123 +437,125 @@ public class DictFilter implements ServiceFactory {
       }
     };
   /********************************************************************/
-  private static final FaAction do_t_r = new AbstractFaAction() {
-      Map<String,String>  m = new HashMap<String,String>();
-      DfaRun convert;
-      {
-	try {
-	  convert = 
-	    Term2Re.createConverter(Term2Re.wordSplitRe,
-				    //"[ \\-_]?",
-				    Term2Re.wordSepRe,
-				    Term2Re.trailContextRe);
-	} catch( ReSyntaxException e ) {
-	  throw new Error("impossible", e);
-	}
+  private static final class Do_t_r extends AbstractFaAction {
+    Map<String,String>  m = new HashMap<String,String>();
+    DfaRun convert;
+    public Do_t_r(ReParser rep) {
+      try {
+	convert = 
+	  Term2Re.createConverter(Term2Re.wordSplitRe,
+				  //"[ \\-_]?",
+				  Term2Re.wordSepRe,
+				  Term2Re.trailContextRe,
+				  rep);
+      } catch( ReSyntaxException e ) {
+	throw new Error("impossible", e);
       }
-      private String convert(String txt) {
-	try {
-	  return convert.filter(txt);
-	} catch( IOException e ) {
-	  throw new Error("impossible", e);
-	}
-      }
+    }
 
-      public void invoke(StringBuffer yytext, int start, DfaRun r) 
-	throws CallbackException
-      {
-	ReadHelper rh = (ReadHelper)r.clientData;
-	
-	// <t> and <r> must come after some <template>
-	if( rh.recentTemplate==null ) {
-	  throw new CallbackException("no <template> yet");
-	}
-	
-	boolean isTerm = yytext.charAt(start+1)=='t';
-	
-	m.clear();
-	Xml.splitElement(m, yytext, start);
-	
-	// We keep the content of yytext almost to the very end to be
-	// able to set up a meaningful context for a throw.
-	int l = yytext.length();
-	
-	// This TextStore will be preloaded with the p1, p2,
-	// ... attributes of this <t> or <r> element, will be stored in
-	// the MwtCallback and will eventually be used to call a
-	// PrintfFormatter. Part 0 will be filled on the fly later on by
-	// the MwtCallback with the match itself
-	TextStore fsp = new TextStore();
-	fsp.appendPart(yytext, 0, 0);
-	
-	// Fetch all attributes p1, p2, etc. in consecutive order and
-	// fill them into fsp. We also delete them from m to check
-	// later that there are no superfluous attributes
-	int i = 1;
-	yytext.append('p');
-	while( true ) {
-	  yytext.append(i++);
-	  String key = yytext.substring(l);
-	  yytext.setLength(l+1);
-	  
-	  Object pAttrib = m.remove(key);
-	  if( pAttrib==null ) break;
-	  
-	  // transform standard XML character entities to characters
-	  // while misusing yytext as a buffer
-	  yytext.append(pAttrib);
-	  StdCharEntities.toChar(yytext, l+1);
-	  fsp.appendPart(yytext, l+1, yytext.length());
-	  yytext.setLength(l+1);
-	}
-	yytext.setLength(l);
-	
-	
-	String re = StdCharEntities.toChar((String)m.remove(Xml.CONTENT));
-	
-	int tc = 0;		// length of trailing context
-	if( isTerm ) {
-	  re = convert(re);
-	  tc = 1;
-	} else {
-	  String tmp = (String)m.remove("tc");
-	  if( tmp==null ) tmp="0";
-	  try {
-	    tc = Integer.parseInt(tmp);	      
-	  } catch( NumberFormatException e ) {
-	    throw new CallbackException
-	      ("found tc attribute which is not a number", e);
-	  }
-	  if( tc<0 ) {
-	    throw new CallbackException("found negative tc attribute");
-	  }
-	}
-
-	// the map must be empty by now (except one last key/value pair)
-	m.remove(Xml.TAGNAME);
-	if( m.size()>0 ) {
-	  StringBuffer sb = new StringBuffer();
-	  sb.append("superfluous attributes:");
-	  Iterator it = m.keySet().iterator();
-	  while( it.hasNext() ) {
-	    Object key = it.next();
-	    sb.append(' ').append(key).append('=').append(m.get(key));
-	  }
-	  throw new CallbackException(sb.toString());
-	}
-	
-	if( rh.verbose ) System.err.println(">>"+re+"<<");
-	try {
-	  rh.dict.or(re, new MwtCallback(fsp, rh.recentTemplate, tc, 
-					 rh.nextPrio++));
-	} catch( ReSyntaxException e ) {
-	  throw new CallbackException
-	    ("regular expression syntax error (see cause)", e);
-	}
-	yytext.setLength(start);
+    private String convert(String txt) {
+      try {
+	return convert.filter(txt);
+      } catch( IOException e ) {
+	throw new Error("impossible", e);
       }
-    };
+    }
     
+    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+      throws CallbackException
+    {
+      ReadHelper rh = (ReadHelper)r.clientData;
+      
+      // <t> and <r> must come after some <template>
+      if( rh.recentTemplate==null ) {
+	throw new CallbackException("no <template> yet");
+      }
+      
+      boolean isTerm = yytext.charAt(start+1)=='t';
+      
+      m.clear();
+      Xml.splitElement(m, yytext, start);
+      
+      // We keep the content of yytext almost to the very end to be
+      // able to set up a meaningful context for a throw.
+      int l = yytext.length();
+      
+      // This TextStore will be preloaded with the p1, p2,
+      // ... attributes of this <t> or <r> element, will be stored in
+      // the MwtCallback and will eventually be used to call a
+      // PrintfFormatter. Part 0 will be filled on the fly later on by
+      // the MwtCallback with the match itself
+      TextStore fsp = new TextStore();
+      fsp.appendPart(yytext, 0, 0);
+      
+      // Fetch all attributes p1, p2, etc. in consecutive order and
+      // fill them into fsp. We also delete them from m to check
+      // later that there are no superfluous attributes
+      int i = 1;
+      yytext.append('p');
+      while( true ) {
+	yytext.append(i++);
+	String key = yytext.substring(l);
+	yytext.setLength(l+1);
+	
+	Object pAttrib = m.remove(key);
+	if( pAttrib==null ) break;
+	
+	// transform standard XML character entities to characters
+	// while misusing yytext as a buffer
+	yytext.append(pAttrib);
+	StdCharEntities.toChar(yytext, l+1);
+	fsp.appendPart(yytext, l+1, yytext.length());
+	yytext.setLength(l+1);
+      }
+      yytext.setLength(l);
+      
+      
+      String re = StdCharEntities.toChar((String)m.remove(Xml.CONTENT));
+      
+      int tc = 0;		// length of trailing context
+      if( isTerm ) {
+	re = convert(re);
+	tc = 1;
+      } else {
+	String tmp = (String)m.remove("tc");
+	if( tmp==null ) tmp="0";
+	try {
+	  tc = Integer.parseInt(tmp);	      
+	} catch( NumberFormatException e ) {
+	  throw new CallbackException
+	    ("found tc attribute which is not a number", e);
+	}
+	if( tc<0 ) {
+	  throw new CallbackException("found negative tc attribute");
+	}
+      }
+      
+      // the map must be empty by now (except one last key/value pair)
+      m.remove(Xml.TAGNAME);
+      if( m.size()>0 ) {
+	StringBuffer sb = new StringBuffer();
+	sb.append("superfluous attributes:");
+	Iterator it = m.keySet().iterator();
+	while( it.hasNext() ) {
+	  Object key = it.next();
+	  sb.append(' ').append(key).append('=').append(m.get(key));
+	}
+	throw new CallbackException(sb.toString());
+      }
+      
+      if( rh.verbose ) System.err.println(">>"+re+"<<");
+      try {
+	rh.dict.or(re, new MwtCallback(fsp, rh.recentTemplate, tc, 
+				       rh.nextPrio++));
+      } catch( ReSyntaxException e ) {
+	throw new CallbackException
+	  ("regular expression syntax error (see cause)", e);
+      }
+      yytext.setLength(start);
+    }
+  };
+  
   /********************************************************************/
   private static class MwtCallback extends AbstractFaAction {
     TextStore store;

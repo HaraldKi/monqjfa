@@ -33,16 +33,9 @@ import java.io.ByteArrayOutputStream;
  * @author &copy; 2005 Harald Kirsch
  */
 public class NfaTest extends TestCase {
-  //ReParser rep;
-  Nfa rep;
-  public void setUp() throws ReSyntaxException {
-    //rep = new ReParser();
-    rep = new Nfa(Nfa.NOTHING);
-  }
-
   public void testSeqToNFA() throws ReSyntaxException {
     String s = "abcdedcba";
-    Nfa fa = rep.parse(s, Copy.COPY);
+    Nfa fa = new Nfa(s, Copy.COPY);
     //assertEquals(s.length()+1,fa.size());
     FaState state = fa.getStart();
     FaState other = null;
@@ -58,7 +51,7 @@ public class NfaTest extends TestCase {
 
   public void testDotToNFA() throws ReSyntaxException {
     String s = ".";
-    Nfa fa = rep.parse(s, Copy.COPY);
+    Nfa fa = new Nfa(s, Copy.COPY);
     //assertEquals(2, fa.size());
     FaState state = fa.getStart();
     assertNotNull(state);
@@ -78,7 +71,7 @@ public class NfaTest extends TestCase {
     String[] s = {"abc", "012346789", "-]", "abcde0123"};
 
     for(int i=0; i<re.length; i++) {
-      Nfa fa = rep.parse(re[i], Copy.COPY);
+      Nfa fa = new Nfa(re[i], Copy.COPY);
       //assertEquals(2, fa.size());
       FaState start = fa.getStart();
       FaState stop = start.follow(s[i].charAt(0));
@@ -90,31 +83,31 @@ public class NfaTest extends TestCase {
     }
   }
   public void testInvertRange() throws ReSyntaxException {
-    Nfa nfa = rep.parse("[^acf]+", Drop.DROP);
+    Nfa nfa = new Nfa("[^acf]+", Drop.DROP);
     assertEquals(2, nfa.findPath("  a"));
     assertEquals(3, nfa.findPath("   c"));
     assertEquals(5, nfa.findPath("     f"));
   }
   public void testOptional() throws ReSyntaxException {
-    Nfa nfa = rep.parse("[a-bx0]?", Drop.DROP);
+    Nfa nfa = new Nfa("[a-bx0]?", Drop.DROP);
     assertEquals(1, nfa.findPath("a"));
     assertEquals(0, nfa.findPath(""));
     assertEquals(0, nfa.findPath("X"));
   }
   public void testStar() throws ReSyntaxException {
-    Nfa nfa = rep.parse("[ab]*", Drop.DROP);
+    Nfa nfa = new Nfa("[ab]*", Drop.DROP);
     assertEquals(0, nfa.findPath("X"));
     assertEquals(1, nfa.findPath("a"));
     assertEquals(8, nfa.findPath("abababab"));
   }
   public void testPlus() throws ReSyntaxException {
-    Nfa nfa = rep.parse("[ab]+", Drop.DROP);
+    Nfa nfa = new Nfa("[ab]+", Drop.DROP);
     assertEquals(-1, nfa.findPath("X"));
     assertEquals(1, nfa.findPath("a"));
     assertEquals(7, nfa.findPath("abababa"));
   }
   public void testOr() throws ReSyntaxException {
-    Nfa nfa = rep.parse("ab|rx|hallo", Drop.DROP);
+    Nfa nfa = new Nfa("ab|rx|hallo", Drop.DROP);
     assertEquals(2, nfa.findPath("ab"));
     assertEquals(2, nfa.findPath("rx"));
     assertEquals(5, nfa.findPath("hallo"));
@@ -123,7 +116,7 @@ public class NfaTest extends TestCase {
      throws ReSyntaxException, CompileDfaException
   {
     // try to enforce the first branch in Nfa.or()
-    Nfa nfa = rep.parse("a|b*", Drop.DROP);
+    Nfa nfa = new Nfa("a|b*", Drop.DROP);
     assertEquals(1, nfa.findPath("a"));
     assertEquals(1, nfa.findPath("b"));
     assertEquals(3, nfa.findPath("bbbxxy"));
@@ -132,7 +125,7 @@ public class NfaTest extends TestCase {
 
 
   public void testSeq() throws ReSyntaxException {
-    Nfa nfa = rep.parse("a[0-9](xx|yy)", Drop.DROP);
+    Nfa nfa = new Nfa("a[0-9](xx|yy)", Drop.DROP);
     assertEquals(4, nfa.findPath("a0xx"));
     assertEquals(4, nfa.findPath("a1xx"));
     assertEquals(4, nfa.findPath("a2xx"));
@@ -146,7 +139,7 @@ public class NfaTest extends TestCase {
   // state with only epsilon-states going out.
   public void testSeqToStartWithEps() throws ReSyntaxException {
     // the parsing went wrong already
-    Nfa nfa = rep.parse("b[a]*", Drop.DROP);
+    Nfa nfa = new Nfa("b[a]*", Drop.DROP);
 
     // nevertheless a basic test
     assertEquals(1, nfa.findPath("b"));
@@ -158,7 +151,7 @@ public class NfaTest extends TestCase {
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
   {
-    Dfa dfa = rep.parse("a", Drop.DROP).compile();
+    Dfa dfa = new Nfa("a", Drop.DROP).compile(DfaRun.UNMATCHED_COPY);
     String s = "aaa";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer();
@@ -175,7 +168,7 @@ public class NfaTest extends TestCase {
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
   {
-    Dfa dfa = rep.parse("(ab)|(cd)", Drop.DROP).compile();
+    Dfa dfa = new Nfa("(ab)|(cd)", Drop.DROP).compile(DfaRun.UNMATCHED_COPY);
     String s =  "abcdcdab";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer();
@@ -201,7 +194,7 @@ public class NfaTest extends TestCase {
   {
     FaAction a = new Printf("xx");
     Dfa dfa = 
-      rep.parse("a|b", a)
+      new Nfa("a|b", a)
       .or("b|a", a)
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abba";
@@ -222,7 +215,7 @@ public class NfaTest extends TestCase {
     FaAction a = new Printf(false, "xx", 1);
     FaAction b = new Printf(false, "yy", 2);
     Dfa dfa =
-      rep.parse("a|b", a)
+      new Nfa("a|b", a)
       .or("b|a", b)
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abba";
@@ -246,7 +239,7 @@ public class NfaTest extends TestCase {
     FaAction a = new Printf(false, "xx", 2);
     FaAction b = new Printf(false, "yy", 1);
     Dfa dfa = 
-      rep.parse("a|b", a)
+      new Nfa("a|b", a)
       .or("b|a", b)
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abba";
@@ -268,9 +261,9 @@ public class NfaTest extends TestCase {
     Exception e = null;
     try {
       Dfa dfa = 
-	rep.parse("a|b", a)
+	new Nfa("a|b", a)
 	.or("b|a", b)
-	.compile();
+	.compile(DfaRun.UNMATCHED_COPY);
       dfa.toDot(System.out);
     } catch( CompileDfaException _e ) {
       e = _e;
@@ -284,7 +277,7 @@ public class NfaTest extends TestCase {
    * an Nfa with no actions should compile to the empty automaton
    */
   public void testCompileToEmpty() throws Exception {
-    Dfa dfa = rep.parse("abc").compile();
+    Dfa dfa = new Nfa("abc").compile(DfaRun.UNMATCHED_COPY);
     Nfa nfa = dfa.toNfa();
     dfa = nfa.or("xyz", Copy.COPY).compile(DfaRun.UNMATCHED_DROP);
     DfaRun r = new DfaRun(dfa);
@@ -310,10 +303,10 @@ public class NfaTest extends TestCase {
 	  }
 	}
       };
-    Dfa dfa = rep.parse("a*", a).compile();
+    Dfa dfa = new Nfa("a*", a).compile(DfaRun.UNMATCHED_COPY);
 
     // we have to do tricks to get an epsmatcher into a DfaRun
-    Dfa dummy = rep.parse("x").compile(DfaRun.UNMATCHED_THROW);
+    Dfa dummy = new Nfa("x").compile(DfaRun.UNMATCHED_THROW);
     DfaRun r = new DfaRun(dummy);
     r.setDfa(dfa);
     String s = r.filter("yyaayy");
@@ -325,9 +318,9 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     Dfa dfa =
-      rep.parse("[abc]", Drop.DROP)
+      new Nfa("[abc]", Drop.DROP)
       .or("[b-z]", Drop.DROP)
-      .compile();
+      .compile(DfaRun.UNMATCHED_COPY);
     String s = "abcdefghijklmnopqrstuvwxyz";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer(32);
@@ -349,9 +342,9 @@ public class NfaTest extends TestCase {
   {
     //System.out.println("testNfaAddTransitions2");
     Dfa dfa = 
-      rep.parse("[b-er-v]", Drop.DROP)
+      new Nfa("[b-er-v]", Drop.DROP)
       .or("[abcs-z]", Drop.DROP)
-      .compile();
+      .compile(DfaRun.UNMATCHED_COPY);
     String s = "abcderstuvwxyz";
     CharSource cs = new ReaderCharSource(new StringReader(s));
     StringBuffer sb = new StringBuffer(32);
@@ -376,8 +369,8 @@ public class NfaTest extends TestCase {
   {
     //System.out.println("testIsImportant");
     Dfa dfa =
-      rep.parse("a|b", Drop.DROP)
-      .compile();
+      new Nfa("a|b", Drop.DROP)
+      .compile(DfaRun.UNMATCHED_COPY);
 
     //dfa.getFaToDot(System.out).go();
     // FIX ME: how can I write this test with the current interfaces?
@@ -392,7 +385,7 @@ public class NfaTest extends TestCase {
     // same DFA state, which happend in an early implementation.
     // The following should simply not throw anything.
     Dfa dfa =
-      rep.parse("a", Copy.COPY)
+      new Nfa("a", Copy.COPY)
       .or("b", Drop.DROP)
       //.or("b", new Replace(""))
       .compile(DfaRun.UNMATCHED_DROP);
@@ -408,7 +401,7 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     FaAction a = new Printf(".");
-    Dfa dfa = rep.parse("[a-c]+", a).compile(DfaRun.UNMATCHED_COPY);
+    Dfa dfa = new Nfa("[a-c]+", a).compile(DfaRun.UNMATCHED_COPY);
     String s = "cccHabcabaAaaaaRbbbbAabcLaDcc";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
     StringBuffer sb = new StringBuffer();
@@ -423,7 +416,7 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     Dfa dfa = 
-      rep.parse("[A-Z]+", Copy.COPY).compile(DfaRun.UNMATCHED_DROP);
+      new Nfa("[A-Z]+", Copy.COPY).compile(DfaRun.UNMATCHED_DROP);
     String s = "KaIxRaSbCcH";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
     StringBuffer sb = new StringBuffer();
@@ -438,7 +431,7 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     Dfa dfa = 
-      rep.parse("[A-Z]+", Copy.COPY).compile(DfaRun.UNMATCHED_THROW);
+      new Nfa("[A-Z]+", Copy.COPY).compile(DfaRun.UNMATCHED_THROW);
     String s = "xKaIxRaSbCcH";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
     StringBuffer sb = new StringBuffer();
@@ -461,7 +454,7 @@ public class NfaTest extends TestCase {
   {
     // The first step replaces blank-lowercase like ' a' by '# a#'
     FaAction mark = new Printf("#%0#");
-    Dfa dfa1 = rep.parse(" [a-z]", mark).compile(DfaRun.UNMATCHED_COPY);
+    Dfa dfa1 = new Nfa(" [a-z]", mark).compile(DfaRun.UNMATCHED_COPY);
 
     // The 2nd step will used the marked stuff to upcase the marked
     // character 
@@ -472,7 +465,7 @@ public class NfaTest extends TestCase {
 	  out.append(' ').append(Character.toUpperCase(ch));
 	}
       };
-    Dfa dfa2 = rep.parse("# .#", upCase).compile(DfaRun.UNMATCHED_COPY);
+    Dfa dfa2 = new Nfa("# .#", upCase).compile(DfaRun.UNMATCHED_COPY);
 
     String s = " alle meine entchen schwimmen auf dem see";
 
@@ -491,7 +484,7 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     Dfa dfa = 
-      rep.parse("[a-z]+(0000)?", new Printf(false, "FULL", 0))
+      new Nfa("[a-z]+(0000)?", new Printf(false, "FULL", 0))
       .or("[a-z]+", new Printf(false, "PART", 1))
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "abc000def0000xyz0r0000";
@@ -508,7 +501,7 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     Dfa dfa =
-      rep.parse("abc|def")
+      new Nfa("abc|def", null)
       .seq("xxx", new Printf("1"))
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "abcxxxdefxxx";
@@ -524,7 +517,7 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     Dfa dfa =
-      rep.parse("abc|def")
+      new Nfa("abc|def", null)
       .or("xxx")
       .addAction(new Printf("1"))
       .compile(DfaRun.UNMATCHED_DROP);
@@ -551,9 +544,9 @@ public class NfaTest extends TestCase {
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
   {
-    Dfa dummy = rep.parse("x", Copy.COPY).compile();
+    Dfa dummy = new Nfa("x", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
 
-    Dfa dfa = rep.parse("a*", Copy.COPY).compile();
+    Dfa dfa = new Nfa("a*", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
     StringBuffer sb = new StringBuffer();
     DfaRun r = new DfaRun(dummy);
     r.setDfa(dfa);
@@ -589,7 +582,7 @@ public class NfaTest extends TestCase {
     // find an 'x'. If it does not find an 'x', it has to pushback all
     // but one 'a'.
     Dfa dfa = 
-      rep.parse("a", new Printf("b"))
+      new Nfa("a", new Printf("b"))
       .or("(a*x)!", Drop.DROP)
       .compile(DfaRun.UNMATCHED_THROW);
     StringBuffer in = new StringBuffer(L);
@@ -615,7 +608,7 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     // basically the following should not throw an exception
-    Nfa nfa = rep.parse("(a+)!|b", Drop.DROP);
+    Nfa nfa = new Nfa("(a+)!|b", Drop.DROP);
 
     // Nevertheless we check some basic functionality, in particular
     // the shortest operator put this thing into a "a|b" machine.
@@ -628,7 +621,7 @@ public class NfaTest extends TestCase {
   public void testShortestAfterActionAssigned()
     throws ReSyntaxException, CompileDfaException
   {
-    Nfa nfa = rep.parse("[abc]+", Drop.DROP).shortest();
+    Nfa nfa = new Nfa("[abc]+", Drop.DROP).shortest();
     assertEquals(-1, nfa.findPath("xx"));
     assertEquals(1, nfa.findPath("a"));
     assertEquals(1, nfa.findPath("bx"));
@@ -1057,7 +1050,7 @@ public class NfaTest extends TestCase {
       ;
     Exception e = null;
     try {
-      nfa.compile();
+      nfa.compile(DfaRun.UNMATCHED_COPY);
     } catch( CompileDfaException _e ) {
       e = _e;
     }
@@ -1074,7 +1067,7 @@ public class NfaTest extends TestCase {
       ;
     Exception e = null;
     try {
-      nfa.compile();
+      nfa.compile(DfaRun.UNMATCHED_COPY);
     } catch( CompileDfaException _e ) {
       e = _e;
     }
@@ -1096,14 +1089,12 @@ public class NfaTest extends TestCase {
       ;
     assertEquals("<a> <b> c", s);
 
-    Exception e = null;
-    try {
-      // this should not work as other is invalid now
-      other.addAction(Copy.COPY);
-    } catch( java.lang.NullPointerException _e) {
-      e = _e;
+    // the start state of other should lead nowwhere now because the
+    // .or() should have initialized it
+    FaState state = other.getStart();
+    for(char ch=Character.MIN_VALUE; ch<Character.MAX_VALUE; ch++) {
+      assertNull(state.follow(ch));
     }
-    assertTrue( e instanceof java.lang.NullPointerException );
   }
   public static void test_seq_withOther() 
     throws ReSyntaxException, CompileDfaException, java.io.IOException
@@ -1117,14 +1108,12 @@ public class NfaTest extends TestCase {
       .filter("ba c");
     assertEquals("<ba> c", s);
 
-    Exception e = null;
-    try {
-      // this should not work as other is invalid now
-      other.addAction(Copy.COPY);
-    } catch( java.lang.NullPointerException _e) {
-      e = _e;
+    // the start state of other should lead nowwhere now because the
+    // .seq() should have initialized it
+    FaState state = other.getStart();
+    for(char ch=Character.MIN_VALUE; ch<Character.MAX_VALUE; ch++) {
+      assertNull(state.follow(ch));
     }
-    assertTrue( e instanceof java.lang.NullPointerException );
   }
 
   // Exercise Dfa connected to InputStream
@@ -1152,17 +1141,6 @@ public class NfaTest extends TestCase {
     assertEquals("<hallo> \n<x;y>\t<***>", s);
   }
   /**********************************************************************/
-//   public static void test_NfaWithSplitFmt() throws Exception {
-//     String s = new
-//       Nfa(Nfa.NOTHING)
-//       .or("[0-9]+[.][0-9]+", "[.]", RegexpSplitter.SPLIT, "%1,%2")
-//       .compile()
-//       .createRun(DfaRun.UNMATCHED_COPY)
-//       .filter("3.14 2.79 99.00 456.890")
-//       ;
-//     assertEquals("3,14 2,79 99,00 456,890", s);
-//   }
-  /**********************************************************************/
   public static void test_SetPrio() throws Exception {
     String s = new 
       Nfa("[a-z]+", new Embed("[", "]"))
@@ -1173,26 +1151,37 @@ public class NfaTest extends TestCase {
     assertEquals("[abc]-<rrr111>", s);
   }
   /**********************************************************************/
+  // make an effort to ensure that the escaped special characters
+  // match only the string of special characters
   public static void test_Escape1() {
-    String s = Nfa.escape(new String(Nfa.specialChars));
-    StringBuffer b = new StringBuffer();
-    for(int i=0; i<Nfa.specialChars.length; i++) {
-      b.append('\\').append(Nfa.specialChars[i]);
+    ReParserFactory rpfs[] = {ReClassicParser.factory};
+    for(ReParserFactory rpf : rpfs ) {
+      Nfa.setDefaultParserFactory(rpf);
+      Nfa nfa = new Nfa();
+      String spch = nfa.specialChars();    
+      Regexp re = new Regexp(nfa.escape(spch));
+      StringBuilder sb = new StringBuilder(spch);
+      assertEquals(0, re.find(sb, 0));
+      assertEquals(spch.length(), re.length());
+
+      for(int i=0; i<spch.length(); i++) {
+	sb.setCharAt(i, 'X');
+	assertEquals(-1, re.find(sb, 0));
+      }
     }
-    assertEquals(b.toString(), s);
   }
   /**********************************************************************/
-  public static void test_Escape2() {
-    StringBuffer in = new StringBuffer().append(Nfa.specialChars);
-    StringBuffer out = new StringBuffer();
-    Nfa.escape(out, in, 0);
+//   public static void test_Escape2() {
+//     StringBuffer in = new StringBuffer().append(Nfa.specialChars);
+//     StringBuffer out = new StringBuffer();
+//     Nfa.escape(out, in, 0);
 
-    StringBuffer b = new StringBuffer();
-    for(int i=0; i<Nfa.specialChars.length; i++) {
-      b.append('\\').append(Nfa.specialChars[i]);
-    }
-    assertEquals(b.toString(), out.toString());
-  }
+//     StringBuffer b = new StringBuffer();
+//     for(int i=0; i<Nfa.specialChars.length; i++) {
+//       b.append('\\').append(Nfa.specialChars[i]);
+//     }
+//     assertEquals(b.toString(), out.toString());
+//   }
   /**********************************************************************/
   public static void test_InitWithEpsilon() throws Exception {
     String s = new Nfa(Nfa.EPSILON).seq("[a-z]+", new Replace("+"))
@@ -1246,7 +1235,7 @@ public class NfaTest extends TestCase {
     Dfa dfa = new 
       Nfa("a", new Replace("*"))
       .or("b", new Replace("+"))
-      .compile();
+      .compile(DfaRun.UNMATCHED_COPY);
     dfa = dfa.toNfa().or("c", new Replace("@"))
       .compile(DfaRun.UNMATCHED_THROW);
     String s = dfa.createRun().filter("abccba");
@@ -1331,7 +1320,8 @@ public class NfaTest extends TestCase {
       .or("r", new Replace("#"))
       // we have to run this twice through compile to get into those
       // nasty bits of code in TableCharTrans.getLastAt() and ...getPos().
-      .compile().toNfa().compile(DfaRun.UNMATCHED_COPY);
+      .compile(DfaRun.UNMATCHED_COPY)
+      .toNfa().compile(DfaRun.UNMATCHED_COPY);
      
     String s = dfa.createRun()
       .filter("abcdefghijklmnopqrstuvwxyz");

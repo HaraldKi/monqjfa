@@ -31,10 +31,14 @@ import java.io.PrintStream;
  * matches. The regular expression with the longest match is selected
  * and its associated action will be invoked.
  *
- * @see <a href="doc-files/resyntax.html">Regular expression
- * syntax</a>
- * @author &copy; 2003, 2004 Harald Kirsch
- * @version $Revision: 1.48 $, $Date: 2006-01-25 15:35:38 $
+ * <p>The regular expression syntax depends on the {@link ReParser}
+ * implementation in use, which can be inspeced and changed with
+ * {@link #getDefaultParserFactory getDefaultParserFactory()} and
+ * {@link #setDefaultParserFactory setDefaultParserFactory()}. At the
+ * time of this writing, the default parser is a {@link
+ * ReClassicParser}.</p>
+ *
+ * @author &copy; 2003&ndash;2007 Harald Kirsch
 */
 
 public class Nfa  {
@@ -48,51 +52,77 @@ public class Nfa  {
   private AbstractFaState.EpsState lastState;
 
   // our private parser for regular expressions
-  private ReParser rep = null;
+  private ReParser reParser = null;
 
+  // used to get running IDs for marked subgraphs (see
+  // markAsSub). Must not exceed 256 before addAction is called.
+  private int subgraphID = 0;
+
+  private ParserView pView = new ParserView();
+
+  /**
+   * <p>is used by each <code>Nfa</code> to obtain a default regular
+   * expression parser.</p>
+   *
+   * @see #setReParser
+   */
+  private static ReParserFactory defaultParserFactory 
+    = ReClassicParser.factory;
   /**********************************************************************/
   /**
-   * <p>is a string filled with those characters that have a special
-   * meaning in regular expressions.</p>
-   * @see #escape(String)
+   * <p>sets the default parser factory used by <code>Nfa</code>s to
+   * obtain a default <code>ReParser</code>.</p>
+   * @see #setReParser
    */
-  public static final char[] specialChars 
-    = ReParser.specialChars.toCharArray();
-  static { java.util.Arrays.sort(specialChars); }
+  public static synchronized void 
+    setDefaultParserFactory(ReParserFactory rpf) {
+      defaultParserFactory = rpf;
+    }
 
   /**
-   * <p>transforms the input string into a regular expression which
-   * matches exactly only the input string. In particular, characters
-   * with a special meaning in regular expressions are escaped. For
-   * example <code>"1+2"</code> is transformed into
-   * <code>"1\+2"</code>.</p>
-   * @see #specialChars
+   * <p>returns the default parser factory used by <code>Nfa</code>s
+   * to obtain a default {@link ReParser}.</p>
+   * @see #setReParser
    */
-  public static String escape(String s) {
+  public static synchronized ReParserFactory
+    getDefaultParserFactory(ReParserFactory rpf) {
+      return rpf;
+    }
+
+  /**
+   * <p>escapes special characters in <code>s</code> according to the
+   * rules of the current <code>ReParser</code> set for
+   * <code>this</code>.</p>
+   *
+   * @see  ReParser#escape(StringBuffer, CharSequence, int)
+   */
+  public String escape(String s) {
     StringBuffer sb = new StringBuffer();
-    escape(sb, s, 0);
+    getReParser().escape(sb, s, 0);
     return sb.toString();
   }
   /**
-   * @see #escape(String)
+   * <p>is only a pass-through to
+   * <code>getReParser().escape(...)</code>.</p> 
+   *
+   * @see ReParser#escape(StringBuffer, CharSequence, int)
    */
-  public static void escape(StringBuffer out, 
-			    CharSequence in, int startAt) {
-    int l = in.length();
-    for(int i=startAt; i<l; i++) {
-      char ch = in.charAt(i);
-      int pos = java.util.Arrays.binarySearch(specialChars, ch);
-      if( pos>=0 ) out.append('\\');
-      out.append(ch);
-    }
+  public void escape(StringBuffer out, CharSequence in, int startAt) {
+    getReParser().escape(out, in, startAt);
+  }
+  /**
+   * <p>is a shortcut for <code>.getReParser().specialChars()</code>
+   */
+  public String specialChars() {
+    return getReParser().specialChars();
   }
   /**********************************************************************/
   
   /**
    * <p>is used for an enumeration type which determines which type of
-   * empty <code>Nfa</code> is generated when calling
-   * {@link monq.jfa.Nfa#Nfa(Nfa.EmptyNfaType)}. The possible values of this class are
-   * defined as static fields of <code>Nfa</code>.</p>
+   * empty <code>Nfa</code> is generated when calling {@link
+   * monq.jfa.Nfa#Nfa(Nfa.EmptyNfaType)}. The possible values of this
+   * class are defined as static fields of <code>Nfa</code>.</p>
    */
   private static final class EmptyNfaType {
     private EmptyNfaType() {}
@@ -109,6 +139,15 @@ public class Nfa  {
   public static final EmptyNfaType EPSILON = new EmptyNfaType();
 
   /**
+   * <p>
+   * creates an automaton that recognizes nothing but is suitable to be filled
+   * with calls to any of the {@link #or(CharSequence, FaAction) or()} methods.
+   * </p>
+   */
+  public Nfa() {
+    initialize();
+  }
+  /**
    * <p>creates an <code>Nfa</code> which does either not match
    * anything or only the empty string. Most of the time you will use
    * {@link #NOTHING} as the parameter and later add regular
@@ -117,169 +156,64 @@ public class Nfa  {
    * constructor with {@link #EPSILON}.</p>
    */
   public Nfa(EmptyNfaType type) {
-    start = new AbstractFaState.EpsState();
-    lastState = new AbstractFaState.EpsState();
+    this();
     if( type==EPSILON ) {
-      // automaton suitable to be extended by seq, i.e. one
-      // recognizing the empty set
-      start.addEps(lastState);
+      // automaton recognizing the empty string
+      optional();
     }      
   }
-
   /**
-   * <p>creates an<code>Nfa</code> from the given 
+   * <p>creates an <code>Nfa</code> from the given 
    * <a href="doc-files/resyntax.html">regular expression</a> and
    * assigns the given action to the stop state. More regex/action
    * pairs are then normally added with {@link
    * #or(CharSequence,FaAction)}. </p>
    */
-  public Nfa(CharSequence s, FaAction a) throws ReSyntaxException {
-    setRegex(s);
+  public Nfa(CharSequence regex, FaAction a) throws ReSyntaxException {
+    getReParser().parse(pView, regex);
+    pView.clear();     // pView has two null states pushed still
     addAction(a);
   }
-
   /**
-   * creates an <code>Nfa</code> from the given 
-   * <a href="doc-files/resyntax.html">regular expression</a>.
+   * <p>calls {@link #Nfa(CharSequence,FaAction)} with the 2nd
+   * parameter set to <code>null</code>.</p>
    */
-//   public Nfa(CharSequence s) throws ReSyntaxException {
-//     setRegex(s);
-//   }
-  /**********************************************************************/
-  // to be able to test different Set implementations
-//   private static Set newSet() { return new LeanSet(); }
-//   private static Set newSet(int s) { return new LeanSet(s); }
-//   private static Set newSet(Collection c) { return new LeanSet(c); }
-
-//  private static Set newSet() { return new PlainSet(); }
-//  private static Set newSet(int s) { return new PlainSet(s); }
-//  private static Set newSet(Collection c) { return new PlainSet(c); }
-
-   private static <E> Set<E> newSet() { return new HashSet<E>(16, 1.0F); }
-   private static <E> Set<E> newSet(int s) { return new HashSet<E>(s, 1.0F); }
-   private static <E> Set<E> newSet(Collection<E> c) { 
-     Set<E> h = new HashSet<E>(c.size()+1, 1.0F);
-     h.addAll(c);
-     return h;
-   }
-  
-  /**********************************************************************/
+  public Nfa(CharSequence regex) throws ReSyntaxException {
+    this(regex, null);
+  }
+  //-*******************************************************************
   /**
-   * used in high volume Nfa creation to conserve space. To be able to
-   * parse a regular expression, an Nfa creates an internal parser
-   * object. To prevent the parser object to be created and thereby
-   * save quite some space, use this method of an already available
-   * Nfa to create new Nfas instead of creating them with the
-   * constructor. 
-   * @deprecated will disappear soon.
+   * <p>initializes this automaton to recogize nothing.<p>
    */
-  public Nfa parse(CharSequence s, FaAction a) throws ReSyntaxException {
-    // the parsing will mess with start and lastState, so we have to
-    // keep them on the side.
-    FaState keepStart = start;
-    AbstractFaState.EpsState keepLast = lastState;
-
-    setRegex(s);
-    addAction(a);
-
-    Nfa result = new Nfa(start, lastState);
-    start = keepStart;
-    lastState = keepLast;
-    return result;
+  private void initialize() {
+    start = new AbstractFaState.EpsState();
+    lastState = new AbstractFaState.EpsState();    
   }
-
-  /**
-   * <p>expert only.</p>
-   * @deprecated will disappear soon.
-   */
-  public Nfa parse(CharSequence s) throws ReSyntaxException {
-    return parse(s, null);
-  }
-  /**********************************************************************/
-  FaState getStart() {return start;}
-  //private AbstractFaState.EpsState getLastState() {return lastState;}
-
-  /**
-   * <p>adds an action to the Nfa (expert only).  This is done by
-   * adding an epsilon transition to the last state of this Nfa to a
-   * new last state which will carry the action.</p>
-   *
-   * <p>If the automaton has free subgraphs, these will be bound to
-   * this action.</p>
-   *
-   * <p><b>Note:</b>If the automaton has already one or more actions
-   * (i.e. stop states), this operation may easily make the automaton
-   * uncompilable due to conflicting actions.
-   */
-  public Nfa addAction(FaAction a) {
-    if( a==null ) return this;
-
-    AbstractFaState.EpsStopState newLast;
-    newLast = new AbstractFaState.EpsStopState(a);
-    lastState.addEps(newLast);
-    lastState = newLast;
-    addSubAction(start, a, Nfa.<FaState>newSet());
-    
-    // All unbound subgraphs are now bound to an action. Since a
-    // subgraph is identified by a pair (FaAction a, byte id), now is
-    // the time to reset the id counter in our ReParser.
-    rep.resetSubGraphCounter();
-    return this;
-  }
-  private void addSubAction(FaState s, FaAction a, Set<FaState> known) {
-    s.reassignSub(null, a);
-    known.add(s);
-    Iterator children = s.getChildIterator();
-    while( children.hasNext() ) {
-      Object o = children.next();
-      if( known.contains(o) ) continue;
-      addSubAction((FaState)o, a, known);
-    }
-    
-  }
-
-  public void toDot(PrintStream out) {
-    FaToDot.print(out, start, lastState);
-  }
-
-  /**
-   * is used to clear an automaton to be an empty shell without
-   * states. This is used in {@link or(Nfa)} and {@link
-   * seq(Nfa)} because these functions don't make a deep copy of their
-   * parameter, but rather integrate the given automata into their own
-   * structure.
-   */
-  private void invalidate() {start=null; lastState=null;}
-
-
-  //public int size() {return all.size();}
-  /**********************************************************************/
-  /**
-   * makes sure this.rep is not null and then calls it to parse the
-   * regex.
-   */
-  private void setRegex(CharSequence s) throws ReSyntaxException {
-    if( rep==null ) rep = new ReParser();
-    rep.parse(s);
-  }
-  /**
-   * for internal use by {@link Dfa#toNfa()} only.
-   */
-  Nfa(FaState start, AbstractFaState.EpsState lastState) {
-    this.start = start;
-    this.lastState = lastState;
-  }
-  private void initialize(Intervals ivals) {
-    lastState = new AbstractFaState.EpsState();
-    int L = ivals.size();
-    for(int i=0; i<L; i++) {
-      if( ivals.getAt(i)==null ) continue;
-      ivals.setAt(i, lastState);
-    }
+  //-*******************************************************************
+  private void initialize(final CharSequence pairs, boolean invert) {
     start = new AbstractFaState.NfaState();
+    lastState = new AbstractFaState.EpsState();
+
+    Intervals ivals = new Intervals();
+    if( pairs!=null ) {
+      if( pairs.length()%2!=0 ) {
+	throw new IllegalArgumentException
+	  ("pairs must be null or have even length");
+      }
+      for(int i=0; i<pairs.length(); i+=2) {
+	char from = pairs.charAt(i);
+	char to = pairs.charAt(i+1);
+	if( from>to ) { char tmp=from; from=to; to=tmp; }
+	ivals.overwrite(from, to, lastState);
+      }
+    }
+    if( invert ) ivals.invert(lastState);
     start.setTrans(ivals.toCharTrans());
   }
-  private void initialize(StringBuffer s) {
+  //-*******************************************************************
+  // initialize to a sequence of states that recognize exactly the
+  // given string. (no regex parsing!)
+  private void initialize(CharSequence s) {
     //System.out.println("+++"+s.toString());
     start = new AbstractFaState.NfaState();
 
@@ -299,7 +233,7 @@ public class Nfa  {
     ch = s.charAt(i);
     assemble.overwrite(ch, ch, lastState);
     current.setTrans(assemble.toCharTrans());
-  }    
+  }
   private void initializeAsSequence(FaState start1, FaState last1,
 				    FaState start2, 
 				    AbstractFaState.EpsState last2) {
@@ -324,6 +258,7 @@ public class Nfa  {
     start = start1;
     lastState = last2;
   }
+  //-*******************************************************************
   private void initializeAsOr(FaState start1, 
 			      AbstractFaState.EpsState last1,
 			      FaState start2, 
@@ -364,6 +299,179 @@ public class Nfa  {
     }
     start = start1;
   }
+  //-*******************************************************************
+//   /**
+//    * creates an <code>Nfa</code> from the given 
+//    * <a href="doc-files/resyntax.html">regular expression</a>.
+//    */
+//   public Nfa(CharSequence s) throws ReSyntaxException {
+//     setRegex(s);
+//   }
+  /**********************************************************************/
+  // to be able to test different Set implementations
+//   private static Set newSet() { return new LeanSet(); }
+//   private static Set newSet(int s) { return new LeanSet(s); }
+//   private static Set newSet(Collection c) { return new LeanSet(c); }
+
+//  private static Set newSet() { return new PlainSet(); }
+//  private static Set newSet(int s) { return new PlainSet(s); }
+//  private static Set newSet(Collection c) { return new PlainSet(c); }
+
+   private static <E> Set<E> newSet() { return new HashSet<E>(16, 1.0F); }
+   private static <E> Set<E> newSet(int s) { return new HashSet<E>(s, 1.0F); }
+   private static <E> Set<E> newSet(Collection<E> c) { 
+     Set<E> h = new HashSet<E>(c.size()+1, 1.0F);
+     h.addAll(c);
+     return h;
+   }
+  
+  //-*******************************************************************/
+  /**
+   * <p>returns the regular expression parser currently used by this
+   * <code>Nfa</code>. If none was explicitely set, {@link
+   * #getDefaultParserFactory} is used to set the parser, before
+   * it is returned.</p>
+   */
+  public ReParser getReParser() {
+    if( reParser==null ) reParser = defaultParserFactory.newReParser();
+    return reParser;
+  }
+  /**
+   * <p>sets the parser to be used by this <code>Nfa</code>.</p>
+   * @return <code>this</code>
+   */
+  public Nfa setReParser(ReParser reParser) {
+    this.reParser = reParser;
+    return this;
+  }
+  //-********************************************************************/
+//   /**
+//    * used in high volume Nfa creation to conserve space. To be able to
+//    * parse a regular expression, an Nfa creates an internal parser
+//    * object. To prevent the parser object to be created and thereby
+//    * save quite some space, use this method of an already available
+//    * Nfa to create new Nfas instead of creating them with the
+//    * constructor. 
+//    * @deprecated will disappear soon.
+//    */
+//   public Nfa parse(CharSequence s, FaAction a) throws ReSyntaxException {
+//     // the parsing will mess with start and lastState, so we have to
+//     // keep them on the side.
+//     FaState keepStart = start;
+//     AbstractFaState.EpsState keepLast = lastState;
+
+//     setRegex(s);
+//     addAction(a);
+
+//     Nfa result = new Nfa(start, lastState);
+//     start = keepStart;
+//     lastState = keepLast;
+//     return result;
+//   }
+
+//   /**
+//    * <p>expert only.</p>
+//    * @deprecated will disappear soon.
+//    */
+//   public Nfa parse(CharSequence s) throws ReSyntaxException {
+//     return parse(s, null);
+//   }
+  /**********************************************************************/
+  FaState getStart() {return start;}
+  //private AbstractFaState.EpsState getLastState() {return lastState;}
+
+  /**
+   * <p>adds an action to the Nfa (expert only).  This is done by
+   * adding an epsilon transition to the last state of this Nfa to a
+   * new last state which will carry the action.</p>
+   *
+   * <p>If the automaton has free subgraphs, these will be bound to
+   * this action.</p>
+   *
+   * <p><b>Note:</b>If the automaton has already one or more actions
+   * (i.e. stop states), this operation may easily make the automaton
+   * uncompilable due to conflicting actions.
+   */
+  public Nfa addAction(FaAction a) {
+    if( a==null ) return this;
+
+    AbstractFaState.EpsStopState newLast;
+    newLast = new AbstractFaState.EpsStopState(a);
+    lastState.addEps(newLast);
+    lastState = newLast;
+    addSubAction(start, a, Nfa.<FaState>newSet());
+    
+    // All unbound subgraphs are now bound to an action. Since a
+    // subgraph is identified by a pair (FaAction a, byte id), now is
+    // the time to reset the id counter in our ReParser.
+    subgraphID = 0;
+    return this;
+  }
+  private void addSubAction(FaState s, FaAction a, Set<FaState> known) {
+    s.reassignSub(null, a);
+    known.add(s);
+    Iterator children = s.getChildIterator();
+    while( children.hasNext() ) {
+      Object o = children.next();
+      if( known.contains(o) ) continue;
+      addSubAction((FaState)o, a, known);
+    }
+    
+  }
+
+  public void toDot(PrintStream out) {
+    FaToDot.print(out, start, lastState);
+  }
+
+  /**********************************************************************/
+  /**
+   * makes sure this.reParser is not null and then calls it to parse the
+   * regex.
+   */
+//   private void setRegex(CharSequence s) throws ReSyntaxException {
+//     ReParser rp = getReParser();
+//     Nfa nfa = rp.parse(s);
+//     this.start = nfa.start;
+//     this.lastState = nfa.lastState;
+//   }
+  /**
+   * for internal use by {@link Dfa#toNfa()} only.
+   */
+  Nfa(FaState start, AbstractFaState.EpsState lastState) {
+    this.start = start;
+    this.lastState = lastState;
+  }
+//   void initialize(Intervals ivals) {
+//     lastState = new AbstractFaState.EpsState();
+//     int L = ivals.size();
+//     for(int i=0; i<L; i++) {
+//       if( ivals.getAt(i)==null ) continue;
+//       ivals.setAt(i, lastState);
+//     }
+//     start = new AbstractFaState.NfaState();
+//     start.setTrans(ivals.toCharTrans());
+//   }
+//   void initialize(StringBuffer s) {
+//     //System.out.println("+++"+s.toString());
+//     start = new AbstractFaState.NfaState();
+
+//     Intervals assemble = new Intervals();
+//     FaState current = start;
+//     FaState other;
+//     char ch;
+//     int i, L;
+//     for(i=0, L=s.length(); i<L-1; i++) {
+//       other = new AbstractFaState.DfaState();
+//       ch = s.charAt(i);
+//       assemble.overwrite(ch, ch, other);
+//       current.setTrans(assemble.toCharTrans());
+//       current = other;
+//     }
+//     lastState = new AbstractFaState.EpsState();
+//     ch = s.charAt(i);
+//     assemble.overwrite(ch, ch, lastState);
+//     current.setTrans(assemble.toCharTrans());
+//   }    
   /********************************************************************/
   /**
    * creates a generally useful empty <code>CharTrans</code>. It is
@@ -380,15 +488,31 @@ public class Nfa  {
   /**
    * <p>marks this automaton as a reporting subautomaton. It will of
    * course only become a <em>sub</em>automaton, if further operators
-   * are applied. This is the underlying function called when a
-   * regular expression contains an <code>@</code>-marked atom.</p>
+   * are applied, or if this automaton is combined with another
+   * <code>Nfa</code>.</p>
+   * <p>Marking subgraphs for reporting matching substrings is
+   * expensive, therefore the number of subgraphs per action is
+   * limited to a single byte. This method returns <code>null</code>
+   * if 256 subgraph markings are exceeded before an action is added
+   * to this <code>Nfa</code>. In this case, the subgraph marking
+   * requested was not performed. The <code>Nfa</code> is not touched
+   * in any way in this case.</p>
+   *
+   * @return <code>this</code> if the subgraph marking could be
+   * performed or <code>null</code> if the marking could not be
+   * performed, because the number of possible subgraphs was exceeded.
    */
-  Nfa markAsSub(byte id) {
+  public boolean markAsSub() {
+    if( subgraphID>Byte.MAX_VALUE ) return false;
+
+    byte id = (byte)subgraphID++;
     Set<FaState> known = newSet();
 
     FaSubinfo startInfo = FaSubinfo.start(id);
     FaSubinfo stopInfo = FaSubinfo.stop(id);
     FaSubinfo innerInfo = FaSubinfo.inner(id);
+
+
     start.addUnassignedSub(startInfo);
     lastState.addUnassignedSub(stopInfo);
 
@@ -398,7 +522,7 @@ public class Nfa  {
     //known.add(lastState);
 
     _markAsSub(start, innerInfo, false, known);
-    return this;
+    return true;
   }
 
   // Every state that can be reached via a character transition is
@@ -705,39 +829,21 @@ public class Nfa  {
    * enclose the matching text in brackets.</p>
    */
   public Nfa not() throws CompileDfaException {
-    Intervals worker = new Intervals();
+    // If this is equivalent to re, we do invert("(.*re.*)?")
 
-    // If this is equivalent to re, we do invert(".*re.*)?")
+    pView.pushDot();
+    pView.star();
 
-    // keep our current start and lastState
-    FaState keepStart = start;
-    AbstractFaState.EpsState keepLast = lastState;
+    pView.swap();
+    pView.seq();
 
-    // create the equivalent to '.' in this
-    start = new AbstractFaState.NfaState();
-    lastState = new AbstractFaState.EpsState();
-    start.setTrans(worker.complete(lastState).toCharTrans());
+    pView.pushDot();
+    pView.star();
+    pView.seq();
+    pView.optional();
+    pView.invert();
 
-    // apply * and append the orginal this
-    star();
-    initializeAsSequence(start, lastState, keepStart, keepLast);
-
-    // keep again the Nfa built so far
-    keepStart = start;
-    keepLast = lastState;
-
-    // manufacture another '.'
-    start = new AbstractFaState.NfaState();
-    lastState = new AbstractFaState.EpsState();
-    start.setTrans(worker.complete(lastState).toCharTrans());
-
-    // apply * again and string everything together
-    star();
-    initializeAsSequence(keepStart, keepLast, start, lastState);
-
-    // finish up
-    optional();
-    return invert();
+    return this;
   }
   /**********************************************************************/
   /**
@@ -817,20 +923,41 @@ public class Nfa  {
   }
   
   /**********************************************************************/
-  public Nfa seq(CharSequence s, FaAction a) throws ReSyntaxException {
-    FaState keepStart = start;
-    AbstractFaState.EpsState keepLast = lastState;
-    setRegex(s);
+  /**
+   * <p>extend the current automaton to recognize <code>regex</code>
+   * as a suffix of the strings already recognized and arrange for the
+   * given action to be called if the suffix was recognized. If the
+   * action is <code>null</code>, no action will be added.</p>
+   */
+  public Nfa seq(CharSequence regex, FaAction a) 
+    throws ReSyntaxException 
+  {
+    getReParser().parse(pView, regex);
     addAction(a);
-    initializeAsSequence(keepStart, keepLast, start, lastState);
+    pView.seq();
     return this;
-  }
+  } 
+  /**
+   * <p>calls {@link #seq(CharSequence,FaAction)} with
+   * <code>null</code> as the 2nd parameter.</p>
+   */
   public Nfa seq(CharSequence s) throws ReSyntaxException {
     return seq(s, null);
-  }
+  } 
+  /**
+   * <p> Concatenates <code>other</code> to <code>this</code> such that a
+   * sequence of characters <em>vw</em> is matched where <em>v</em> is
+   * matched by <code>this</code> and <em>w</em> is matched by
+   * <code>other</code>.  The <code>other</code> <code>Nfa</code> is
+   * initialized to the same state as if just constructed with {@link
+   * #Nfa()}.</p>
+   *
+   * <p>FIX ME: unassigned reporting subexpressions in other may
+   * create a mess</p>
+   */
   public Nfa seq(Nfa other) {
     initializeAsSequence(start, lastState, other.start, other.lastState);
-    other.invalidate();
+    other.initialize();
     return this;
   }
   /**********************************************************************/
@@ -839,16 +966,15 @@ public class Nfa  {
    * <p>adds the given regular expression <code>re</code> to the
    * automaton and associates it with the given action. </p>
    */
-  public Nfa or(CharSequence re, FaAction action) 
+  public Nfa or(CharSequence regex, FaAction action) 
     throws ReSyntaxException 
   {
-    FaState keepStart = start;
-    AbstractFaState.EpsState keepLast = lastState;
-    setRegex(re);
+    getReParser().parse(pView, regex);
     addAction(action);
-    initializeAsOr(keepStart, keepLast, start, lastState);
+    pView.or();
     return this;
   }
+
   /**
    * <p>adds the given regular expression to the automaton (expert
    * only). To make it effective, {@link #addAction} should be called
@@ -859,11 +985,16 @@ public class Nfa  {
   }
   /**
    * <p>joins the other <code>Nfa</code> into this automaton while
-   * keeping all stop states and assigned actions.
+   * keeping all stop states and assigned actions. The
+   * <code>other</code> <code>Nfa<code> is initialized to the same
+   * state as if just created constructed with {@link #Nfa()}.<p>
+   *
+   * <p>FIX ME: unassigned reporting subexpressions in other may
+   * create a mess</p>
    */
   public Nfa or(Nfa other) {
     initializeAsOr(other.start, other.lastState, start, lastState);
-    other.invalidate();
+    other.initialize();
     return this;
   }
   /**********************************************************************/
@@ -1139,13 +1270,13 @@ public class Nfa  {
     return compile(fmb, null);
   }
 
-  /**
-   * @deprecated Use {@link #compile(DfaRun.FailedMatchBehaviour)}
-   * instead. This method calls it with <code>UNMATCHED_COPY</code>.
-   */
-  public Dfa compile() throws CompileDfaException {
-    return compile(DfaRun.UNMATCHED_COPY, null);
-  }
+//   /**
+//    * @deprecated Use {@link #compile(DfaRun.FailedMatchBehaviour)}
+//    * instead. This method calls it with <code>UNMATCHED_COPY</code>.
+//    */
+//   public Dfa compile() throws CompileDfaException {
+//     return compile(DfaRun.UNMATCHED_COPY, null);
+//   }
 
   // Parameter needEps only decides for inner states if they shall be
   // able to store eps moves later. Currently this is only needed for
@@ -1320,400 +1451,61 @@ public class Nfa  {
     }
     return dfaStart;
   }
-/**********************************************************************/
-/**********************************************************************/
-/**********************************************************************/
-/**********************************************************************/
-private class ReParser {
-  private static final int TOK_EOF      = Character.MAX_VALUE+1;
-  private static final int TOK_OBRACKET = Character.MAX_VALUE+'[';
-  private static final int TOK_CBRACKET = Character.MAX_VALUE+']';
-  private static final int TOK_OPAREN   = Character.MAX_VALUE+'(';
-  private static final int TOK_CPAREN   = Character.MAX_VALUE+')';
-  private static final int TOK_QMARK    = Character.MAX_VALUE+'?';
-  private static final int TOK_STAR     = Character.MAX_VALUE+'*';
-  private static final int TOK_PLUS     = Character.MAX_VALUE+'+';
-  private static final int TOK_OR       = Character.MAX_VALUE+'|';
-  private static final int TOK_DOT      = Character.MAX_VALUE+'.';
-  private static final int TOK_EXCL     = Character.MAX_VALUE+'!';
-  private static final int TOK_TILDE    = Character.MAX_VALUE+'~';
-  private static final int TOK_HAT      = Character.MAX_VALUE+'^';
-  private static final int TOK_MINUS    = Character.MAX_VALUE+'-';
-  private static final int TOK_AT    = Character.MAX_VALUE+'@';
-  
-  public static final String specialChars = "[]()?*+|.!^-\\~@";
+  //-*****************************************************************
+  private class ParserView implements NfaParserView {
+    private List<FaState> startStack = new ArrayList<FaState>();
+    private List<AbstractFaState.EpsState> lastStack 
+      = new ArrayList<AbstractFaState.EpsState>();
 
-  //private Reader in;
-  private CharSequence in;
-  private int inNext = 0;
-  private StringBuffer tmp = new StringBuffer(30);
-  private int token;
+    private <T> T pop(List<T> stack) {
+      return stack.remove(stack.size()-1);
+    }
+    private <T> T swap(List<T> stack, T newTop) {
+      T value = pop(stack);
+      stack.add(newTop);
+      return value;
+    }
+    private void clear() {
+      startStack.clear();
+      lastStack.clear();
+    }
 
-  // the following two are needed to efficiently collect long strings
-  // into a sequential automaton. In an re like "abcd?" however, the
-  // '?' applies only to the 'd', so 'd' and '?' must be seen to
-  // decide that 'c' is the last character of teh sequential
-  // automaton. 
-  private int lookaheadToken;
-  private boolean lookaheadValid = false;
-  
-  // recent input, kept for error messages
-  private char[] recent = new char[60];
-  private int recentNext = 0;			// first free in recent
-  private boolean recentWrapped = false;
-
-  // reusable assembly area for parseBracket
-  private Intervals assemble = new Intervals();
-
-  // reporting subgraphs get auto-incremented small IDs
-  private byte reportingID = 0;
-
-  /********************************************************************/
-  void resetSubGraphCounter() { reportingID = 0; }
-  /********************************************************************/
-  private void parse(CharSequence s) 
-    throws  ReSyntaxException 
-  {
-    in = s;
-    inNext = 0;
-    recentNext = 0;
-    recentWrapped = false;
-    nextToken(false);
-    parseOr();
-    if( token!=TOK_EOF ) throw error(ReSyntaxException.EEXTRACHAR);
+    public void pushCharSet(CharSequence pairs, boolean invert) {
+      startStack.add(start);
+      lastStack.add(lastState);
+      initialize(pairs, invert);
+    }
+    public void pushDot() {
+      pushCharSet("\u0000\uFFFF", false);
+    }
+    public void pushString(CharSequence str) {
+      startStack.add(start);
+      lastStack.add(lastState);
+      initialize(str);      
+    }
+    public void swap() {
+      start = swap(startStack, start);
+      lastState = swap(lastStack, lastState);
+    }
+    public void or() {
+      FaState oldStart = pop(startStack);
+      AbstractFaState.EpsState oldLast = pop(lastStack);
+      initializeAsOr(oldStart, oldLast, start, lastState);
+    }
+    public void seq() {
+      FaState oldStart = pop(startStack);
+      AbstractFaState.EpsState oldLast = pop(lastStack);
+      initializeAsSequence(oldStart, oldLast, start, lastState);
+    }
+    
+    public void star() { Nfa.this.star(); }
+    public void plus() { Nfa.this.plus(); }
+    public void optional() { Nfa.this.optional(); }
+    public void not() throws CompileDfaException { Nfa.this.not(); }
+    public void invert() throws CompileDfaException { Nfa.this.invert(); }
+    public void shortest() throws CompileDfaException { Nfa.this.shortest(); }
+    public boolean markAsSub() { return Nfa.this.markAsSub(); }
   }
-  /**********************************************************************/
-  private ReSyntaxException error(String msg) 
-    throws ReSyntaxException {
-
-    tmp.setLength(0);
-    getRecent(tmp);
-    int column = tmp.length();
-
-    int ch;
-    for(int i=0; -1!=(ch=nextChar()) && i<10; i++) tmp.append((char)ch);
-
-    return new ReSyntaxException(msg, tmp.toString(), 0, column);
-  }
-
-  private void getRecent(StringBuffer b) {
-    int pos = recentWrapped ? recentNext+1 : 0;
-    while( pos!=recentNext ) {
-      b.append(recent[pos]);
-      pos += 1;
-      if( pos==recent.length ) pos=0;
-    }
-  }
-  private int nextChar() {
-    //int ch = in.read();
-    //if( ch==-1 ) return ch;
-    if( inNext==in.length() ) return -1;
-    int ch = in.charAt(inNext++);
-
-    //System.out.println("-->"+(char)ch+" "+ch);
-
-    recent[recentNext] = (char)ch;
-    recentNext += 1;
-    if( recentNext==recent.length ) {
-      recentWrapped = true;
-      recentNext = 0;
-    }
-    return ch;
-  }
-  private void pushBack(int valueForToken) {
-    lookaheadValid = true;
-    lookaheadToken = token;
-    token = valueForToken;
-  }
-  private void nextToken(boolean withinBracket) 
-    throws  ReSyntaxException {
-
-    if( lookaheadValid ) {
-      token = lookaheadToken;
-      lookaheadValid = false;
-      return;
-    }
-
-    int ch = nextChar();
-
-    if( ch==-1 ) {
-      token = TOK_EOF;
-      return;
-    }
-
-    // a backslash escapes everything, everywhere, except EOF
-    if( ch=='\\' ) {
-      ch = nextChar();
-      if( ch==-1 ) throw error(ReSyntaxException.EBSATEOF);
-      token = ch;      
-      return;
-    }
-
-    if( withinBracket ) {
-      switch( ch ) {
-      case '-': token = TOK_MINUS; break;
-      case ']': token = TOK_CBRACKET; break;
-      case '^': token = TOK_HAT; break;
-      default: token = ch;
-      }
-    } else {
-      switch( ch ) {
-      case '[': token = TOK_OBRACKET; break;
-      case '(': token = TOK_OPAREN; break;
-      case ')': token = TOK_CPAREN; break;
-      case '?': token = TOK_QMARK; break;
-      case '*': token = TOK_STAR; break;
-      case '+': token = TOK_PLUS; break;
-      case '|': token = TOK_OR; break;
-      case '.': token = TOK_DOT; break;
-      case '!': token = TOK_EXCL; break;
-      case '~': token = TOK_TILDE; break;
-      case '^': token = TOK_HAT; break;
-      case '@': token = TOK_AT; break;
-      default: token = ch;
-      }
-      //System.out.println("xx>"+(char)ch+" "+ch);
-    }
-  }
-  /********************************************************************/
-  private void parseBracket() 
-    throws  ReSyntaxException
-  {
-    // we just saw the opening bracket
-
-    // The object we enter into assemble is completely arbitray,
-    // as long as it is not null
-    String dada = "dada";
-
-    boolean invert = false;
-
-    // At the start of a character range, the following characters are
-    // recognized specially in this order "^]-"
-    if( token==TOK_HAT ) { 
-      invert = true; 
-      nextToken(true); 
-    }
-    if( token==TOK_CBRACKET ) {
-      assemble.overwrite(']', ']', dada);
-      nextToken(true);
-    }
-    if( token==TOK_MINUS ) {
-      assemble.overwrite('-', '-', dada); 
-      nextToken(true);
-    }
-
-    // collect single characters and character ranges
-    while( token!=TOK_CBRACKET ) {
-      if( token==TOK_EOF) throw error(ReSyntaxException.EEOFUNEX);
-      if( token>Character.MAX_VALUE || token<Character.MIN_VALUE) {
-	throw error(ReSyntaxException.ECHARUNEX);
-      }
-      int ch = token;
-      nextToken(true);
-      if( token!=TOK_MINUS ) {
-	assemble.overwrite((char)ch, (char)ch, dada);
-	continue;
-      }
-      nextToken(true);
-      if( token>Character.MAX_VALUE ) {
-	throw error(ReSyntaxException.EINVALUL);
-      }
-      if( ch>token ) {
-	throw error(ReSyntaxException.EINVRANGE);
-      }
-      assemble.overwrite((char)ch, (char)token, dada);
-      nextToken(true);
-    }
-    nextToken(false);
-
-    if( invert ) assemble.invert(dada);
-
-    initialize(assemble);
-    //return new Nfa(trans);
-  }
-  /********************************************************************/
-
-  private void parseAtom() 
-    throws  ReSyntaxException {
-
-    // a '(' starts a full regular expression. If the very next
-    // character is TOK_EXCL, this is a reporting subexpression.
-    if( token==TOK_OPAREN ) {
-      boolean isReporting = false;
-      nextToken(false);
-      if( token==TOK_EXCL ) {
-	isReporting = true;
-	nextToken(false);
-      }
-      parseOr();
-      if( token!=TOK_CPAREN ) throw error(ReSyntaxException.ECLOSINGP);
-      nextToken(false);
-
-      if( isReporting ) {
-	markAsSub(reportingID++);
-	if( reportingID==0 ) {
-	  throw error(ReSyntaxException.ETOOMANYREPORTING);
-	}
-      }
-      return;
-    }
-     
-    // a '[' starts a character class
-    if( token==TOK_OBRACKET ) {
-      nextToken(true);
-      parseBracket();
-      return;
-    }
-
-    // a '.' stands for every character
-    if( token==TOK_DOT ) {
-      // the object we write into assemble does not matter
-      assemble.overwrite(Character.MIN_VALUE, Character.MAX_VALUE, "");
-      initialize(assemble);
-      nextToken(false);
-      return;
-    }
-
-    // Normal characters are allowed here too. We collect consecutive
-    // sequences of those because a string can be turned into an Fa
-    // quite compact.
-    if( token<=Character.MAX_VALUE ) {
-      tmp.setLength(0);
-      tmp.append((char)token);
-      nextToken(false);
-      for(/**/; token<=Character.MAX_VALUE; nextToken(false) ) {
-	tmp.append((char)token);
-      }
-      int L = tmp.length();
-      if( L>1 ) {
-	// token might be a postfix operator and as such should not be
-	// applied to more than one character.
-	// FIX ME: in principle the pushback is only necessary if in
-	// fact a postfix operator follows. However, I don't dare to
-	// use this info because it is to easily forgotten the tokens
-	// for postfix operators change.
-	pushBack(tmp.charAt(L-1));
-	tmp.setLength(L-1);
-      }
-      //System.out.println(":::"+tmp.toString());
-      initialize(tmp);
-      return;
-    }
-
-    // everything else is an error
-    if( token==TOK_EOF ) throw error(ReSyntaxException.EEOFUNEX);
-    throw error(ReSyntaxException.ECHARUNEX);
-  }
-  /********************************************************************/
-  private void parsePostfixedAtom() 
-    throws  ReSyntaxException {
-
-    parseAtom();
-
-    boolean havePostfix = true;
-    while( havePostfix ) {
-      switch( token ) {
-      case TOK_QMARK: optional(); nextToken(false); break;
-      case TOK_STAR: star(); nextToken(false); break;
-      case TOK_PLUS: plus(); nextToken(false); break;
-      case TOK_AT: {
-	try {
-	  throw new Exception("warning: use `(!...)' instead of `(...)@i@'");
-	} catch( Exception e) {
-	  e.printStackTrace();
-	}
-	nextToken(false);
-	if( token<'0' || token>'9' ) throw error(ReSyntaxException.EATDIGIT);
-	int id = 0;
-	while( token>='0' && token<='9' ) {
-	  id = 10*id+(token-'0');
-	  if( id>Byte.MAX_VALUE ) throw error(ReSyntaxException.EATRANGE);
-	  nextToken(false);
-	}
-	if( token!=TOK_AT ) throw error(ReSyntaxException.EATMISSAT);
-	nextToken(false);
-	markAsSub((byte)id);
-	break;
-      }
-      case TOK_EXCL: {
-	try {
-	  shortest(); 
-	} catch( CompileDfaException e) {
-	  ///CLOVER:OFF
-	  throw error
-	    ("internal error, this should not happen. A call to "+
-	     "shortest() results in a compilation of the Nfa constructed "+
-	     "so far. Because this Nfa should not yet have any Actions "+
-	     "associated, there cannot be any ambiguous.");
-	  ///CLOVER:ON
-	}
-	nextToken(false); 
-	break;
-      }
-      case TOK_TILDE: {
-	try {
-	  invert(); 
-	} catch( CompileDfaException e) {
-	  ///CLOVER:OFF
-	  throw error
-	    ("internal error, this should not happen. A call to "+
-	     "invert() results in a compilation of the Nfa constructed "+
-	     "so far. Because this Nfa should not yet have any Actions "+
-	     "associated, there cannot be any ambiguous.");
-	  ///CLOVER:ON
-	}
-	nextToken(false); 
-	break;
-      }
-      case TOK_HAT: {
-	try {
-	  not(); 
-	} catch( CompileDfaException e) {
-	  ///CLOVER:OFF
-	  throw error
-	    ("internal error, this should not happen. A call to "+
-	     "not() results in a compilation of the Nfa constructed "+
-	     "so far. Because this Nfa should not yet have any Actions "+
-	     "associated, there cannot be any ambiguous.");
-	  ///CLOVER:ON
-	}
-	nextToken(false); 
-	break;
-      }
-      default:
-	havePostfix = false;
-	break;
-      }
-    }
-  }
-  /********************************************************************/
-  private void parseSequence() 
-    throws  ReSyntaxException {
-    parsePostfixedAtom();
-
-    while( token!=TOK_EOF && token!=TOK_OR && token!=TOK_CPAREN ) {
-      //System.out.println("token:"+token);
-      FaState keepStart = start;
-      AbstractFaState.EpsState keepLast = lastState;
-      parsePostfixedAtom();
-      initializeAsSequence(keepStart, keepLast, start, lastState);
-    }
-  }
-  /********************************************************************/
-  private void parseOr() 
-    throws ReSyntaxException {
-    parseSequence();
-
-    while( token==TOK_OR ) {
-      nextToken(false);
-      FaState keepStart = start;
-      AbstractFaState.EpsState keepLast = lastState;
-      parseSequence();
-      initializeAsOr(keepStart, keepLast, start, lastState);
-    }
-  }
-  /********************************************************************/
-
-}
+  //-*****************************************************************
 }
  

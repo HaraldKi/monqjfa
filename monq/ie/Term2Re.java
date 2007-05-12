@@ -53,6 +53,14 @@ public class Term2Re {
    */
   public static final String trailContextRe = "[^A-Za-z0-9]";
 
+  /**
+   * <p>4th parameter passed to {@link #createConverter
+   * createrConverter()} when creating the default converter used by
+   * {@link #convert convert()}.</p>
+   */
+  public static final ReParser reParser 
+    = ReClassicParser.factory.newReParser();
+
   // is an automaton to split a string into words and white space. It
   // is initialized in the static block below.
   private static DfaRun convert;
@@ -71,7 +79,8 @@ public class Term2Re {
 
   static {
     try {
-      convert = createConverter(wordSplitRe, wordSepRe, trailContextRe);
+      convert = createConverter(wordSplitRe, wordSepRe, trailContextRe,
+				reParser);
 
 //   	= new Nfa(wordSplitIn, new AbstractFaAction.Replace(wordSplitOut))
 // 	.or("[A-Za-z]("+wordSplitIn+")^", new DoOrdinaryWord())
@@ -121,19 +130,24 @@ public class Term2Re {
    * expressions generated for individual words of the multi word
    * term.
    *
+   * @param rp must be an {@link ReParser} of the type for which the
+   * regular expression is generated. This is necessary to be able to
+   * escape characters in original multi word term properly.
+   *
    * @param trailContextRe is a regular expression which will be
    * finally appended to the result.
    */
   public static DfaRun createConverter(String wordSplitRe,
 				       String wordSepRe, 
-				       String trailContextRe) 
+				       String trailContextRe,
+				       ReParser rp) 
     throws ReSyntaxException {
     Dfa dfa;
     try {
       Nfa nfa = new 
 	Nfa(wordSplitRe, new Replace(wordSepRe))
-	.or("[A-Za-z]("+wordSplitRe+")^", new DoOrdinaryWord())
-	.or("("+wordSplitRe+")^", new DoFunnyWord())
+	.or("[A-Za-z]("+wordSplitRe+")^", new DoOrdinaryWord(rp))
+	.or("("+wordSplitRe+")^", new DoFunnyWord(rp))
 	.or(stopWords, Copy.COPY)
 	;
       FaAction eofAction = null;
@@ -148,28 +162,35 @@ public class Term2Re {
   }
   /**********************************************************************/
   private static class DoFunnyWord extends AbstractFaAction {
-    //public int getPriority() { return -2; }
+    private ReParser rp;
     private StringBuffer scratch = new StringBuffer();
-    private DoFunnyWord() { priority = -2; }
+    private DoFunnyWord(ReParser rp) { 
+      priority = -2; 
+      this.rp = rp;
+    }
     public void invoke(StringBuffer yytext, int start, DfaRun r) {
       scratch.setLength(0);
-      Nfa.escape(scratch, yytext, start);
+      rp.escape(scratch, yytext, start);
       yytext.setLength(start);
       yytext.append(scratch);
     }
   }
   /**********************************************************************/
   private static class DoOrdinaryWord extends AbstractFaAction {
+    private ReParser rp;
     private StringBuffer scratch = new StringBuffer();
     private StringBuffer scratch2 = new StringBuffer();
 
     //public int getPriority() { return -1; }
-    private DoOrdinaryWord() { priority = -1; }
+    private DoOrdinaryWord(ReParser rp) { 
+      this.rp = rp;
+      priority = -1; 
+    }
     public void invoke(StringBuffer yytext, int start, DfaRun r) {
       // transform characters with a special meaning in a regular
       // expression such that they stand only for themselves.
       scratch2.setLength(0);
-      Nfa.escape(scratch2, yytext, start);
+      rp.escape(scratch2, yytext, start);
 
 
       scratch.setLength(0);

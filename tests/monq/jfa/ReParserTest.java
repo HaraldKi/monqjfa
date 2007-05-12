@@ -31,16 +31,16 @@ import junit.framework.TestSuite;
  * @author &copy; 2005 Harald Kirsch
  */
 public class ReParserTest extends TestCase {
-  Nfa rep = null;
+  Nfa nfa;
 
   public void setUp() throws ReSyntaxException {
-    rep = new Nfa(".", Copy.COPY);   
+    nfa = new Nfa();
   }
   public void testEBSEOF() throws java.io.IOException {
     ReSyntaxException e = null;
     String s = "abcde\\";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -53,7 +53,7 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "a)";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -66,7 +66,7 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "[a-]";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -80,7 +80,7 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "[x-a]";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -94,7 +94,7 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "(abc";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -108,7 +108,7 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "[abc^]";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -122,7 +122,7 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "(";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -136,7 +136,7 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "(*";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e ) {
       e = _e;
       assertEquals(s, e.text);
@@ -150,8 +150,8 @@ public class ReParserTest extends TestCase {
     ReSyntaxException e = null;
     String s = "[a-";
     try {
-      rep.parse("abc");
-      rep.parse(s);
+      nfa.or("abc");
+      nfa.or(s);
     } catch( ReSyntaxException _e) {
       e = _e;
       //System.out.println(e);
@@ -167,7 +167,7 @@ public class ReParserTest extends TestCase {
       + "ABCDEFGHIJKLMNOPQRSTUVWXYZ::::::::::::::::::::::::"
       + ")0123456789";
     try {
-      rep.parse(s);
+      nfa.or(s);
     } catch( ReSyntaxException _e) {
       e = _e;
       //System.out.println(e);
@@ -181,7 +181,7 @@ public class ReParserTest extends TestCase {
   public void testBackslash() 
     throws java.io.IOException, ReSyntaxException {
     String s = "\\[a[x\\]]b";
-    Nfa nfa = rep.parse(s, Drop.DROP);
+    nfa.or(s, Drop.DROP);
     assertEquals(4, nfa.findPath("[a]b"));
     assertEquals(4, nfa.findPath("[axb"));
     assertEquals(-1, nfa.findPath("aaa"));
@@ -190,7 +190,7 @@ public class ReParserTest extends TestCase {
   public void testMinusInBracket() 
     throws java.io.IOException, ReSyntaxException {
     String s = "[-abc]+";
-    Nfa nfa = rep.parse(s, Drop.DROP);
+    Nfa nfa = new Nfa(s, Drop.DROP);
     assertEquals(4, nfa.findPath("a-bcd"));
     assertEquals(4, nfa.findPath("----"));
   }
@@ -200,7 +200,7 @@ public class ReParserTest extends TestCase {
   {
     ReSyntaxException e = null;
     try {
-      Nfa nfa = rep.parse("ab[rst");
+      nfa.or("ab[rst");
     } catch( ReSyntaxException _e) {
       e = _e;
     }
@@ -212,7 +212,7 @@ public class ReParserTest extends TestCase {
   {
     ReSyntaxException e = null;
     try {
-      Nfa nfa = rep.parse("x?[");
+      nfa.or("x?[");
     } catch( ReSyntaxException _e) {
       e = _e;
     }
