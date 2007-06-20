@@ -34,7 +34,6 @@ import java.util.Map;
  */
 public class Printf extends AbstractFaAction {
   private Formatter f;
-  private TextStore store = new TextStore();
   private TextSplitter splitter;
 
   /**
@@ -103,8 +102,7 @@ public class Printf extends AbstractFaAction {
   {
     TextStore ts;
     if( splitter!=null ) {
-      ts = store;
-      ts.clear();
+      ts = new TextStore();
       splitter.split(ts, out, start);
     } else {
       ts = runner.submatches(out, start);
