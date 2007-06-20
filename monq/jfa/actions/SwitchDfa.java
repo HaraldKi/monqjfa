@@ -58,7 +58,7 @@ import monq.jfa.*;
  */
 public class SwitchDfa extends AbstractFaAction {
   Dfa dfa;
-  //private DfaRun.FailedMatchBehaviour fmb;
+
   private FaAction action;
   
   /**
@@ -83,17 +83,6 @@ public class SwitchDfa extends AbstractFaAction {
   public SwitchDfa(FaAction action) {
     this.action = action;
   }
-//   public SwitchDfa(FaAction action, 
-// 		   DfaRun.FailedMatchBehaviour fmb, int priority) {
-//     this.priority = priority;
-//     this.fmb = fmb;
-//     this.action = action;
-//  }
-  /**
-   * <p>calls the 2 parameter constructor with
-   * <code>fmb==null</code>.</p>
-   */
-//  public SwitchDfa(FaAction action) { this(action, 0); }
   /**
    * <p>calls the 1 parameter constructor with
    * <code>action==null</code>.</p>
