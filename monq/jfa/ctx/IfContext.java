@@ -8,7 +8,7 @@ import java.util.*;
  * <p>is an {@link monq.jfa.FaAction} to execute different client actions
  * depending on the {@link Context} in which
  * <code>IfContext.invoke()</code> is called. Typical usage:<pre>
- * nfa.or("regex", new IfAction(ctx1, action1)
+ * nfa.or("regex", new IfContext(ctx1, action1)
  *                      .ifthen(ctx2, action2)
  *                      .ifthen(ctx3, action3)
  *                      .elsedo(actionDefault))</pre>
@@ -48,7 +48,7 @@ public class IfContext extends AbstractFaAction {
   /**
    * <p>defines to call the given action when this object's invoke method
    * is called in the given context.</p>
-   * <p><b>NOTE:</b>The given <code>Context</code> may be
+   * <p><b>NOTE:</b> The given <code>Context</code> may be
    * <code>null</code> to indicate that the action should be run if no
    * context is (yet) on the stack.</p>
    */
