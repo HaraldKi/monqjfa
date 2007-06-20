@@ -36,6 +36,10 @@ public class ContextManager {
   private FaAction startAction;
   private FaAction endAction;
 
+  // used internally as a marker when calling add(...) to say that
+  // there is not context wanted at all
+  public static final Context anyContext = new Context();
+
   /**
    * <p>creates an object to populate the given <code>Nfa</code> with
    * regex/action pairs for context matching.</p>
@@ -100,16 +104,23 @@ public class ContextManager {
    * <p>adds a new context to the client <code>Nfa</code>. The context
    * starts whenever the regular expression <code>reIn</code>
    * matches while the given <code>parent</code> context is active. It
-   * ends as soon as <code>reOut</code> is found. With
-   * <code>parent==null</code> any match of <code>reIn</code> will
-   * switch to the new context.</p>
+   * ends as soon as <code>reOut</code> is found.<p>
+
+   * <p>With <code>parent==null</code>, <code>reIn</code> will only
+   * switch to the new context from the outermost level, i.e. when no
+   * context was yet entered. Note that this is in line with {@link
+   * IfContext#IfContext IfContext()} when called with
+   * <code>null</code>. If you want to match <code>reIn</code> to
+   * always match, independent of context, then use {@link
+   * #add(String,String)}.</p>
    *
+   * 
    * <p>The defaults of the context returned will be be initialized
    * from the defaults stored in <code>this</code> with any of the
    * <code>setDefault...</code> methods. They can be changed on the
    * object returned as needed.</p>
    *
-   * @param parent may be null to denote any context
+   * @param parent may be null to denote the outermost level.
    * @param reIn is the regular expression denoting the start of the
    * new context being added to the client <code>Nfa</code>
    * @param reOut is the regular expression denoting the end of the
@@ -132,7 +143,7 @@ public class ContextManager {
 
     // If we have a parent, we need an IfContext action in between
     FaAction a;
-    if( parent==null ) a = ctx;
+    if( parent==anyContext ) a = ctx;
     else a = new IfContext(parent, ctx);
     nfa.or(reIn, a);
     
@@ -143,20 +154,23 @@ public class ContextManager {
   }
   /**********************************************************************/
   /**
-   * <p>calls {@link #add(Context,String,String)
-   * add(null,reIn,reOut)}.</p>
+   * <p>calls {@link #add(Context,String,String)} such that the
+   * context is entered in any parent context.</p>
    */
   public Context add(String reIn, String reOut)
     throws ReSyntaxException
   {
-    return add(null, reIn, reOut);
+    return add(anyContext, reIn, reOut);
   }
   /**********************************************************************/
   /**
    * <p>calls {@link #add(Context,String,String)
    * add(parent,reIn,reOut)} such that <code>reIn</code> and
-   * <code>reOut</code> match the start and end of the XML element with the
-   * given <code>tagname</code>.
+   * <code>reOut</code> match the start and end of the XML element
+   * with the given <code>tagname</code>.
+   *
+   * <p>For the use of <code>null</code> as a parent, see {@link
+   * #add(Context,String,String)}.</p>
    */
   public Context addXml(Context parent, String tagname) 
     throws ReSyntaxException
@@ -167,14 +181,14 @@ public class ContextManager {
   }
   /**********************************************************************/
   /**
-   * <p>calls {@link #add(Context,String,String)
-   * add(null,reIn,reOut)} such that <code>reIn</code> and
-   * <code>reOut</code> match the start and end of the XML element with the
-   * given <code>tagname</code>.</p>
+   * <p>calls {@link #add(Context,String,String)}
+   * such that <code>reIn</code> and <code>reOut</code> match the
+   * start and end of the XML element with the given
+   * <code>tagname</code>.</p>
    */
   public Context addXml(String tagname) throws ReSyntaxException
   {
-    Context c = add(null, Xml.STag(tagname), Xml.ETag(tagname));
+    Context c = add(anyContext, Xml.STag(tagname), Xml.ETag(tagname));
     c.setName(tagname);
     return c;
   }
@@ -201,15 +215,15 @@ public class ContextManager {
     return ctx;
   }
   /**********************************************************************/
-    /**
-   * <p>calls {@link #add(Context,String,String)
-   * add(null,reIn,reOut)} such that <code>reIn</code> and
-   * <code>reOut</code> match the start and end of any XML element.</p>
+  /**
+   * <p>calls {@link #add(Context,String,String)} such that
+   * <code>reIn</code> and <code>reOut</code> match the start and end
+   * of any XML element.</p>
    */
 
   public Context addXml() throws ReSyntaxException
   {
-    Context all = add(null, Xml.STag(), Xml.ETag());
+    Context all = add(anyContext, Xml.STag(), Xml.ETag());
     all.setPriority(-1);
     //all.setPopPriority(-1);
     all.setName("#all#");
