@@ -18,6 +18,7 @@ package monq.jfa;
 
 import java.io.Serializable;
 import java.io.PrintStream;
+import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 
@@ -212,6 +213,37 @@ public class Dfa implements Serializable {
     smd.size = lastStopPos-startPos+1;
 
     FaAction a = lastStopState.getAction();
+    return a;
+  }
+  /**********************************************************************/
+  /**
+   * <p>determine a matching prefix of <code>in</code> and deliver
+   * respective data. If <code>in</code> can be matched by the
+   * <code>Dfa</code> the matching text is appended to
+   * <code>out</code> and the associated action is returned. If
+   * <code>subMatches</code> is not <code>null</code>, the submatches,
+   * if any, are analyzed and provided in <code>subMatches</code>
+   * after first clearing it.</p>
+   *
+   * @param subMatches may be null, if no submatch analysis is
+   * requested. 
+   *
+   * @return either the action associated with the match found or
+   * <code>null</code> if no match was found.
+   */
+  public FaAction match(CharSource in, StringBuffer out, 
+			TextStore subMatches) throws IOException {
+    if( subMatches==null ) {
+      return match(in, out, dummySmd);
+    }
+
+    SubmatchData smd = new SubmatchData();
+    int start = out.length();
+    FaAction a = match(in, out, smd);
+    subMatches.clear();
+    subMatches.appendPart(out, start, out.length());
+    smd.analyze(subMatches, a);
+
     return a;
   }
   /**********************************************************************/
