@@ -157,49 +157,6 @@ public class Dfa implements Serializable {
     FaToDot.print(out, startState, null);
     //new FaToDot(startState).print(out);
   }
-  ///CLOVER:ON
-
-  /* FINALLY REMOVED *
-   * @see #match(CharSource,StringBuffer)
-   *
-   * @deprecated Use one of the methods of {@link Regexp} or {@link
-   * DfaRun}, please.
-   */
-//   public FaAction match(CharSequence s, StringBuffer out) 
-//     //throws java.io.IOException
-//   {
-//     CharSource in = new CharSequenceCharSource(s);
-
-//     // We now that there will be no IOException coming from a
-//     // CharSequenceCharSource 
-//     try {
-//       return match(in, out);
-//     } catch( java.io.IOException e ) {
-//       throw new Error("impossible", e);
-//     }
-//   }
-  /**********************************************************************/
-  /* FINALLY REMOVED *
-   * <p>tests whether a prefix of the input source can be matched and
-   * adds the matched string to <code>out</code>.</p>
-   *
-   * <p>Note that <code>out</code> may stay unchanged if the DFA
-   * recognizes the empty string and the input does not match anything
-   * else.</p>
-   *
-   * @return the action registered with the stop state recognizing the
-   * match or <code>null</code> if no match was found. As a special
-   * case, the action <code>DfaRun.EOF</code> is returned if not a single
-   * character could be read from <code>in</code>.
-   *
-   * @deprecated Use one of the methods of {@link Regexp} or {@link
-   * DfaRun}, please.
-   */
-//   public FaAction match(CharSource in, StringBuffer out) 
-//     throws java.io.IOException
-//   {
-//     return match(in, out, dummySmd);
-//   }
   /**********************************************************************/
 
   /**
@@ -258,38 +215,6 @@ public class Dfa implements Serializable {
     return a;
   }
   /**********************************************************************/
-  /* FINALLY REMOVED *
-   * <p>tests whether a prefix of the input starting at the given
-   * position can be matched. The automaton tries to find the longest
-   * match possible.</p>
-   *
-   * @return the length of the match or -1, if nothing can be matched
-   * at all. If the automaton matches the empty string, 0 will be
-   * returned if no longer match can be found.
-   *
-   * @deprecated Use {@link Regexp} instead. This method may even
-   * return wrong results as it is no longer maintained.
-   */
-//   public int match(CharSequence in, int pos)   {
-//     int startPos = pos;
-//     int lastStopPos = startPos;
-//     FaState lastStopState = null;
-
-//     FaState current = startState;
-//     while( current!=null ) {
-//       if( null!=current.getAction() ) {
-// 	lastStopState = current;
-// 	lastStopPos = pos;
-//       }
-//       if( pos>=in.length() ) break;
-//       int ch = in.charAt(pos);
-//       pos += 1;
-//       current = current.follow((char)ch);
-//     }
-    
-//     if( lastStopState==null ) return -1;
-//     return lastStopPos-startPos;
-//   }
 
 }
  

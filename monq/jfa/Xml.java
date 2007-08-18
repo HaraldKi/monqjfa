@@ -270,34 +270,6 @@ public final class Xml {
    */
   public static String ETag() { return ETag(Name); }
 
-  /**
-   * creates an {@link Nfa} to match an XML end tag with the given tag
-   * name and adds the given action to the <code>Nfa</code>.
-   *
-   * @throws ReSyntaxException if <code>nameRe</code> contains a
-   * syntax error.
-   *
-   * @see <a href="http://www.w3.org/TR/REC-xml#NT-ETag">XML
-   * end tag</a>
-   */
-//   public static Nfa ETagNfa(String nameRe, FaAction a) 
-//     throws ReSyntaxException
-//   {
-//     return new Nfa(ETag(nameRe), a);
-//   }
-//   /**
-//    * creates an {@link Nfa} to match any XML end tag and adds the
-//    * given action to the <code>Nfa</code>.
-//    */
-//   public static Nfa ETagNfa(FaAction a) {
-//     try {
-//       return new Nfa("</"+Name+S+"?>", a);
-//     } catch( ReSyntaxException e) {
-//       ///CLOVER:OFF
-//       throw new Error("this cannot happen", e);
-//       ///CLOVER:ON
-//     }
-//   }
   /**********************************************************************/
   // combines functionality to create a start tag or an empty element
   // tag. 
@@ -621,70 +593,6 @@ public final class Xml {
     }
   }
   /**********************************************************************/
-//   /**
-//    * <p>splits an XML start tag into tag name, attribute names and
-//    * attribute values. If <code>dst</code> is initially empty, the
-//    * whole start tag will be part 0, the tag name will be part no. 1
-//    * the first attribute name will be part no. 2 and the first
-//    * attribute value will be part 3. If <code>dst</code> contains
-//    * already parts, these part numbers will be respectivly greater.</p>
-//    *
-//    * <p><b>Hint:</b> If you need a {@link TextSplitter} which uses
-//    * this method, use the static object {@link #STAGSPLITTER}.</p>
-//    *
-//    * @return the position of the first unprocessed character,
-//    * guaranteed to be before or equal to the position of the
-//    * terminating '&gt;'.</p>
-//    *
-//    * @deprecated use {@link #splitElement(Map,StringBuffer,int)} which
-//    * can also deal with the {@link #XMLDecl XML declaration}
-//    */
-//   public static int splitSTag(TextStore dst, StringBuffer s, int start) {
-//     // how much string is already stored in dst
-//     int oldLen = dst.length();
-
-//     // make a copy of the content as required by the interface
-//     dst.appendPart(s, start, s.length());
-
-//     // fetch the tag
-//     int cursor = 1;
-//     int end = cursor+DFA_Name.match(s, start+cursor);
-//     dst.addPart(oldLen+cursor, oldLen+end);
-//     cursor = end;
-      
-//     // repeat for zero or more attributes
-//     // NOTE: according to the interface definition, we don't have to
-//     // check if the syntax of the input string matches our
-//     // expectations. In fact, if it does not, the following loop may
-//     // not terminate.
-//     while( true ) {
-//       // JUNK? CharSequence attr=null, value;
-      
-//       // we may see some space now. It may introduce an attribute,
-//       // but may also be the optional space before the closing angle
-//       // bracket.
-//       end = cursor+DFA_S.match(s, start+cursor);
-//       if( end<cursor ) break;
-//       cursor = end;
-      
-//       // there may be an attribute name
-//       end = cursor+DFA_Name.match(s, start+cursor);
-//       if( end<cursor) break;
-//       dst.addPart(oldLen+cursor, oldLen+end);
-//       cursor = end;
-      
-//       // skip the Eq	
-//       end = cursor+DFA_Eq.match(s, start+cursor);
-//       cursor = end;
-      
-//       // get AttValue
-//       end = cursor+DFA_AttValue.match(s, start+cursor);
-//       dst.addPart(oldLen+cursor+1, oldLen+end-1);
-//       cursor = end;
-//     }
-//     return cursor;
-//   }
-  /**********************************************************************/  
   /**
    * <p>calls {@link #splitElement(Map,StringBuffer,int)} with a freshly
    * allocated <code>HashMap</code> and returns the filled map.</p>
