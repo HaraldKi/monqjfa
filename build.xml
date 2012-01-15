@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- DOCTYPE date SYSTEM "ant.dtd" -->
+
+<project name="monq" default="compile" basedir=".">
+  <description>
+    The MonQ library contains as its main contribution the
+    monq.jfa.* packages which implement fast and scalable regular
+    expression viz. NFA/DFA library.
+  </description>
+
+  <property environment="env" />
+  <property name="NOT_stylefile" value="monq/jfa/ebistyle.css" />
+  <property name="stylefile" value="monq/jfa/docstyle.css" />
+
+  <property name="pubftp" value="/ebi/ftp/pub/software/textmining/monq" />
+  <property name="pubhtml" value="/homes/kirsch/public_html" />
+
+  <!-- *************************************************************** -->
+  <!-- these are our source files -->
+  <patternset id="jsrc" 
+	      excludes="monq/**/keep/** monq/**/doc-files/** monq/**/*.html"
+	      includes="monq/**/*.java"
+	      >
+    <exclude unless="xstream" name="monq/programs/DistFilter.java" />
+    <exclude unless="xstream" name="monq/net/Filter*Info.java" />
+    <exclude unless="jython" name="monq/jfa/JyFA.java" />
+    <exclude unless="jython" name="monq/programs/JythonFilter.java" />
+  </patternset>
+
+  <!-- these are the test source files -->
+  <patternset id="testsrc" includes="monq/**/*.java *.java">
+    <exclude unless="jython" name="monq/jfa/JyFATest.java"/>
+  </patternset>
+
+  <!-- how to find the freshly compiled stuff -->
+  <path id="CPLOCAL">
+    <pathelement path="${basedir}/Classes" />
+    <pathelement path="${basedir}/Classes/tests" />
+  </path>
+ 
+  <!-- *************************************************************** -->
+  <!-- check existence of certain features -->
+  <target name="findfeatures">
+    <available property="xstream" 
+      classname="com.thoughtworks.xstream.XStream" />
+    <available property="jython"
+      classname="org.python.util.PythonInterpreter" />
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- read current version to build from RELNOTES -->
+
+  <target name="setVersion">
+    <loadfile property="version" srcfile="Documentation/RELNOTES">
+      <!-- someone had a half decent idea with these filter chains,
+      but what is availabe is still bloody poor compared to a decent
+      grep/sed/awk combination -->
+      <filterchain>
+	<linecontainsregexp>
+	  <regexp pattern="VERSION +[a-z]*[0-9.]+" />
+	</linecontainsregexp>
+	<headfilter lines="1" />
+	<striplinebreaks />
+	<striplinebreaks linebreaks="VERSION&#xD;&#xA; " />
+      </filterchain>
+    </loadfile>
+  </target>
+  <!-- *************************************************************** -->
+
+  <!-- before compilation, delete all class files to make sure there
+  is no outdated stuff lurking -->
+  <target name="purgeClasses">
+    <dependset>
+      <srcfileset dir="."><patternset refid="jsrc"/></srcfileset>
+      <targetfileset dir="Classes" includes="**/*.class"/>
+    </dependset>
+  </target>
+
+  <target name="warnXstream" unless="xstream">
+    <echo>WARNING: com.thoughtworks.xstream.XStream not found, monq.programs.DistFilter will not be available.</echo>
+  </target>
+  <target name="warnJython" unless="jython">
+    <echo>WARNING: org.python.util.PythonInterpreter not found, monq.programs.JythonFilter will not be available.</echo>
+  </target>
+
+  <!-- Main target is to compile all source files of the packages. -->
+  <target name="compile" 
+    depends="findfeatures,warnXstream,warnJython,purgeClasses"
+    description="compile all Java source files to ./Classes">
+
+    <javac srcdir="."
+	   destdir="Classes" 
+	   source="1.5"
+       listfiles="no"
+	   fork="false"
+       debug="true"
+       deprecation="true"
+	   >
+      <compilerarg value="-Xlint:unchecked"/>
+      <patternset refid="jsrc"/>
+    </javac>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- packing a jar for the compiled distro -->
+  <target name="jar" depends="compile, setVersion"
+    description="creates the runtime library jar file">
+
+    <mkdir dir="dist" />
+
+    <jar jarfile="dist/monq-${version}.jar"
+      basedir="Classes"
+      includes="monq/**">
+      <manifest>
+	<attribute name="Monq-Version" value="${version}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- create the documentation -->
+  <target name="apidoc" depends="setVersion"
+    description="create the API documentation in dist">
+
+    <javadoc destdir="dist/monqApiDoc"
+	     Public="true" nodeprecated="false" 
+	     author="true" nohelp="true"
+	     source="1.5"
+	     Windowtitle="monq packages"
+      Header="monq-${version}"
+	     Bottom="&lt;div class=&quot;monqlink&quot;>download: &lt;a href='https://developer.berlios.de/project/showfiles.php?group_id=8239' target='_top'>developer.berlios.de&lt;/a>&lt;br/>home page: &lt;a href=&quot;http://monqjfa.berlios.de/&quot; target='_top'>monqjfa.berlios.de&lt;/a>&lt;/div>"
+	     Overview="monq/overview.html"
+	     additionalparam="-quiet"
+	     verbose="false"
+	     stylesheetfile="${stylefile}"
+	     >
+      <packageset dir=".">
+	<include name="monq/**/*" />
+	<exclude name="monq/**/doc-files" />
+      </packageset>
+    </javadoc>
+
+  </target>
+  <!-- *************************************************************** -->
+  <target name="apidocjar" depends="apidoc"
+    description="jar file of the api documentation created with javadoc">
+
+    <jar jarfile="dist/monqApiDoc-${version}.jar" 
+      basedir="dist" 
+      includes="monqApiDoc/**" />
+
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- testing -->
+  <target name="test" depends="compileTests"
+    description="run junit tests, use e.g. -Dtest=Nfa to run single test">
+    <junit printsummary="off" haltonfailure="true" 
+      dir="${basedir}" fork="true">
+      <classpath refid="CPLOCAL"/>
+
+      <formatter type="brief" usefile="false"/>
+
+      <batchtest>
+	<fileset dir="Classes/tests">
+	  <include if="test" name="**/${test}Test.class" />
+	  <include unless="test" name="**/*Test.class" />
+	</fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+  <target name="compileTests" depends="purgeTest,compile">
+    <mkdir dir="Classes/tests" />
+    <javac srcdir="tests" destdir="Classes/tests"
+      sourcepath="tests"
+      classpathref="CPLOCAL"
+      source="1.5" 
+      listfiles="no"
+      debug="true"
+      >
+      <patternset refid="testsrc"/>
+    </javac>
+  </target>
+
+  <target name="purgeTest"> 
+    <dependset>
+      <srcfileset dir="tests" includes="*Test.java"/>
+      <srcfileset dir="."><patternset refid="jsrc" /></srcfileset>
+      <targetfileset dir="Classes/tests" includes="*.class"/>
+    </dependset>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- NEVER, EVER again waste your time in trying to get emma going
+  as an ant task. It is a pain already to get it going on the command
+  line, and what it found out the very hard way seems to be this:
+
+  a) start the jvm with only exactly emma.jar in the classpath
+  b) put everything else necessary to run the test in emma's -cp
+  c) use explicit includes to prevent silly emma messages
+
+  All other combinations produce nerve wrecking and #$@#$ (put in your
+  favorite swear word here) class loader problems.
+  -->
+
+  <macrodef name="runemma">
+    <attribute name="testClass" />
+    <sequential>
+      <java classname="emmarun" fork="true">
+	<jvmarg line="-cp ${env.EMMAJAR}" />
+	<arg line="-cp ${env.CLASSPATH} -quiet"/>
+	<arg line="-sessiondata -out emma/coverage.es -fullmetadata" />
+	<arg line="-ix monq* -ix -*Test* -ix -monq.jfa.*Test*"/>
+	<arg line="-Dreport.txt.out.file=emma/unused.txt"/>
+	<arg line="@{testClass}"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <!-- *************************************************************** -->
+  <target name="emma" depends="compileTests"
+    description="test with test coverage analysis using emma" >
+
+    <fail unless="env.EMMAJAR">Cannot run emma without the environment variable EMMAJAR set to contain the full path to emma.jar</fail>
+    <available property="haveEmma" classpath="${env.EMMAJAR}" 
+      classname="emma"/>
+    <fail unless="haveEmma">Environment variable EMMAJAR does not seem to properly indicate the path to emma.jar, because class emma cannot be found.</fail>
+
+    <delete file="emma/coverage.es"/>
+
+    <runemma testClass="monq.jfa.JyFATest" />
+    <runemma testClass="DictFilterTest" />
+    <runemma testClass="CoderTest" />
+    <runemma testClass="PipeFilterTest" />
+    <runemma testClass="monq.jfa.ActionTest" />
+    <runemma testClass="monq.jfa.ByteCharSourceTest" />
+    <runemma testClass="monq.jfa.IntervalsTest" />
+    <runemma testClass="monq.jfa.MatchGroupTest" />
+    <runemma testClass="monq.jfa.NfaTest" />
+    <runemma testClass="monq.jfa.PrintfFormatterTest" />
+    <runemma testClass="monq.jfa.RegexpTest" />
+    <runemma testClass="monq.jfa.ReParserTest" />
+    <runemma testClass="monq.jfa.SetTest" />
+    <runemma testClass="monq.jfa.TextSplitterTest" />
+    <runemma testClass="monq.jfa.XmlTest" />
+    <runemma testClass="monq.jfa.CtxTest" />
+    <runemma testClass="monq.clifj.CommandlineTest" />
+
+    <!-- As for not using an emma task, see above under runemma. -->
+    <java classname="emma" fork="true">
+      <jvmarg line="-cp ${env.EMMAJAR}" />
+      <arg line="report -sp . -quiet -r html -input emma/coverage.es"/>
+      <arg line="-Dreport.html.out.file=emma/index.html" />
+      <arg line="-Dreport.columns=name,line,block,method" />
+      <arg line="-Dreport.sort=+line,+block,+method" />
+      <arg line="-Dreport.metrics=line:95" />
+    </java>
+  </target>
+
+  <!-- ***************************************************************
+  --> <!-- check whether svn status -u produces no output (except one
+  line) and set property svnclean if this is so -->
+
+  <target name="svnclean"
+    description="check that svn status -u has no output">
+
+    <exec executable="svn">
+      <arg line="status -u" />
+      <redirector outputproperty="svnstatus">
+	<outputfilterchain>
+	  <tailfilter lines="-1" skip="1"/>
+	</outputfilterchain>
+      </redirector>
+    </exec>
+
+    <condition property="svnclean">
+      <or>
+	<equals arg1="${svnstatus}" arg2="" trim="true"/>
+	<isset property="pretend"/>
+      </or>
+    </condition>
+    
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- create a .tar.gz as for the source distribution -->
+  <target name="tgz" 
+    description="create .tar.gz for shipping the source (basically an svn-export) !!! not yet operational">
+    <exec executable="svn" dir="dist">
+      <arg line="-d ~/transfer -F -ver RELNOTES -s '2005-02-01'" />
+    </exec>
+  </target>
+  
+  <!-- *************************************************************** -->
+  <target name="distftp" depends="svnclean,jar,apidocjar,apidoc"
+    description="upload software distro files to berlios">
+
+    <fail unless="svnclean">
+      The command svn status -u produces the output 
+${svnstatus}
+      Please make sure that everything is up to date and checked in
+      before publishing.      
+    </fail>
+
+    <!-- HINT: For ftp, apt-get install libcommons-net-java or similar
+    is required here in addition consider a soft link in ~/.ant/lib to
+    this library.
+    -->
+
+    <ftp server="ftp.berlios.de"
+      userid="anonymous"
+      password="monqJfaDeveloper"
+      remotedir="incoming">
+      <fileset dir="dist">
+	<include name="monq-${version}.jar"/>
+	<include name="monqApiDoc-${version}.jar"/>
+      </fileset>
+    </ftp>
+  </target>
+
+  <!-- *************************************************************** -->
+  <!-- create a tgz of the home page files -->
+  <target name="packsite" depends="apidoc,tutorial,emma">
+    <tar destfile="dist/site.tar.gz" compression="gzip">
+      <tarfileset dir="Documentation" 
+	includes="index.html style.css *.png" />
+      <tarfileset dir="dist" includes="monqApiDoc/**" />
+      <tarfileset dir="Documentation/Tutorial"
+	includes="MonqJfaTutorial.pdf" />
+      <tarfileset dir="Documentation/Tutorial" prefix="examples"
+	includes="*.java"/>
+      <tarfileset dir="emma" prefix="coverage"
+	includes="index.html _files/**"/>
+    </tar>
+  </target>
+  <!-- *************************************************************** -->
+  <target name="pubsite" depends="packsite"
+    description="upload home page, only works for hk">
+    <exec executable="scp" dir="dist" failonerror="true">
+      <arg line="site.tar.gz pifpafpuf@shell.berlios.de:/home/groups/monqjfa/htdocs"/>
+    </exec>
+    <exec executable="ssh" failonerror="true">
+      <arg line="pifpafpuf@shell.berlios.de 'cd /home/groups/monqjfa/htdocs; tar xzf site.tar.gz'"/>
+    </exec>
+  </target>
+  <!-- *************************************************************** -->
+  <!-- run pdflatex to create the tutorial -->
+  <target name="tutorial">
+    <exec dir="Documentation/Tutorial" 
+      executable="/bin/sh"
+      failonerror="true"
+      >
+      <arg line="maketut"/>
+    </exec>
+  </target>
+  <!-- *************************************************************** -->
+
+  <!-- for debugging, show all properties -->
+  <target name="props" depends="setVersion,findfeatures,svnclean"
+    description="debug aid: prints all defined properties">   
+    <property name="copy-of-CPLOCAL" refid="CPLOCAL"/>
+    <echoproperties/>
+  </target>
+</project>
+ 

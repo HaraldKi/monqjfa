@@ -1,0 +1,161 @@
+VERSION 1.1
+
+With this version, monqjfa made the move to Java 1.5. When compiling,
+there is only one 'unchecked' warning left. Where necessary, generic
+parameters were added and in the process, a few loops turned out to be
+more readable with 1.5 syntax.
+
+In addition, there is a new FaAction called monq.jfa.actions.Call. It
+simplifies writing applications a lot, because all callbacks for a Dfa
+can be combined as methods in one class and need not be implemented as
+individual (anonymous) classes.
+
+Some minor improvements and some cleanup leads to slightly
+incompatible changes in monq.clifj. The necessary changes should be
+obvious from compiler output.
+
+
+VERSION 1.0
+
+This version is functionally equivalent to version 0.19. With version
+1.0 we celebrate the move to berlios.de and the entry of 6 developers.
+
+
+VERSION 0.19
+
+IMPORTANT: The communication between Dist(Pipe)?Filter and
+FilterServiceFactory changed. You have to recompile and restart
+servers in order to work with the new Dist(Pipe)?Filter.
+
+The ServiceFactory interface was changed so that createService accepts
+an additional arbitrary Object that can be used to parameterize the
+Service created. FilterServiceFactory, DistPipeFilter and DistFilter
+make use of this by providing for a set of key/value pairs to be send
+upstream to individual servers.
+
+Introduced Feeder and Drainer interfaces in monq.stuff. A Feeder is
+needed to use a DistPipeFilter. Together they result in a pipe, i.e. a
+Runnable that passes data from an InputStream into an
+OutputStream. AbstractPipe has a basic implementation that can be used
+to implement Feeders and Drainers easily. Feeders feeding from a
+Reader, a CharSequence and a DfaRun are available.
+
+VERSION 0.18
+
+Bug fixes: 
+a) The templates of DictFilter went wrong when they contained
+character entities like "&lt;". This bug was introduced in version 0.13.
+
+VERSION 0.17
+
+Bug fixes:
+a) TcpServer could get stuck on unchecked exceptions thrown by a
+Service.
+b) DfaRun could gobble all memory in mode UNMATCHED_COPY if no match
+was found at all.
+
+Features:
+a) Historically DictFilter always added a default word in addition to
+what was found in the dictionary. This can now be switched off on the
+command line.
+
+VERSION 0.16
+
+A region-of-interest (ROI) --- similar to monq.programs.Grep --- can
+now be defined when setting up a finite automaton (FA) via Jython
+(monq.jfa.JyFA). The ROI restricts the work of the pattern/action
+pairs of the FA to the region of interest. Text outside the ROI can
+either be deleted or ignored. Unit tests were added for JyFA.
+
+Exception reporting for CallbackExceptions was (hopefully) improved.
+
+VERSION 0.15a
+
+Maintenance release: Example java program and description of the
+regular expression syntax where missing in the documentation package.
+
+
+VERSION 0.15
+
+Jython can now be easily used to set up all the regular expressions
+for an Nfa. The class monq.jfa.JyFA loads an Nfa from a jython module
+and monq.programs.JythonFilter allows to set up a series of JyFAs from
+the command lin.
+
+
+VERSION 0.14
+
+Maintenence release: The example mentioned in README did not compile.
+
+
+VERSION 0.13
+
+Major code rearrangements and cleanup: 
+
+1) Because the way to handle unmatched input as well as which action
+callback to call at EOF are design issues with an automaton, they are
+now properly stored in the Dfa when it is compiled from the Nfa. The
+DfaRun retrieves both pieces of information from the Dfa.
+
+2) Several constructors of DfaRun as well as of Nfa were
+deprecated/deleted to reduce code bloat. Similarly DfaRun.setIn(). The
+major impact is that creation of a CharSource must be done
+explicitely. 
+
+3) Formatter.format() has an explicit Map argument to avoid storing
+the Map in the Formatter which, for Printf(Formatter), would result in
+the Dfa not be shareable between threads.
+
+4) All monq.jfa.actions.* got their internal state removed so that the
+can be used in a Dfa which is shared between threads. They retrieve
+the state to manipulate from DfaRun.clientData.
+
+5) Xml.splitElement versions to fill a TextStore are no longer
+available. Now always a Map is filled.
+
+
+VERSION 0.12
+
+This version was internal only. Some of the more visible changes
+include: Sizeof also records parent statistics for each type; Term2Re
+does not add optional plural 's' to words not ending in a character;
+DictFilter's <r> got an attribute for trailing context, i/o encodings
+handled more seriously; DfaService deprecated due to improper
+encodings handling, use DfaRunService instead.
+
+VERSION 0.10
+
+This is a bug fix release. In monq.net.TcpServer, creating the service
+object was done in the connection related thread, which meant that the
+ServiceFactory to create the Service object had to be thread safe. Now
+createService is called in the server's main thread
+only. As a result, FilterServiceFactory had to be changed to not
+potentially block while creating a service.
+Another fix regards a bad allocation strategy in the code handling
+submatches, which lead to extremely slow operation for huge matches.
+
+VERSION 0.9
+
+The package monq.jfa.ctx, which supports recursive parsing, now has a
+tutorial introduction in the package description. This also triggered
+a rewrite which simplified things and corrected a serious bug. Unit
+tests with nearly 100% coverage were added.
+
+
+VERSION 0.8
+
+The new package monq.jfa.ctx is an experiment in recursive parsing
+with jfa. The package provides the infrastructure to call callbacks
+based on a regular expression AND a stack context. More info can be
+found in the api documentation, in particular for
+monq.jfa.ctx.ContextManager. 
+
+
+VERSION 0.7
+
+First public GPLed version.
+
+
+VERSION 0.6
+
+Stable version used for quite some time in house.

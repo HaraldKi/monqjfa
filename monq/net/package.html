@@ -1,0 +1,56 @@
+  <body>
+
+    <p>Simple tcp server and clients. </p>
+
+    <h4><code>TcpServer</code>, <code>Service</code> and
+      <code>ServiceFactory</code></h4> 
+
+    <p>The most basic class provided is {@link monq.net.TcpServer}
+    which handles all the nasty bits of setting up a network
+    connection. For every incoming connection it asks a {@link
+    monq.net.ServiceFactory} to generate a {@link
+    monq.net.Service}. The <code>Service</code> is then plumbed up
+    with the I/O streams of the network connection and its
+    <code>run()</code> method called. When that finishes, the
+    <code>TcpServer</code> cleans up the remains of the thread and
+    closes the connection.</p>
+
+    <h4><code>DfaService</code> and <code>DfaRunService</code></h4>
+
+    <p>If you have a class that creates a {@link monq.jfa.DfaRun}
+    object, it can implement the interface <code>ServiceFactory</code>
+    by wrapping the <code>DfaRun</code> into a into a {@link
+    monq.net.DfaRunService}.</p>
+
+    <p>Example<pre>
+  public createService(java.io.InputStream in, 
+                       java.io.OutputStream out) {
+    DfaRun r = ... // do whatever is necessary 
+                   // to create a DfaRun
+    r.setIn(in);
+    return new DfaRunService(r, new PrintStream(out));
+  }</pre>
+    </p>
+    
+    <h4><code>FilterServiceFactory</code> and
+      <code>DistPipeFilter</code></h4> 
+
+    <p>To set up one element of a distributed filter pipeline, use
+    a {@link monq.net.FilterServiceFactory}. Suppose you have a
+      <code>ServiceFactory</code> object called
+      <code>mySF</code>. Then do the 
+      following:<pre>  FilterServiceFactory fsf = new FilterServiceFactory(mySF);
+  int port = 3456;
+  new TcpServer(port, fsf).serve();</pre>
+    As a result, the service created for connections on the given port
+      will read from its input stream instructions of how to fetch
+      input data, normally from another upstream server. It
+      establishes the connection and plumbs up your underlying service
+      with the input from upstream and the output to downstream, all
+      fully automatic.
+    </p>
+
+    <p>To access a pipeline of filter services as described above, use
+      {@link monq.net.DistPipeFilter} or its command line wrapper
+      {@link monq.programs DistFilter}.</p>
+  </body>

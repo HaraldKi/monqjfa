@@ -1,0 +1,43 @@
+#!/bin/sh
+########################################################################
+#
+# This is a bit of a hack, but I feel that it is much easier and
+# better to understand than forcing people to download all kind of
+# fancy stuff for ant, just to run pdflatex and bibtex a few times.
+#
+# (C) 2007 Harald Kirsch
+#
+########################################################################
+
+# Just run pdflatex often enough:-)
+needRun() {
+  test MonqJfaTutorial.tex -nt MonqJfaTutorial.pdf \
+   || grep -qsi 'label.s. may have ch' MonqJfaTutorial.log
+}
+haveErr() {
+  ! test -f MonqJfaTutorial.log \
+  || grep -m 1 -B 1 -iE '^l[.][0-9]+' MonqJfaTutorial.log
+}
+
+P='pdflatex -interaction batchmode'
+
+needRun || haveErr || exit 0
+$P MonqJfaTutorial
+bibtex MonqJfaTutorial
+
+if  err=$(haveErr) ; then
+  echo "ERROR: $err"
+  exit 1
+fi
+
+needRun || exit 0
+
+i=10
+while needRun && test $i -gt 0; do 
+  i=$((i-1))
+  $P MonqJfaTutorial
+done
+
+if [ $i = 0 ]; then
+  echo "***** still not finished after 10 rounds *****"
+fi

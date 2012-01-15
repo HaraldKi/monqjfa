@@ -1,0 +1,76 @@
+
+/*****
+  The body positioning is necessary to allow positioning of
+  the children.
+*****/
+html { 
+  margin: 0px;
+}
+body { 
+  position: relative;
+  top: 0px;
+  left: 0px;
+  margin: 0px;
+  background: url("bg.png");
+  background-repeat: repeat-y;
+  /* background-position: right; */
+  height: 100%;
+}
+
+.main { 
+  max-width: 55em;
+  /* border-left: 1px solid grey; */
+  padding-left: 1em;
+  padding-right: 1em;
+  background: url("bg.png");
+  background-repeat: repeat-y;
+}
+
+.navi { 
+  float: left;
+  margin: 0 1em 1em 0.5em;
+  padding: 0px 1em 0px 0px;
+  border-right: 1px solid #ffd712;
+  border-bottom: 1px solid #ffd712;
+  overflow: auto;
+/*   background: grey; */
+}
+
+.navi h1 {
+  font-size: medium;
+  font-variant: small-caps;
+  margin: 0px;
+  margin-top: 1em;
+  margin-bottom: 0em;
+}
+
+.navi p {
+  font-size: smaller;		/* relative to .navi */
+  margin: 0px;
+  margin-left: 3px;
+  margin-bottom: 2px;
+}
+
+a:link { color: #a00000 }
+a:visited { color:  #CD4444}
+a:active { color: #FF6347 }
+
+
+.footer { 
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  border-top: 1px solid #ffd712;
+  background: white url("bg.png");
+  background-repeat: repeat-y;
+  z-index: 1;
+}
+.footcont { 
+  padding: 3px
+}
+.footcont p {
+  margin: 0px;
+  font-size: smaller;
+  text-align: right;
+}

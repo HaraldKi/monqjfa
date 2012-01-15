@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+      <head>
+	<title>monqJfa - Java Finite Automata</title>
+	<script language=" javascript" type="text/javascript">
+    <!--
+	  function makemail(where, title, who, name) {
+            document.write("<a href='mailto:" 
+	                   + who +"@"+ where.replace("#", ".") +"' "
+  	                   + "title='" + title+"'"
+	                   + ">"
+	                   + name
+	                   + "<\/a>");
+	  }
+	  -->
+	</script>
+    <link rel="stylesheet" type="text/css" href="style.css"></link>
+    
+  </head>
+  <body>
+    <div class="navi">
+      <h1>Manage&shy;ment</h1>
+      <p><a href="https://developer.berlios.de/projects/monqjfa/">Project</a></p>
+
+      <p><a href="https://developer.berlios.de/bugs/?group_id=8239">Bugs</a></p>
+
+      <p><a
+      href="https://developer.berlios.de/feature/?group_id=8239">Features</a></p>
+      <p><a href="https://developer.berlios.de/support/?group_id=8239">Support</a></p>
+
+      <p><a href="http://svn.berlios.de/wsvn/monqjfa/trunk/?rev=0&amp;sc=0">Code Browser</a></p>
+
+      <p><a href="https://developer.berlios.de/project/showfiles.php?group_id=8239">Download</a></p>
+
+      <p><a href="http://freshmeat.net/projects/monq.jfa">Freshmeat</a></p>
+
+
+      <h1>Documentation</h1>
+      <p><a href="monqApiDoc/index.html">API</a></p>
+      <p><a href="coverage/index.html">Test Coverage</a></p>
+      <p><a href="MonqJfaTutorial.pdf">Tutorial (pdf)</a></p>
+      <p><a href="examples" title="Tutorial Example Files">Examples</a></p>
+
+
+      <div style="height:2cm">&nbsp;</div>
+
+      <h1>Sponsors</h1>
+      <p>software host<br/><a
+	  href="http://developer.berlios.de"><img
+	    src="http://developer.berlios.de/bslogo.php?group_id=8293"
+	    width="124" height="32" border="0" alt="BerliOS Logo"
+	    /></a></p>
+
+      <p>development<br/><a
+	  href="http://www.ebi.ac.uk/Rebholz/"><img
+	    src="http://www.ebi.ac.uk/Groups/images/logo_rebholz.gif"
+	    border="0" alt="Rebholz Group Logo"/></a><br/>at<br/><a
+	  href="http://www.ebi.ac.uk/"><img
+	    src="http://www.ebi.ac.uk/inc/images/ebi_logo.jpg"
+	    border="0" alt="EBI Logo" width="124"/></a></p>
+
+      <div style="height:1cm;">&nbsp;</div>
+
+    </div>
+    <!-- ******************************************************** -->
+
+    <div class="main">
+	
+      <h1><code>monq.jfa</code> &mdash; Java Finite Automata</h1>
+
+      <p>The Java class library monq.jfa provides fast and flexible
+      text filtering with regular expressions. In contrast to
+      <code>java.util.regex</code>, <code>monq.jfa</code> allows a
+      regular expression to be bound to an action that is
+      automatically called whenever a match is spotted in an input
+      stream.</p>
+
+      <p>In addition it is possible to combine several tenthousand
+      regex/action pairs into one machinery (called <span
+      style="border-bottom: grey dashed 1px;" 
+	title="deterministic finite automaton">DFA</span>). The DFA filters input to output
+      by looking for matches of all regular expressions in parallel,
+      calling their actions to reformat the text or to incrementally
+      built up a data structure.</p>
+    
+      <p>The filtering speed is 1.5MB/s on P4 2.6GHz and is mostly
+      unrelated to the number of regex/action pairs.</p>
+
+      <p>A general purpose TCP server and associated classes in
+      <code>monq.net</code> allow the bigger DFAs to be run as servers.</p>
+
+
+      <p>If you need a <b>GPL free</b> version of the software to use
+      in closed source projects, please contact the <a
+      href="http://www.ebi.ac.uk/Rebholz/contact.html">Text Mining
+      Group at the EBI</a>.
+      </p>
+
+      <h2>Is this for me?</h2>
+
+      <p>To quickly see the pros and cons of <code>monq.jfa</code>
+      compared to other regular expression engines, read the <em>Key
+      Features</em> section of the <a
+      href="MonqJfaTutorial.pdf">tutorial</a>.</p>
+
+      <!-- help to scroll all the way past the footer -->
+      <div style="height:1cm;">&nbsp;</div>
+
+    </div>
+
+    <!-- ******************************************************** -->
+
+
+    <div class="footer">
+      <div class="footcont">
+	<p>Design &copy;2007 by 
+	<script type="text/javascript" language="javascript"><!--
+	  makemail("pifpafpuf#de", 
+	  "contact me", "Harald.Kirsch", "Harald Kirsch");
+	  -->
+	</script></p>
+      </div>
+    </div>
+    
+
+  </body>
+</html>

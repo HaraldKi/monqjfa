@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!-- SED: This file needs to be edited before being shipped -->
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Jfa Tutorial</title>
+    <link href="jfastyle.css" rel="stylesheet" type="text/css" />
+    <script language ="javascript" type="text/javascript">
+      <!--
+      function makemail(where, title, who, name) {
+          document.write("<a href='mailto:" 
+			 + who +"@"+ where.replace("#", ".") +"' "
+			 + "title='" + title+"'"
+			 + ">"
+			 + name
+			 + "<\/a>");
+        }
+      -->
+    </script>  
+  </head>
+
+  <body>
+    <div class="rfltimg">
+      <img src="JfaLogo.png" alt="Jfa Logo" />
+    </div>
+
+    <div class="main">
+      <h1>Jfa Tutorial</h1> 
+
+      <p>This was a Wiki previously, but several people asked for a
+	document that can also be printed nicely. Therefore I turned
+	the tutorial contents into an old fashioned document.</p>
+
+      <p>The tutorial is available as <a
+      href="MonqJfaTutorial.pdf">MonqJfaTutorial.pdf</a>. It
+      makes use of the following example Java files:</p>
+      <ul>
+	<li><a
+	href="CompileTest.java"><code>CompileTest.java</code></a> is
+	used to check that you have a basic installation of <a
+	href="http://www.ebi.ac.uk/Rebholz-srv/whatizit/software"><code>monq.jfa</code></a>.</li>
+
+	<li><a href="Example.java"><code>Example.java</code></a>
+	  serves as an initial example.</li>
+
+	<li><a href="CountWords.java"><code>CountWords.java</code></a>
+	    shows how actions should communicate.</li>
+
+	<li><a
+	href="ExampleFaAction.java"><code>ExampleFaAction.java</code></a>
+	contains a simple <code>FaAction</code> implementation.</li>
+
+	<li><a
+	href="PatternConflict.java"><code>PatternConflict.java</code></a>
+	is used to explain how priorities are used to resolves
+	conflicts between patterns.</li>
+
+      </ul>
+
+      <p>To get the tutorial as well as the example files, download <a
+      href="MonqJfaTutorial-@VERSION@.tar.gz">MonqJfaTutorial-@VERSION@.tar.gz</a></p>
+    </div>
+    
+    <div class="footer">
+      <p>Send comments and questions to
+	<script type="text/javascript" language="javascript">
+	  makemail("pifpafpuf#de", 
+	  "Harald Kirsch",
+	  "Harald.Kirsch", "Harald Kirsch");
+	</script>.</p>
+    </div>
+
+    
+  </body>
+</html>

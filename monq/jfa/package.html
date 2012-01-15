@@ -1,0 +1,111 @@
+  <!-- $Revision: 1.18 $, $Date: 2005-07-12 12:23:29 $ -->
+  <body> 
+    <p>Implements Finite Automata, deterministic and
+      nondeterministic, with an engine for high throughput filtering of
+      text. There is a complete <a href="doc-files/Example.java">example program</a>
+      available the main parts of which are described below.</p>
+
+    <p>A typical use of this package involves the following steps.
+    </p>
+    <ol>
+      <li>Creation of an {@link monq.jfa.Nfa} comprising one or more <a
+      href="doc-files/resyntax.html">regular expressions</a> to which
+      {@link monq.jfa.FaAction} callbacks are attached.  The
+      <code>Nfa</code> defined below matches identifiers and positive
+      integers. It has actions attached to tag them with &lt;id&gt;
+      and &lt;num&gt; respectively.
+	<pre>
+import monq.jfa.*;
+import monq.jfa.actions.*;
+Nfa nfa = 
+  new Nfa(<font color="green">"[A-Za-z_][A-Za-z0-9_]*"</font>, new Printf("&lt;id&gt;%0&lt;/id&gt;"))
+      .or(<font color="green">"[0-9]+"</font>, new Printf("&lt;num&gt;%0&lt;/num&gt;"));</pre>
+      </li>
+      <li>Compilation of the <code>Nfa</code> into a {@link monq.jfa.Dfa}.
+	<pre>
+Dfa dfa = nfa.compile({@link monq.jfa.DfaRun#UNMATCHED_COPY}); </pre>
+	A <code>Dfa</code> is a data structure that allows to match
+	the regular expessions which where stuck into the
+	<code>Nfa</code>. The running time depends only linearly on the
+	length of the input string. The parameter given to
+	<code>compile()</code> specifies how non-matching input shall
+	be treated. In this case it is copied unchanged to the output.
+      </li>
+      <li>To operate the <code>Dfa</code>, it must be wrapped in a
+      {@link monq.jfa.DfaRun} which applies the <code>Dfa</code> to input
+      data, e.g. the standard input stream.
+	<pre>
+DfaRun run = new DfaRun(dfa, new ReaderCharSource(System.in));</pre>	
+      </li>
+      <li>Finally, the <code>DfaRun</code> is asked to filter to <code>System.out</code>:
+	<pre>
+run.filter(System.out);</pre>
+	There are also methods to {@link monq.jfa.DfaRun#read() read()} from a
+	<code>DfaRun</code>.
+      </li>
+    </ol>
+    <p>Now you may want to compile and run the 
+      <a href="doc-files/Example.java">slightly more elaborate example</a>.
+    </p>
+
+
+    <h3>Feature Highlights</h3>
+    <ul>
+      <li>A <code>DfaRun</code> can be used as the input source for
+	another <code>DfaRun</code>:<pre>
+  DfaRun a = new DfaRun(..., new ReaderCharSource(System.in));
+  DfaRun b = new DfaRun(..., <font color="red">a</font>);</pre>
+      </li>
+      <li>An {@link monq.jfa.FaAction} is allowed to change the {@link
+	monq.jfa.Dfa} of 
+	a {@link monq.jfa.DfaRun} on the fly. This allows for pieces of text to
+	be operated upon by different <code>Dfa</code>s. A general
+	action to change the <code>Dfa</code> is {@link
+	monq.jfa.actions.SwitchDfa}. 
+      </li>
+      <li>There are many predefined general purpose callbacks
+	available in the package {@link monq.jfa.actions}.
+      </li>
+      <li>You can push back an arbitrary number of characters into the
+	input of a <code>DfaRun</code> with {@link monq.jfa.DfaRun#unskip
+	DfaRun.unskip()}. This in particular allows matches with a
+	trailing context. You only have push back the context in the
+	action callback.
+      </li>
+    </ul>
+    <h3>Computational Model</h3>
+    <p>The model of operation implemented by this package was
+      inspired by <em>LEX &mdash; Lexical Analyzer Generator</em>
+      described in 1975 by M.E.Lesk and E.Schmidt in the 
+      <em>UNIX Programmer's Manual</em> and its more recent GNU incarnation
+      <a href="http://www.gnu.org/software/flex/">flex</a>. This means
+      in particular that the software operates as a filter which
+      changes text as it passes through the machinery. Filtering,
+      i.e. changing text, is initiated whenever a regular expression
+      encoded in the machinery matches. The filter operation itself is
+      carried out by callbacks invoked for every matching piece of
+      text. Apart from changing the text, the callback may count
+      occurences, record things in a database, or do whatever can be
+      done with a piece of java code.
+    </p>
+    <p>The interface of such a callback is {@link
+      monq.jfa.FaAction}. Normally you just need to extend {@link
+      monq.jfa.AbstractFaAction} and implement the {@link
+      monq.jfa.FaAction#invoke invoke()} method.
+      Commonly used callbacks can be found in the package {@link
+      monq.jfa.actions}.
+    </p>
+    <p>While this implementation uses fast <em>deterministic finite
+    automata</em> (DFA) for matching, it nevertheless implements the
+    tracking of submatches. A description of the formal
+    behaviour of the method used shows that it simply does not work in
+    the general case, but it works quite well in many practical
+    applications. Nevertheless care must be taken when using
+    submatches, as sometimes results are a little surprising. For more
+    information see the description of <a
+    href="doc-files/resyntax.html#rse">subexpressions</a> as well as
+    what to do <a href="doc-files/resyntax.html#broken">if they don't
+	work</a>.
+    </p>
+    
+  </body>
