@@ -1,0 +1,4 @@
+*.aux *.log *.out *.toc
+MonqJfaTutorial.pdf
+index.html site.tar.gz MonqJfaTutorial-*.tar.gz
+MonqJfaTutorial.bbl MonqJfaTutorial.blg MonqJfaTutorial.brf
