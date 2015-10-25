@@ -58,7 +58,7 @@ public class Nfa  {
   // markAsSub). Must not exceed 256 before addAction is called.
   private int subgraphID = 0;
 
-  private ParserView pView = new ParserView();
+  private final ParserView pView = new ParserView();
 
   /**
    * <p>is used by each <code>Nfa</code> to obtain a default regular
