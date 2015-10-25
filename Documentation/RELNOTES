@@ -1,3 +1,10 @@
+VERSION 1.1.1
+
+This is a bugfix release to correct improper unsynchronized reuse of
+an object within monq.jfa.actions.Printf. The user visible symptom
+would be garbled output.
+
+
 VERSION 1.1
 
 With this version, monqjfa made the move to Java 1.5. When compiling,
