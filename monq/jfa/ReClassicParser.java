@@ -1,7 +1,5 @@
 package monq.jfa;
 
-import java.util.Arrays;
-
 /**
  * <p>implements the <a href="doc-files/resyntax.html">regular
  * expression syntax</a> classically used by <code>monq.jfa</code>. To
