@@ -129,7 +129,10 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /**
    * returned by {@link #next next()} on EOF.
    */
-  public static final FaAction EOF = new monq.jfa.actions.Drop(0);
+  public static final FaAction EOF = new AbstractFaAction() {
+      public void invoke(StringBuffer sb, int start, DfaRun r) {}
+      public String toString() { return "DfaRun.EOF"; }
+    };
 
   /**
    * is the error text used in a <code>IllegalArgumentException</code>
