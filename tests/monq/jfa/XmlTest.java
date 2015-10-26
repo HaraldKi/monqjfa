@@ -239,6 +239,12 @@ public class XmlTest extends TestCase {
 		 +"xstandalone='yes'?>", s);
   }
   /**********************************************************************/
+  public static void test_getETagName() {
+    assertEquals("x", Xml.getETagName(new StringBuffer("</x>"), 0));
+    assertEquals("A_B-c", 
+		 Xml.getETagName(new StringBuffer("..</A_B-c  >"), 2));
+  }
+  /**********************************************************************/
   public static void main(String[] argv)   {
     // Fa fa = new Fa();
     junit.textui.TestRunner.run(new TestSuite(XmlTest.class));

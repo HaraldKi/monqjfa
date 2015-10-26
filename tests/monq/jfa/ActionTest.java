@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -19,19 +19,21 @@ package monq.jfa;
 //import monq.jfa.*;
 import monq.jfa.actions.*;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import java.util.Map;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 import java.util.HashMap;
 /**
  * Test a bunch of monq.jfa.actions.*.
  *
- * @author &copy; 2005 Harald Kirsch
+ * @author &copy; 2005-2015 Harald Kirsch
  */
-public class ActionTest extends TestCase {
+public class ActionTest {
 
-  // shut up clover on Copy
+  @Test
   public void test_Copy() {
     assertEquals("Copy", Copy.COPY.toString());
   }
@@ -88,42 +90,42 @@ public class ActionTest extends TestCase {
     String pre="", post="";
     Embed[] emb = new Embed[10];
     for(int i=0; i<10; i++) {
-      emb[i] = new Embed(new String(""+(char)('a'+i)), 
+      emb[i] = new Embed(new String(""+(char)('a'+i)),
 			 new String(""+(char)('A'+i)));
     }
     for(int i=0; i<10; i++) {
       switch( i ) {
       case 0:
-	pre="a"; 
-	post="A"; 
+	pre="a";
+	post="A";
 	run = new Run(emb[0]);
 	break;
       case 1:
-	pre="ab"; 
-	post="BA"; 
+	pre="ab";
+	post="BA";
 	run = new Run(emb[1], emb[0]);
 	break;
       case 3:
-	pre="abc"; 
-	post="CBA"; 
+	pre="abc";
+	post="CBA";
 	run = new Run(emb[2], emb[1], emb[0]);
 	break;
       case 4:
-	pre="abcd"; 
-	post="DCBA"; 
+	pre="abcd";
+	post="DCBA";
 	run = new Run(emb[3], emb[2], emb[1], emb[0]);
 	break;
-      default: 
+      default:
 	pre = "";
 	post = "";
 	for(int j=0; j<i; j++) {
 	  if( j==0 ) run = new Run(emb[i-1]);
-	  else run.add(emb[i-j-1]);		      
+	  else run.add(emb[i-j-1]);
 	  pre = pre+((char)(j+'a'));
 	  post = ""+((char)(j+'A'))+post;
 	}
       }
-      String s = new 
+      String s = new
 	Nfa("0", run)
 	.compile(DfaRun.UNMATCHED_THROW)
 	.createRun()
@@ -135,15 +137,15 @@ public class ActionTest extends TestCase {
   /**********************************************************************/
   public void test_SearchReplace1() throws Exception {
     String s = new
-      Nfa(Xml.GoofedElement("(X|Y)"), 
+      Nfa(Xml.GoofedElement("(X|Y)"),
 	  new SearchReplace("<(!/?[A-Z]+)>", "[%1]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("<X>bla</X>, <Y>bli</Y>")
       ;
-    assertEquals("[X]bla[/X], [Y]bli[/Y]", s);	  
+    assertEquals("[X]bla[/X], [Y]bli[/Y]", s);
   }
-  
+
   // here we try to limit the number of replacements done
   public void test_SearchReplace2() throws Exception {
     String s = new
@@ -160,7 +162,7 @@ public class ActionTest extends TestCase {
     TextSplitter sp = new RegexpSplitter("/", RegexpSplitter.SPLIT);
     Formatter fmt = new PrintfFormatter("%3/%2/%1");
     String s = new
-      Nfa("[^\n]+", new SearchReplace("[0-9]+/[0-9]+/[0-9]+", 
+      Nfa("[^\n]+", new SearchReplace("[0-9]+/[0-9]+/[0-9]+",
 				      sp, fmt, -1))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -174,20 +176,21 @@ public class ActionTest extends TestCase {
     // otherwise we drop
     Hold h = new Hold();
     Count c = new Count("ccc");
-    DfaRun r = new 
+    DfaRun r = new
       Nfa("\\[", new Run(h, c.reset()))
       .or("b", c)
       .or("bb", c.add(2))
-      .or("\\]", new If(c.ge(3), 
-			new Run(new Printf("(%(ccc))]"), h.ship()), 
+      .or("\\]", new If(c.ge(3),
+			new Run(new Printf("(%(ccc))]"), h.ship()),
 			h.drop()))
       .compile(DfaRun.UNMATCHED_DROP)
       .createRun()
       ;
     r.clientData = new MapProvider() {
-	Map m = new HashMap();
-	public Map getMap() { return m; }
-      };
+      Map<Object,Object> m = new HashMap<>();
+      @Override
+      public Map<Object,Object> getMap() { return m; }
+    };
     String s = r.filter("[a] [aba] [aabb] [abbba] [abbbbbb]");
     assertEquals("[bbb(3)][bbbbbb(6)]", s);
     assertEquals(6, c.getValue(r));
@@ -195,11 +198,12 @@ public class ActionTest extends TestCase {
   /**********************************************************************/
   public static void test_HoldGetStart() throws Exception {
     final Hold h = new Hold();
-    DfaRun r = new 
+    DfaRun r = new
       Nfa("A", h)
       .or("b", new AbstractFaAction() {
 	  private Hold hh = h;
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  @Override
+    public void invoke(StringBuffer yytext, int start, DfaRun r) {
 	    yytext.insert(hh.getStart(r), "[");
 	    yytext.append(']');
 	  }
@@ -207,23 +211,25 @@ public class ActionTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun();
     r.clientData = new MapProvider() {
-	Map m = new HashMap();
-	public Map getMap() { return m; }
-      };
+      Map<Object,Object> m = new HashMap<>();
+      @Override
+      public Map<Object,Object> getMap() { return m; }
+    };
     String s = r.filter("...A-----b...");
     assertEquals("...[A-----b]...", s);
   }
   /**********************************************************************/
   public static void test_throwAtEndOfHold() throws Exception {
     Hold h = new Hold();
-    DfaRun r = new 
+    DfaRun r = new
       Nfa("xxxx", h.ship())
       .compile(DfaRun.UNMATCHED_DROP)
       .createRun();
     r.clientData = new MapProvider() {
-	Map m = new HashMap();
-	public Map getMap() { return m; }
-      };
+      Map<Object,Object> m = new HashMap<>();
+      @Override
+      public Map<Object,Object> getMap() { return m; }
+    };
 
     Exception e = null;
     Throwable cause = null;
@@ -238,7 +244,7 @@ public class ActionTest extends TestCase {
     assertTrue(cause instanceof IllegalStateException);
     assertTrue(s.startsWith("Hold not active"));
     assertTrue(s.endsWith("[[xxxx]]"));
-	       
+
     //e.printStackTrace();
     //assertEquals("Hold not active when looking at `xxxx[EOF]'", s);
   }
@@ -284,11 +290,7 @@ public class ActionTest extends TestCase {
       .createRun();
     String s = r.filter("...99...123abc...");
     assertEquals("123", s);
-  }  
-  /**********************************************************************/
-  public static void main(String[] argv) {
-    junit.textui.TestRunner.run(new TestSuite(ActionTest.class));
   }
-
+  /**********************************************************************/
 }
- 
+

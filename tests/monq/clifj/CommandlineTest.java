@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -62,7 +62,7 @@ public class CommandlineTest extends TestCase {
   }
   /*+********************************************************************/
   public void test_BasicFullException() {
-    Commandline cmd = 
+    Commandline cmd =
       new Commandline("TestProg", "do the test", "rest", "the rest", 1, 2);
     String[] argv = {"furp1", "glurp2", "blarg3", "murf4"};
     Exception e = parse(cmd, argv);
@@ -74,7 +74,7 @@ public class CommandlineTest extends TestCase {
 
   /*+********************************************************************/
   public void test_BasicFullException2() {
-    Commandline cmd = 
+    Commandline cmd =
       new Commandline("TestProg", "do the test", "rest", "the rest", 1, 2);
     String[] argv = {};
     Exception e = parse(cmd, argv);
@@ -86,7 +86,7 @@ public class CommandlineTest extends TestCase {
 
   /*+********************************************************************/
   public void test_explicitRest() {
-    Commandline cmd = 
+    Commandline cmd =
       new Commandline("TestProg", "do the test", "rest", "the rest", 1, 3);
     String[] argv = {"furp1", "--", "glurp2", "blarg3"};
     Exception e = parse(cmd, argv);
@@ -107,7 +107,7 @@ public class CommandlineTest extends TestCase {
   /* +******************************************************************* */
   public void test_required() {
     Commandline cmd = new Commandline("TestProg", "do the test");
-    cmd.addOption(new Option("-a", "anopt", 
+    cmd.addOption(new Option("-a", "anopt",
         "test an option", 0, 19999).required());
     String[] argv = { "-a", "blarg", "varg" };
     Exception e = parse(cmd, argv);
@@ -119,7 +119,7 @@ public class CommandlineTest extends TestCase {
   /*+********************************************************************/
   public void test_requiredFail() {
     Commandline cmd = new Commandline("TestProg", "do the test");
-    cmd.addOption(new Option("-a", "anopt", 
+    cmd.addOption(new Option("-a", "anopt",
         "test an option", 0, 19999).required());
     String[] argv = {};
     Exception e = parse(cmd, argv);
@@ -131,9 +131,9 @@ public class CommandlineTest extends TestCase {
   /*+********************************************************************/
   public void test_requiredFail2() {
     Commandline cmd = new Commandline("TestProg", "do the test");
-    cmd.addOption(new Option("-a", "anopt", 
+    cmd.addOption(new Option("-a", "anopt",
         "test an option", 0, 19999).required());
-    cmd.addOption(new Option("-b", "anopt", 
+    cmd.addOption(new Option("-b", "anopt",
         "test an option", 0, 19999).required());
     String[] argv = {};
     Exception e = parse(cmd, argv);
@@ -192,10 +192,10 @@ public class CommandlineTest extends TestCase {
     String[] argv = {"-l", "12", "13", "18"};
     Exception e = parse(cmd, argv);
     assertNull(e);
-    assertEquals(new Long(12), (Long)cmd.getValue("-l"));
+    assertEquals(new Long(12), cmd.getValue("-l"));
     assertEquals(12L, cmd.getLongValue("-l"));
 
-    Vector values = cmd.getValues("-l");
+    Vector<Object> values = cmd.getValues("-l");
     assertEquals(3, values.size());
     for(int i=0; i<3; i++) {
       Object o = values.get(i);
@@ -225,9 +225,9 @@ public class CommandlineTest extends TestCase {
     cmd.addOption(new Option("-f", "input", "all input files", 1,
                              Integer.MAX_VALUE));
     Long dflt[] = {-1L, 12L};
-    cmd.addOption(new LongOption("-l", "weight", 
-                                 "weight vector to cast the blaselfaster "+ 
-                                 "into the muckujacker and obtain "+ 
+    cmd.addOption(new LongOption("-l", "weight",
+                                 "weight vector to cast the blaselfaster "+
+                                 "into the muckujacker and obtain "+
                                  "the shnooodoodelbom", 0, 4, -10, 20, dflt));
     String[] argv = {"-h"};
     Exception e = parse(cmd, argv);
@@ -243,8 +243,8 @@ public class CommandlineTest extends TestCase {
   /* +******************************************************************* */
   public void testBreakLongWord() {
     Commandline cmd =  new Commandline("TestProg", "do the test");
-    
-    cmd.addOption(new Option("-o", "option", 
+
+    cmd.addOption(new Option("-o", "option",
                              "we test this option with the word "
                              + "voodooomasterblasterwonderwuzzelsuperdazzeledgargleblaster, "
                              + "which is just the right stuff", 0, 1));
@@ -395,5 +395,5 @@ public class CommandlineTest extends TestCase {
   public static void main(String[] argv) {
     junit.textui.TestRunner.run(new TestSuite(CommandlineTest.class));
   }
-  
+
 }
