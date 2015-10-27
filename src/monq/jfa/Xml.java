@@ -77,60 +77,6 @@ public final class Xml {
    */
   public static String STag() { return STag(Name); }
 
-  /**
-   * <p>creates an {@link Nfa} to match any XML start tag. It is a
-   * convenience shortcut for</p>
-   * <blockquote>
-   *   <code>STagNfa({@link Xml#Name}, handler)</code>.
-   * </blockquote>
-   */
-//   public static Nfa STagNfa(Formatter handler) {
-//     Nfa result;
-//     try {
-//       result = STagNfa(Name, handler); 
-//     } catch( ReSyntaxException e) {
-//       ///CLOVER:OFF
-//       throw new Error("this cannot happen", e);
-//       ///CLOVER:ON
-//     }
-//     return result;
-//   }
-
-  /**
-   * <p>creates an {@link Nfa} to match an XML start tag with a given
-   * tag name. An action is set up and added to the <code>Nfa</code>
-   * which splits the start tag into tag name and attribute/value
-   * pairs by means of a {@link #splitSTag splitSTag()} and then calls the
-   * <code>handler</code> with the {@link TextStore} filled by the
-   * splitter.</p>
-   *
-   * <p><b>Hint:</b> Because the handler is a {@link Formatter}, it does
-   * not get the calling {@link DfaRun} passed in. In case this is
-   * necessary, don't use this convenience function, but write your
-   * own {@link FaAction} which does have access to the calling
-   * <code>DfaRun</code> and use <code>splitSTag()</code> to split
-   * the match into the parts described above.</p>
-   *
-   * @param nameRe is the regular expression to match the name of the
-   * start tag. Most of the time it will be just a string.
-   * 
-   * @param handler is the callback invoked by the action added to the
-   * <code>Nfa</code>. 
-   *
-   * @throws ReSyntaxException if the supplied regular expression
-   * contains a syntax error.
-   * 
-   * @see <a href="http://www.w3.org/TR/REC-xml#NT-STag">XML
-   * start tag</a>
-   */
-//   public static Nfa STagNfa(String nameRe, 
-// 			    Formatter handler) 
-//     throws ReSyntaxException {
-
-//     String re = STag(nameRe);
-//     FaAction a = new Printf(STAGSPLITTER, handler, 0);
-//     return new Nfa(re, a);
-//   }
   /**********************************************************************/
   //
   // EmptyElemTag
@@ -152,42 +98,6 @@ public final class Xml {
    */
   public static String EmptyElemTag() { return EmptyElemTag(Name); }
 
- /**
-   * <p>creates an {@link Nfa} to match any XML empty element tag. It
-   * is a  convenience shortcut for</p>
-   * <blockquote>
-   *   <code>EmptyElemTag(Name, handler)</code>.
-   * </blockquote>
-   */
-//   public static Nfa EmptyElemTagNfa(Formatter handler) {
-//     Nfa result;
-//     try {
-//       result = EmptyElemTagNfa(Name, handler); 
-//     } catch( ReSyntaxException e) {
-//       ///CLOVER:OFF
-//       throw new Error("this cannot happen", e);
-//       ///CLOVER:ON
-//     }
-//     return result;
-//   }
-  /**
-   * <p>creates an {@link Nfa} to match an XML empty element tag with
-   * a given tag name. For more details see {@link
-   * #STagNfa(String,Formatter)}.</p>
-   *
-   * <p><b>Hint:</b> see <em>Hint</em> for {@link
-   * #STagNfa(String,Formatter)}</p> 
-   *
-   * @see <a href="http://www.w3.org/TR/REC-xml#NT-EmptyElemTag">XML
-   * empty element tag</a>
-   */
-//   public static Nfa EmptyElemTagNfa(String nameRe, Formatter handler) 
-//     throws ReSyntaxException
-//   {
-//     String re = EmptyElemTag(nameRe);
-//     FaAction a = new Printf(STAGSPLITTER, handler, 0);
-//     return new Nfa(re, a);
-//   }
   /**********************************************************************/
   /**
    * <p>creates a regular expression to match a whole XML element
@@ -215,43 +125,6 @@ public final class Xml {
   public static String GoofedElement(String nameRe) {
     return startOrEmptyTag(nameRe, false) + "(.*" + ETag(nameRe) + ")!";
   }
-  /**
-   * <p>creates an {@link Nfa} to match a whole XML element including
-   * the start tag with its optional attributes, the content and the
-   * end tag.
-   * The method has its name because it does not match an XML element
-   * according to the strict rules of the standard. The following
-   * things can go wrong:</p>
-   *
-   * <ol>
-   * <li>If <code>nameRe</code> is indeed a regular expression and
-   * not just a string, you cannot be sure that the start tag and
-   * the end tag are indeed the same. For example with
-   * <code>nameRe="[AB]"</code> the text 
-   * <code>&lt;A&gt;hallo&lt;/B&gt;</code> will be matched although it
-   * is no well formed XML.</li>
-   * <li><code>GoofedElementNfa</code> creates a plain regular expression
-   * and therefore cannot handle nested elements with the same name
-   * correctly. Given
-   * the text  
-   * <code>&lt;A&gt;&lt;A&gt;..&lt;/A&gt;&lt;/A&gt;</code>
-   * only the part up to the first closing tag, namely
-   * <code>&lt;A&gt;&lt;A&gt;..&lt;/A&gt;</code>, will be
-   * matched. Matching an element which contains elements with
-   * different names, however, is not a problem.</li> 
-   * </ol>
-   *
-   * <p><b>Hint:</b> see <em>Hint</em> for {@link
-   * #STagNfa(String,Formatter)} but use {@link #splitElement}
-   * instead of <code>splitSTag</code>.</p> 
-   *
-   */
-//   public static Nfa GoofedElementNfa(String nameRe, Formatter handler) 
-//     throws ReSyntaxException 
-//   {
-//     FaAction a = new Printf(ELEMENTSPLITTER, handler, 0);
-//     return new Nfa(GoofedElement(nameRe), a);
-//   }
   /**********************************************************************/
   //
   // ETag
@@ -703,6 +576,28 @@ public final class Xml {
       end -= 1;
     }
     dst.put(CONTENT, s.substring(start+tlen, end));
+  }
+  /**********************************************************************/
+  /**
+   * <p>return the name of an end tag. Under the assumption that the
+   * given <code>StringBuffer</code>, starting at <code>start</code>,
+   * contains an XML end tag, possibly followed by characters not
+   * containing a '&gt;' character, the name of the end tag is
+   * returned. At start, however, it is assumed and not tested that
+   * the initial '&lt;' of the end tag is located.</p>
+   */
+  public static String getETagName(StringBuffer s, int start) {
+    int i = s.length()-1;
+    while( s.charAt(i)!='>' ) i -= 1;
+    i -= 1;
+
+    // skip optional S before the '>'
+    char ch;
+    while( (ch=s.charAt(i))==' ' || ch=='\t' || ch=='\r' || ch=='\n' ) {
+      i -= 1;
+    }
+
+    return s.substring(start+2, i+1);
   }
   /**********************************************************************/
 }
