@@ -25,7 +25,6 @@ import java.io.Serializable;
  * look at the subpackage {@link monq.jfa.actions}.
  *
  * @author &copy; 2003, 2004 Harald Kirsch
- * @version $Revision: 1.37 $, $Date: 2005-02-20 21:10:53 $
  */
 public abstract class AbstractFaAction implements Serializable, FaAction {
 
