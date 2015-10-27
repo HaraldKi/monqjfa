@@ -120,7 +120,7 @@ public class XmlTest extends TestCase {
     assertEquals("55", r.filter("5</_bc>5"));
     assertEquals("55", r.filter("5</a:abc>5"));
     assertEquals("55", r.filter("5</abc-d>5"));
-    assertEquals("55", r.filter("5</özgüräß>5"));
+    assertEquals("55", r.filter("5</Ã¶zgÃ¼rÃ¤ÃŸ>5"));
 
     // lets pick some unicode more or less randomly
     // BaseChar introducing the tag
@@ -167,16 +167,16 @@ public class XmlTest extends TestCase {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
-	    yytext.append("ößgür is `"+m.get("ößgür")+"', ");
+	    yytext.append("Ã¶ÃŸgÃ¼r is `"+m.get("Ã¶ÃŸgÃ¼r")+"', ");
 	    yytext.append("x is `"+m.get("x")+"'");
 	  }
 	})
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
-      .filter("<böller    \n ößgür='hallo' x = '11' >   ")
+      .filter("<bÃ¶ller    \n Ã¶ÃŸgÃ¼r='hallo' x = '11' >   ")
       ;
     //System.out.println(s+"<<");
-    assertEquals("tagname is `böller', ößgür is `hallo', x is `11'", s);
+    assertEquals("tagname is `bÃ¶ller', Ã¶ÃŸgÃ¼r is `hallo', x is `11'", s);
   }
   /**********************************************************************/
   public void test_splitToHash2() throws Exception {
@@ -186,7 +186,7 @@ public class XmlTest extends TestCase {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
-	    yytext.append("ößgür is `"+m.get("ößgür")+"', ");
+	    yytext.append("Ã¶ÃŸgÃ¼r is `"+m.get("Ã¶ÃŸgÃ¼r")+"', ");
 	    yytext.append("content is `"+m.get(">")+"'");
 	  }
 	})
@@ -194,13 +194,13 @@ public class XmlTest extends TestCase {
       .createRun()
       ;
     String s = 
-      r.filter("<bla    \n ößgür='hallo'  >  <x>ÄÖÜ</x></bla  >")
+      r.filter("<bla    \n Ã¶ÃŸgÃ¼r='hallo'  >  <x>Ã„Ã–Ãœ</x></bla  >")
       ;
-    assertEquals("tagname is `bla', ößgür is `hallo', "+
-		 "content is `  <x>ÄÖÜ</x>'", s);
+    assertEquals("tagname is `bla', Ã¶ÃŸgÃ¼r is `hallo', "+
+		 "content is `  <x>Ã„Ã–Ãœ</x>'", s);
 
     s = r.filter("<bla />");
-    assertEquals("tagname is `bla', ößgür is `null', content is `null'",
+    assertEquals("tagname is `bla', Ã¶ÃŸgÃ¼r is `null', content is `null'",
 		 s);
     
   }
