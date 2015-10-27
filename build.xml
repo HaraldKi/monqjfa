@@ -2,6 +2,12 @@
 <!-- DOCTYPE date SYSTEM "ant.dtd" -->
 
 <project name="monq" default="compile" basedir=".">
+  <property file="${user.home}/.ant.properties"/>
+  <import file="scripts/util.xml"/>
+  <import file="scripts/cobertura.xml"/>
+  <import file="scripts/junit.xml"/>
+  <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+  
   <description>
     The MonQ library contains as its main contribution the
     monq.jfa.* packages which implement fast and scalable regular
@@ -34,8 +40,8 @@
 
   <!-- how to find the freshly compiled stuff -->
   <path id="CPLOCAL">
-    <pathelement path="${basedir}/Classes" />
-    <pathelement path="${basedir}/Classes/tests" />
+    <pathelement path="build/classes" />
+    <pathelement path="build/test-classes" />
   </path>
  
   <!-- *************************************************************** -->
@@ -87,19 +93,26 @@
   <target name="compile" 
     depends="findfeatures,warnXstream,warnJython,purgeClasses"
     description="compile all Java source files to ./Classes">
-
-    <javac srcdir="."
-	   destdir="Classes" 
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src"
+	   destdir="build/classes" 
 	   source="1.7"
            listfiles="no"
 	   fork="true"
            debug="true"
            deprecation="true"
-           includeantruntime="false"
-	   >
+           includeantruntime="false">
       <compilerarg value="-Xlint:unchecked"/>
       <patternset refid="jsrc"/>
     </javac>
+  </target>
+
+  <!-- *************************************************************** -->
+  <target name="test-coverage" depends="compile, compile-tests">
+    <do-define-cobertura/>
+    <do-cobertura-instrument/>
+    <do-junit/>
+    <do-cobertura-report/>
   </target>
 
   <!-- *************************************************************** -->
@@ -155,7 +168,7 @@
 
   <!-- *************************************************************** -->
   <!-- testing -->
-  <target name="test" depends="compileTests"
+  <target name="test" depends="compile-tests"
     description="run junit tests, use e.g. -Dtest=Nfa to run single test">
     <junit printsummary="off" haltonfailure="true" 
       dir="${basedir}" fork="true">
@@ -172,15 +185,15 @@
     </junit>
   </target>
 
-  <target name="compileTests" depends="purgeTest,compile">
-    <mkdir dir="Classes/tests" />
-    <javac srcdir="tests" destdir="Classes/tests"
+  <target name="compile-tests" depends="purgeTest,compile">
+    <mkdir dir="build/test-classes" />
+    <javac srcdir="tests" destdir="build/test-classes"
       sourcepath="tests"
       classpathref="CPLOCAL"
-      source="1.5" 
+      source="1.7" 
       listfiles="no"
-      debug="true"
-      >
+      includeantruntime="false"
+      debug="true">
       <patternset refid="testsrc"/>
     </javac>
   </target>
@@ -194,72 +207,6 @@
   </target>
 
   <!-- *************************************************************** -->
-  <!-- NEVER, EVER again waste your time in trying to get emma going
-  as an ant task. It is a pain already to get it going on the command
-  line, and what it found out the very hard way seems to be this:
-
-  a) start the jvm with only exactly emma.jar in the classpath
-  b) put everything else necessary to run the test in emma's -cp
-  c) use explicit includes to prevent silly emma messages
-
-  All other combinations produce nerve wrecking and #$@#$ (put in your
-  favorite swear word here) class loader problems.
-  -->
-
-  <macrodef name="runemma">
-    <attribute name="testClass" />
-    <sequential>
-      <java classname="emmarun" fork="true">
-	<jvmarg line="-cp ${env.EMMAJAR}" />
-	<arg line="-cp ${env.CLASSPATH} -quiet"/>
-	<arg line="-sessiondata -out emma/coverage.es -fullmetadata" />
-	<arg line="-ix monq* -ix -*Test* -ix -monq.jfa.*Test*"/>
-	<arg line="-Dreport.txt.out.file=emma/unused.txt"/>
-	<arg line="@{testClass}"/>
-      </java>
-    </sequential>
-  </macrodef>
-
-  <!-- *************************************************************** -->
-  <target name="emma" depends="compileTests"
-    description="test with test coverage analysis using emma" >
-
-    <fail unless="env.EMMAJAR">Cannot run emma without the environment variable EMMAJAR set to contain the full path to emma.jar</fail>
-    <available property="haveEmma" classpath="${env.EMMAJAR}" 
-      classname="emma"/>
-    <fail unless="haveEmma">Environment variable EMMAJAR does not seem to properly indicate the path to emma.jar, because class emma cannot be found.</fail>
-
-    <delete file="emma/coverage.es"/>
-
-    <runemma testClass="monq.jfa.JyFATest" />
-    <runemma testClass="DictFilterTest" />
-    <runemma testClass="CoderTest" />
-    <runemma testClass="PipeFilterTest" />
-    <runemma testClass="monq.jfa.ActionTest" />
-    <runemma testClass="monq.jfa.ByteCharSourceTest" />
-    <runemma testClass="monq.jfa.IntervalsTest" />
-    <runemma testClass="monq.jfa.MatchGroupTest" />
-    <runemma testClass="monq.jfa.NfaTest" />
-    <runemma testClass="monq.jfa.PrintfFormatterTest" />
-    <runemma testClass="monq.jfa.RegexpTest" />
-    <runemma testClass="monq.jfa.ReParserTest" />
-    <runemma testClass="monq.jfa.SetTest" />
-    <runemma testClass="monq.jfa.TextSplitterTest" />
-    <runemma testClass="monq.jfa.XmlTest" />
-    <runemma testClass="monq.jfa.CtxTest" />
-    <runemma testClass="monq.clifj.CommandlineTest" />
-
-    <!-- As for not using an emma task, see above under runemma. -->
-    <java classname="emma" fork="true">
-      <jvmarg line="-cp ${env.EMMAJAR}" />
-      <arg line="report -sp . -quiet -r html -input emma/coverage.es"/>
-      <arg line="-Dreport.html.out.file=emma/index.html" />
-      <arg line="-Dreport.columns=name,line,block,method" />
-      <arg line="-Dreport.sort=+line,+block,+method" />
-      <arg line="-Dreport.metrics=line:95" />
-    </java>
-  </target>
-
   <!-- ***************************************************************
   --> <!-- check whether svn status -u produces no output (except one
   line) and set property svnclean if this is so -->
@@ -323,7 +270,7 @@ ${svnstatus}
 
   <!-- *************************************************************** -->
   <!-- create a tgz of the home page files -->
-  <target name="packsite" depends="apidoc,tutorial,emma">
+  <target name="packsite" depends="apidoc,tutorial,test-coverage">
     <tar destfile="dist/site.tar.gz" compression="gzip">
       <tarfileset dir="Documentation" 
 	includes="index.html style.css *.png" />
@@ -332,7 +279,7 @@ ${svnstatus}
 	includes="MonqJfaTutorial.pdf" />
       <tarfileset dir="Documentation/Tutorial" prefix="examples"
 	includes="*.java"/>
-      <tarfileset dir="emma" prefix="coverage"
+      <tarfileset dir="dist/coverageXXX" prefix="coverage"
 	includes="index.html _files/**"/>
     </tar>
   </target>

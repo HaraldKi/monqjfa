@@ -1,3 +1,6 @@
+VERSION 1.2-pre0
+Trying to get the build-system going again.
+
 VERSION 1.1.1
 
 This is a bugfix release to correct improper unsynchronized reuse of

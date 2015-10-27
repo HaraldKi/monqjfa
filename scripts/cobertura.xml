@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+
+  <macrodef name="do-define-cobertura">
+    <sequential>
+      <property name="cobertura.jar"
+                value="${cobertura.libdir}/cobertura-2.0.3.jar"/>
+      <do-assert-var-set var="cobertura.libdir"/>
+      <if>
+        <available file="${cobertura.jar}"/>
+        <then></then>
+        <else>
+          <fail message="Missing file ${cobertura.jar}"/>
+        </else>
+      </if>
+
+      <path id="cobertura.classpath">
+        <fileset dir="${cobertura.libdir}">
+          <include name="cobertura-2.0.3.jar" />
+          <include name="lib/**/*.jar" />
+        </fileset>
+      </path>
+      <taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
+    </sequential>
+  </macrodef>
+
+  <macrodef name="do-cobertura-instrument">
+    <sequential>
+      <delete dir="build/cobertura"/>
+      <property name="cobertura.data" value="build/cobertura.ser"/>
+      <delete file="build/cobertura.ser"/>
+      <cobertura-instrument todir="build/cobertura/classes"
+                            datafile="build/cobertura.ser">
+        <fileset dir="build/classes" 
+                 includes="**/*.class" />
+      </cobertura-instrument>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="do-cobertura-report">
+    <sequential>
+      <cobertura-report datafile="build/cobertura.ser"
+                        destdir="build/cobertura/report"
+                        srcdir="src"
+                        />
+    </sequential>
+  </macrodef>
+
+</project>
