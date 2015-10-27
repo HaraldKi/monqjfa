@@ -77,10 +77,10 @@
   </target>
 
   <target name="warnXstream" unless="xstream">
-    <echo>WARNING: com.thoughtworks.xstream.XStream not found, monq.programs.DistFilter will not be available.</echo>
+    <echo>WARNING: com.thoughtworks.xstream.XStream not found, monq.programs.DistFilter will not be available. One easy way to provide this, is to add it to the CLASSPATH environment variable just before starting ant.</echo>
   </target>
   <target name="warnJython" unless="jython">
-    <echo>WARNING: org.python.util.PythonInterpreter not found, monq.programs.JythonFilter will not be available.</echo>
+    <echo>WARNING: org.python.util.PythonInterpreter not found, monq.programs.JythonFilter will not be available. One easy way to provide this, is to add it to the CLASSPATH environment variable just before starting ant.</echo>
   </target>
 
   <!-- Main target is to compile all source files of the packages. -->
@@ -90,11 +90,12 @@
 
     <javac srcdir="."
 	   destdir="Classes" 
-	   source="1.5"
-       listfiles="no"
-	   fork="false"
-       debug="true"
-       deprecation="true"
+	   source="1.7"
+           listfiles="no"
+	   fork="true"
+           debug="true"
+           deprecation="true"
+           includeantruntime="false"
 	   >
       <compilerarg value="-Xlint:unchecked"/>
       <patternset refid="jsrc"/>
@@ -133,6 +134,7 @@
 	     additionalparam="-quiet"
 	     verbose="false"
 	     stylesheetfile="${stylefile}"
+      use="true"
 	     >
       <packageset dir=".">
 	<include name="monq/**/*" />
