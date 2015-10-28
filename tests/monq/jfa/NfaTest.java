@@ -800,7 +800,7 @@ public class NfaTest extends TestCase {
       .or("[^a-zA-Z0-9 \t\n]", new Printf("%%"))
       .compile(DfaRun.UNMATCHED_THROW)
       ;
-    String s = "Harald; Kirsch- hat's erfünden";
+    String s = "Harald; Kirsch- hat's erfÃ¼nden";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
     StringBuffer sb = new StringBuffer();
     while( r.read(sb) ) ;
