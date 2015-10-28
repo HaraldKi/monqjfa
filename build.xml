@@ -131,19 +131,21 @@
     <javadoc destdir="dist/monqApiDoc"
 	     Public="true" nodeprecated="false" 
 	     author="true" nohelp="true"
-	     source="1.5"
+	     source="1.7"
 	     Windowtitle="monq packages"
       Header="monq-${version}"
 	     Bottom="&lt;div class=&quot;monqlink&quot;>download: &lt;a href='https://developer.berlios.de/project/showfiles.php?group_id=8239' target='_top'>developer.berlios.de&lt;/a>&lt;br/>home page: &lt;a href=&quot;http://monqjfa.berlios.de/&quot; target='_top'>monqjfa.berlios.de&lt;/a>&lt;/div>"
-	     Overview="monq/overview.html"
+	     Overview="src/monq/overview.html"
 	     additionalparam="-quiet"
 	     verbose="false"
-	     stylesheetfile="${stylefile}"
-      use="true"
+             use="true"
 	     >
       <fileset dir="src">
         <patternset refid="jsrc"/>
       </fileset>
+      <packageset dir="src" includes="monq/**"
+                  excludes="**/doc-files"/>
+
     </javadoc>
 
   </target>
