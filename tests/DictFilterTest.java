@@ -42,14 +42,14 @@ public class DictFilterTest extends TestCase {
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
-      ("blurb hallos äöüß".getBytes("UTF-8"));
+      ("blurb hallos Ã¤Ã¶Ã¼ÃŸ".getBytes("UTF-8"));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Service svc = df.createService(in, out, null);
     svc.run();
     assertEquals(null, svc.getException());
     String s = out.toString("UTF-8");
     //System.out.println("+++"+s);
-    assertEquals("blurb [hallos](17) äöüß", s);
+    assertEquals("blurb [hallos](17) Ã¤Ã¶Ã¼ÃŸ", s);
   }
 
   public static void test_2() throws Exception {
@@ -58,14 +58,14 @@ public class DictFilterTest extends TestCase {
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
-      ("blurb <hallo>hallos</hallo> äöüß".getBytes("UTF-8"));
+      ("blurb <hallo>hallos</hallo> Ã¤Ã¶Ã¼ÃŸ".getBytes("UTF-8"));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Service svc = df.createService(in, out, null);
     svc.run();
     assertEquals(null, svc.getException());
     String s = out.toString("UTF-8");
     //System.out.println("+++"+s);
-    assertEquals("blurb <hallo>[hallos](17)</hallo> äöüß", s);
+    assertEquals("blurb <hallo>[hallos](17)</hallo> Ã¤Ã¶Ã¼ÃŸ", s);
   }
 
   public static void test_3() throws Exception {
@@ -74,7 +74,7 @@ public class DictFilterTest extends TestCase {
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
-      ("blurb <hallo><x><hallo>hallos</hallo></x><hallo> äöüß"
+      ("blurb <hallo><x><hallo>hallos</hallo></x><hallo> Ã¤Ã¶Ã¼ÃŸ"
        .getBytes("UTF-8"));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Service svc = df.createService(in, out, null);
@@ -83,7 +83,7 @@ public class DictFilterTest extends TestCase {
     String s = out.toString("UTF-8");
     //System.out.println("+++"+s);
     assertEquals("blurb <hallo><x><[hallo](17)>[hallos](17)"+
-		 "</[hallo](17)></x><hallo> äöüß", s);
+		 "</[hallo](17)></x><hallo> Ã¤Ã¶Ã¼ÃŸ", s);
   }
   public static void test_IncompleteMwt() throws Exception {
     Reader rin = new StringReader("<mwt>");
