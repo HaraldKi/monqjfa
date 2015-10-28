@@ -8,6 +8,9 @@
   <import file="scripts/junit.xml"/>
   <taskdef resource="net/sf/antcontrib/antlib.xml"/>
   
+  <do-assert-var-set var="junit.jar"
+                     text="Must be the full path of junit4.jar"/>
+
   <description>
     The MonQ library contains as its main contribution the
     monq.jfa.* packages which implement fast and scalable regular
@@ -35,12 +38,6 @@
   <patternset id="testsrc" includes="monq/**/*.java *.java">
   </patternset>
 
-  <!-- how to find the freshly compiled stuff -->
-  <path id="CPLOCAL">
-    <pathelement path="build/classes" />
-    <pathelement path="build/test-classes" />
-  </path>
- 
   <!-- *************************************************************** -->
   <!-- check existence of certain features -->
   <target name="findfeatures">
@@ -128,7 +125,7 @@
   <target name="apidoc" depends="setVersion"
     description="create the API documentation in dist">
 
-    <javadoc destdir="dist/monqApiDoc"
+    <javadoc destdir="build/monqApiDoc"
 	     Public="true" nodeprecated="false" 
 	     author="true" nohelp="true"
 	     source="1.7"
@@ -153,8 +150,8 @@
   <target name="apidocjar" depends="apidoc"
     description="jar file of the api documentation created with javadoc">
 
-    <jar jarfile="dist/monqApiDoc-${version}.jar" 
-      basedir="dist" 
+    <jar jarfile="build/monqApiDoc-${version}.jar" 
+      basedir="build" 
       includes="monqApiDoc/**" />
 
   </target>
@@ -164,7 +161,7 @@
     <mkdir dir="build/test-classes" />
     <javac srcdir="tests" destdir="build/test-classes"
       sourcepath="tests"
-      classpathref="CPLOCAL"
+      classpath="build/classes:${junit.jar}"
       source="1.7" 
       listfiles="no"
       includeantruntime="false"
@@ -249,7 +246,7 @@ ${svnstatus}
     <tar destfile="dist/site.tar.gz" compression="gzip">
       <tarfileset dir="Documentation" 
 	includes="index.html style.css *.png" />
-      <tarfileset dir="dist" includes="monqApiDoc/**" />
+      <tarfileset dir="build" includes="monqApiDoc/**" />
       <tarfileset dir="Documentation/Tutorial"
 	includes="MonqJfaTutorial.pdf" />
       <tarfileset dir="Documentation/Tutorial" prefix="examples"
@@ -280,11 +277,5 @@ ${svnstatus}
   </target>
   <!-- *************************************************************** -->
 
-  <!-- for debugging, show all properties -->
-  <target name="props" depends="setVersion,findfeatures,svnclean"
-    description="debug aid: prints all defined properties">   
-    <property name="copy-of-CPLOCAL" refid="CPLOCAL"/>
-    <echoproperties/>
-  </target>
 </project>
  
