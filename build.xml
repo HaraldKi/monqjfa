@@ -109,11 +109,11 @@
   <target name="jar" depends="compile, setVersion"
     description="creates the runtime library jar file">
 
-    <mkdir dir="dist" />
+    <mkdir dir="build/sitecontent/download" />
 
-    <jar jarfile="dist/monq-${version}.jar"
-      basedir="Classes"
-      includes="monq/**">
+    <jar jarfile="build/sitecontent/download/monq-${version}.jar"
+         basedir="build/classes"
+         includes="monq/**">
       <manifest>
 	<attribute name="Monq-Version" value="${version}"/>
       </manifest>
@@ -125,7 +125,9 @@
   <target name="apidoc" depends="setVersion"
     description="create the API documentation in dist">
 
-    <javadoc destdir="build/monqApiDoc"
+    <mkdir dir="build/sitecontent/monqApiDoc"/>
+    <javadoc destdir="build/sitecontent/monqApiDoc"
+             packagenames="monq.jfa,monq.jfa.actions"
 	     Public="true" nodeprecated="false" 
 	     author="true" nohelp="true"
 	     source="1.7"
@@ -137,23 +139,23 @@
 	     verbose="false"
              use="true"
 	     >
+      <!-- packageset dir="src">
+        <include name="monq/**"/>
+        <exclude name="**/doc-files"/>
+      </packageset -->
       <fileset dir="src">
         <patternset refid="jsrc"/>
       </fileset>
-      <packageset dir="src" includes="monq/**"
-                  excludes="**/doc-files"/>
-
     </javadoc>
 
   </target>
   <!-- *************************************************************** -->
   <target name="apidocjar" depends="apidoc"
     description="jar file of the api documentation created with javadoc">
-
-    <jar jarfile="build/monqApiDoc-${version}.jar" 
-      basedir="build" 
+    <mkdir dir="build/sitecontent/download"/>
+    <jar jarfile="build/sitecontent/download/monqApiDoc-${version}.jar" 
+      basedir="build/sitecontent" 
       includes="monqApiDoc/**" />
-
   </target>
 
   <!-- *************************************************************** -->
@@ -242,28 +244,18 @@ ${svnstatus}
 
   <!-- *************************************************************** -->
   <!-- create a tgz of the home page files -->
-  <target name="packsite" depends="apidoc,tutorial,test-coverage">
-    <tar destfile="dist/site.tar.gz" compression="gzip">
-      <tarfileset dir="Documentation" 
-	includes="index.html style.css *.png" />
-      <tarfileset dir="build" includes="monqApiDoc/**" />
-      <tarfileset dir="Documentation/Tutorial"
-	includes="MonqJfaTutorial.pdf" />
-      <tarfileset dir="Documentation/Tutorial" prefix="examples"
-	includes="*.java"/>
-      <tarfileset dir="dist/coverageXXX" prefix="coverage"
-	includes="index.html _files/**"/>
-    </tar>
-  </target>
-  <!-- *************************************************************** -->
-  <target name="pubsite" depends="packsite"
-    description="upload home page, only works for hk">
-    <exec executable="scp" dir="dist" failonerror="true">
-      <arg line="site.tar.gz pifpafpuf@shell.berlios.de:/home/groups/monqjfa/htdocs"/>
+  <target name="pubsite">
+<!--          depends="jar,apidoc,apidocjar,tutorial,test-coverage"> -->
+    <exec executable="rsync" dir="." failonerror="true">
+      <arg value="-avrc"/>
+      <arg value="--delete"/>
+      <!-- not from source but actuall prevent deletion on target: -->
+      <arg value="--exclude"/>
+      <arg value="/index.html"/>
+      <arg value="build/sitecontent/"/>
+      <arg value="harald@gnuher.de:apache/pifpafpuf.de/Monq.jfa"/>
     </exec>
-    <exec executable="ssh" failonerror="true">
-      <arg line="pifpafpuf@shell.berlios.de 'cd /home/groups/monqjfa/htdocs; tar xzf site.tar.gz'"/>
-    </exec>
+
   </target>
   <!-- *************************************************************** -->
   <!-- run pdflatex to create the tutorial -->
@@ -274,6 +266,13 @@ ${svnstatus}
       >
       <arg line="maketut"/>
     </exec>
+    <mkdir dir="build/sitecontent/download"/>
+    <copy todir="build/sitecontent/download">
+      <fileset dir="Documentation/Tutorial">
+        <include name="MonqJfaTutorial.pdf"/>
+        <include name="*.java"/>
+      </fileset>
+    </copy>
   </target>
   <!-- *************************************************************** -->
 

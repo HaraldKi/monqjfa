@@ -39,8 +39,9 @@
 
   <macrodef name="do-cobertura-report">
     <sequential>
+      <mkdir dir="build/sitecontent/test-coverage"/>
       <cobertura-report datafile="build/cobertura.ser"
-                        destdir="build/cobertura/report"
+                        destdir="build/sitecontent/test-coverage"
                         srcdir="src"
                         />
     </sequential>
