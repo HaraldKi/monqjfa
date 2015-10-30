@@ -127,25 +127,22 @@
 
     <mkdir dir="build/sitecontent/monqApiDoc"/>
     <javadoc destdir="build/sitecontent/monqApiDoc"
-             packagenames="monq.jfa,monq.jfa.actions"
 	     Public="true" nodeprecated="false" 
 	     author="true" nohelp="true"
 	     source="1.7"
 	     Windowtitle="monq packages"
-      Header="monq-${version}"
-	     Bottom="&lt;div class=&quot;monqlink&quot;>download: &lt;a href='https://developer.berlios.de/project/showfiles.php?group_id=8239' target='_top'>developer.berlios.de&lt;/a>&lt;br/>home page: &lt;a href=&quot;http://monqjfa.berlios.de/&quot; target='_top'>monqjfa.berlios.de&lt;/a>&lt;/div>"
+             Header="monq-${version}"
+	     Bottom="&lt;div class=&quot;monqlink&quot;>download: &lt;a href='https://pifpafpuf.de/Monq.jfa/download' target='_top'>pifpafpuf.de&lt;/a>&lt;br/>home page: &lt;a href=&quot;http://pifpafpuf.de/Monq.jfa/&quot; target='_top'>pifpafpuf.de/Monq.jfa&lt;/a>&lt;/div>"
 	     Overview="src/monq/overview.html"
 	     additionalparam="-quiet"
 	     verbose="false"
              use="true"
 	     >
-      <!-- packageset dir="src">
+      <packageset dir="src">
         <include name="monq/**"/>
+        <!-- packageset just creates package names doc-files is no package -->
         <exclude name="**/doc-files"/>
-      </packageset -->
-      <fileset dir="src">
-        <patternset refid="jsrc"/>
-      </fileset>
+      </packageset>
     </javadoc>
 
   </target>
@@ -244,8 +241,9 @@ ${svnstatus}
 
   <!-- *************************************************************** -->
   <!-- create a tgz of the home page files -->
-  <target name="pubsite">
-<!--          depends="jar,apidoc,apidocjar,tutorial,test-coverage"> -->
+  <target name="pubsite"
+          depends="jar,apidoc,apidocjar,tutorial,test-coverage">
+    <copy file="Documentation/RELNOTES" todir="build/sitecontent"/>
     <exec executable="rsync" dir="." failonerror="true">
       <arg value="-avrc"/>
       <arg value="--delete"/>
