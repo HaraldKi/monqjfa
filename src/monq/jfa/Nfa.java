@@ -85,8 +85,8 @@ public class Nfa  {
    * @see #setReParser
    */
   public static synchronized ReParserFactory
-    getDefaultParserFactory(ReParserFactory rpf) {
-      return rpf;
+    getDefaultParserFactory() {
+      return defaultParserFactory;
     }
 
   /**
