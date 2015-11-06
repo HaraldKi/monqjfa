@@ -60,7 +60,7 @@ public class ReSyntaxException extends Exception {
     this.text = text;
   }
   public String toString() {
-    StringBuffer b = new StringBuffer(300);
+    StringBuilder b = new StringBuilder(300);
     b.append("ReSyntaxException: ").append(emsg)
       .append(".\n  ");
     int realColumn = column;

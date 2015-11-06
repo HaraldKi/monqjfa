@@ -91,7 +91,7 @@ public class Term2Re {
 
       aeAut
 	= new Nfa(".ae", new AbstractFaAction() {
-	    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	    public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	      yytext.setLength(start+1);
 	      yytext.append("a?e");
 	    }
@@ -163,12 +163,12 @@ public class Term2Re {
   /**********************************************************************/
   private static class DoFunnyWord extends AbstractFaAction {
     private ReParser rp;
-    private StringBuffer scratch = new StringBuffer();
+    private StringBuilder scratch = new StringBuilder();
     private DoFunnyWord(ReParser rp) { 
       priority = -2; 
       this.rp = rp;
     }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
       scratch.setLength(0);
       rp.escape(scratch, yytext, start);
       yytext.setLength(start);
@@ -178,15 +178,15 @@ public class Term2Re {
   /**********************************************************************/
   private static class DoOrdinaryWord extends AbstractFaAction {
     private ReParser rp;
-    private StringBuffer scratch = new StringBuffer();
-    private StringBuffer scratch2 = new StringBuffer();
+    private StringBuilder scratch = new StringBuilder();
+    private StringBuilder scratch2 = new StringBuilder();
 
     //public int getPriority() { return -1; }
     private DoOrdinaryWord(ReParser rp) { 
       this.rp = rp;
       priority = -1; 
     }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
       // transform characters with a special meaning in a regular
       // expression such that they stand only for themselves.
       scratch2.setLength(0);
@@ -237,7 +237,7 @@ public class Term2Re {
   }
 
   
-  private static StringBuffer sb = new StringBuffer(40);
+  private static StringBuilder sb = new StringBuilder(40);
   
   /**
    * converts a multi word term into a regular expression matching

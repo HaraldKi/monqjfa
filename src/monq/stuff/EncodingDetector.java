@@ -39,7 +39,7 @@ public class EncodingDetector {
   private EncodingDetector() {}
   /**********************************************************************/
   private static FaAction do_encoding = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	//System.err.println("gotcha: `"+yytext.substring(start)+"'");
 	Map m = Xml.splitElement(yytext, start);
 	yytext.setLength(start);
@@ -53,7 +53,7 @@ public class EncodingDetector {
     };
 
   private static FaAction do_content = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	//System.err.println("gotcha: `"+yytext.substring(start)+"'");
 	Map m = Xml.splitElement(yytext, start);
 	yytext.setLength(start);

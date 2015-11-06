@@ -49,7 +49,7 @@ class ArrayCharTrans implements Serializable, CharTrans {
   /**********************************************************************/
   ///CLOVER:OFF
   public String toString() {
-    StringBuffer s = new StringBuffer(100);
+    StringBuilder s = new StringBuilder(100);
     for(int i=0, L=values.length; i<L; i++) {
       s.append("[`").append(Misc.printable(getFirstAt(i)))
 	.append("',`").append(Misc.printable(getLastAt(i)))
@@ -59,9 +59,9 @@ class ArrayCharTrans implements Serializable, CharTrans {
   }
   ///CLOVER:ON
   /**********************************************************************/
-  public ArrayCharTrans(StringBuffer sb, List<Object> values) {
-    this.ranges = new char[sb.length()];
-    sb.getChars(0, sb.length(), ranges, 0);
+  public ArrayCharTrans(StringBuilder ranges2, List<Object> values) {
+    this.ranges = new char[ranges2.length()];
+    ranges2.getChars(0, ranges2.length(), ranges, 0);
     //this.size = values.size();
     this.values = values.toArray();
   }

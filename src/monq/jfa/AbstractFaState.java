@@ -116,20 +116,7 @@ abstract class AbstractFaState
     subinfos.remove(from);
     subinfos.put(to, o);
   }
-//   String getSubs() {
-//     if( subinfos==null ) return "null";
-//     StringBuffer b = new StringBuffer();
-//     Iterator it = subinfos.keySet().iterator();
-//     while( it.hasNext() ) {
-//       Object o = it.next();
-//       FaSubinfo[] ary = (FaSubinfo[])subinfos.get(o);
-//       for(int i=0; i<ary.length; i++) {
-// 	b.append("(").append(o).append(',')
-// 	  .append(ary[i]).append(')');
-//       }
-//     }
-//       return b.toString();
-//   }
+
   /**
    * called during compilation where this is a new state of the Dfa
    * and the given nfaStates is the set of states of the Nfa that

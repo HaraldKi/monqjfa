@@ -79,7 +79,7 @@ public class ReClassicParser implements ReParser {
    * @see #escape(String)
    */
   /**********************************************************************/
-  public void escape(StringBuffer out, CharSequence in, int startAt) {
+  public void escape(StringBuilder out, CharSequence in, int startAt) {
     int l = in.length();
     for(int i=startAt; i<l; i++) {
       char ch = in.charAt(i);

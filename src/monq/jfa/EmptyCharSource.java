@@ -73,7 +73,7 @@ public class EmptyCharSource implements CharSource {
     pstart = pushed.length-len;
   }
 
-  public void pushBack(StringBuffer buf, int start) {
+  public void pushBack(StringBuilder buf, int start) {
     int L = buf.length()-start;
 
     if( L>pstart ) ensureRoom(L);
@@ -93,14 +93,14 @@ public class EmptyCharSource implements CharSource {
     pstart = pushed.length;
   }
 
-  public int pop(StringBuffer out) {
+  public int pop(StringBuilder out) {
     int count = pushed.length-pstart;
     out.append(pushed, pstart, count);
     pstart = pushed.length;
     return count;
   }
 
-  public int pop(StringBuffer out, int count) {
+  public int pop(StringBuilder out, int count) {
     int max = pushed.length-pstart;    
     if( count>max ) count = max;
     out.append(pushed, pstart, count);

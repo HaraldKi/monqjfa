@@ -92,12 +92,12 @@ public class Misc {
    * console 
    */
   public static String printable(char ch) {
-    StringBuffer out = new StringBuffer();
+    StringBuilder out = new StringBuilder();
     printable(out, ch);
     return out.toString();
   }
 
-  public static void printable(StringBuffer out, char ch) {
+  public static void printable(StringBuilder out, char ch) {
     int v = (int)ch;
     if( v<32 || v>=128 ) {
       if( v==9 )   { out.append("\\t"); return; }
@@ -112,7 +112,7 @@ public class Misc {
   }
 
   public static CharSequence printable(CharSequence s) {
-    StringBuffer sb = new StringBuffer(s.length()+10);
+    StringBuilder sb = new StringBuilder(s.length()+10);
     for(int i=0; i<s.length(); i++ ) {
       sb.append(printable(s.charAt(i)));
     }
@@ -120,21 +120,21 @@ public class Misc {
   }
 
   /**
-  * There is no method in StringBuffer to append a substring of
-  * another StringBuffer. Consequently, a substring would have to be
+  * There is no method in StringBuilder to append a substring of
+  * another StringBuilder. Consequently, a substring would have to be
   * created from the source to be appended to the destination. This
   * results in two copy operations plus a mandatory new String object
   * generated. In addition, the latter forces reallocation of the
-  * source StringBuffer's internal buffer as soon as it is changed. In
+  * source StringBuilder's internal buffer as soon as it is changed. In
   * 1.5 it will be possible to append a substring of a CharSequence to
-  * a StringBuffer, but looking into the implementation, I find a
+  * a StringBuilder, but looking into the implementation, I find a
   * character-by-character copying with charAt(). Consequently, I
   * prefer this method. It copies the characters twice, but spares
   * reallocation of a new object most of the time and uses (hopefully)
   * fast array copying.
   */
-  public static StringBuffer append(StringBuffer dst, 
-		       StringBuffer src, int start, int end) {
+  public static StringBuilder append(StringBuilder dst, 
+                                    StringBuilder src, int start, int end) {
     synchronized( appendBuf ) {
       int len = end-start;
       if( len>appendBuf.length ) appendBuf = new char[len];

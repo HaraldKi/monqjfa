@@ -30,11 +30,11 @@ class Intervals {
   // Every element of the array denotes a range starting at this
   // character and reaching up to just before the next character or
   // Character.MAX_VALUE.
-  private StringBuffer ivals = new StringBuffer();
+  private StringBuilder ivals = new StringBuilder();
   private List<Object> values = new ArrayList<Object>();
 
   // used during conversion to CharTrans
-  private StringBuffer ranges = new StringBuffer();
+  private StringBuilder ranges = new StringBuilder();
   private List<Object> vtmp = new ArrayList<Object>();
 
   public static long[] stats = new long[4];
@@ -254,7 +254,7 @@ class Intervals {
   /**********************************************************************/
   ///CLOVER:OFF
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("Intervals[");
     for(int i=0; i<ivals.length(); i++) {
       if( i>0 ) sb.append(", ");

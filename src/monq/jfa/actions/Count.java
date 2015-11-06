@@ -73,7 +73,7 @@ public class Count extends AbstractFaAction {
     return i;
   }
   /**********************************************************************/
-  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+  public void invoke(StringBuilder yytext, int start, DfaRun r) {
     getCounter(r).value += 1;
   }
   /**********************************************************************/
@@ -90,7 +90,7 @@ public class Count extends AbstractFaAction {
    */
   public AbstractFaAction reset() { return new Reset(); }
   private class Reset extends AbstractFaAction {
-    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
       Int i = getCounter(r);
       i.value = 0;
     }
@@ -110,7 +110,7 @@ public class Count extends AbstractFaAction {
   private class Add extends AbstractFaAction {
     private final int incr;
     public Add(int incr) { this.incr = incr; }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
       Int i = getCounter(r);
       i.value += incr;
     }

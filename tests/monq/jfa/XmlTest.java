@@ -33,7 +33,7 @@ import junit.framework.TestSuite;
 public class XmlTest extends TestCase {
 
   private FaAction h = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	Map m = Xml.splitElement(yytext, start);
 	yytext.setLength(start);
 	String[] keys = (String[])m.keySet().toArray(new String[0]);
@@ -163,7 +163,7 @@ public class XmlTest extends TestCase {
   public void test_splitToHash1() throws Exception {
     String s = new 
       Nfa(Xml.STag()+Xml.S+"?", new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
@@ -182,7 +182,7 @@ public class XmlTest extends TestCase {
   public void test_splitToHash2() throws Exception {
     DfaRun r = new
       Nfa(Xml.GoofedElement("bla")+"|"+Xml.EmptyElemTag("bla"), new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
@@ -208,7 +208,7 @@ public class XmlTest extends TestCase {
   public static void test_XMLDecl() throws Exception {
     DfaRun r = new 
       Nfa(Xml.XMLDecl, new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tag=").append(m.get(Xml.TAGNAME))
@@ -240,9 +240,9 @@ public class XmlTest extends TestCase {
   }
   /**********************************************************************/
   public static void test_getETagName() {
-    assertEquals("x", Xml.getETagName(new StringBuffer("</x>"), 0));
+    assertEquals("x", Xml.getETagName(new StringBuilder("</x>"), 0));
     assertEquals("A_B-c", 
-		 Xml.getETagName(new StringBuffer("..</A_B-c  >"), 2));
+		 Xml.getETagName(new StringBuilder("..</A_B-c  >"), 2));
   }
   /**********************************************************************/
   public static void main(String[] argv)   {

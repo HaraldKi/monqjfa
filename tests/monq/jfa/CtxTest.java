@@ -91,7 +91,7 @@ public class CtxTest extends TestCase {
     ContextManager mgr = new ContextManager(nfa);
     Context ctx = mgr.addXml("x");
     nfa.or("Z", new IfContext(ctx, new AbstractFaAction() {
-	public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	  List stack = ((ContextStackProvider)r.clientData).getStack();
 	  // just mess it up somehow
 	  stack.add(this);
@@ -114,7 +114,7 @@ public class CtxTest extends TestCase {
     ContextManager mgr = new ContextManager(nfa);
     final Context ctx = mgr.addXml("x");
     nfa.or("Z", new IfContext(ctx, new AbstractFaAction() {
-	public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	  java.util.List stack 
 	    = ((ContextStackProvider)r.clientData).getStack();
 	  // just mess it up somehow
@@ -272,7 +272,7 @@ public class CtxTest extends TestCase {
     // the end of the braces
     mgr.add("{[0-9]*", "}")
       .setStartAction(new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    List stack = ((ContextStackProvider)r.clientData).getStack();
 	    String s = yytext.substring(start+1);
 	    // a length of zero allows us to test the EmptyStackException
@@ -281,7 +281,7 @@ public class CtxTest extends TestCase {
 	  }
 	})
       .setEndAction(new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    List stack = ((ContextStackProvider)r.clientData).getStack();
 	    String s = (String)(ContextManager.pop(stack));
 	    yytext.insert(start, s);

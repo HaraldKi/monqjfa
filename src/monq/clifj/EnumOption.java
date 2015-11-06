@@ -90,7 +90,7 @@ public class EnumOption extends Option {
   }
   /**********************************************************************/
   private String allowedUsage() {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     String sep = "";
     for(String s: allowed) {
       b.append(sep).append(s);

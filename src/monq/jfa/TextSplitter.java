@@ -39,7 +39,7 @@ public interface TextSplitter {
    * <p><b>Postcondition:</b> Implementations of this method must
    * treat <code>source</code> read-only.</p>
    */
-  void split(TextStore dst, StringBuffer source, int start);
+  void split(TextStore dst, StringBuilder source, int start);
 
   /**
    * <p>is an instance of a <code>TextSplitter</code> which does not
@@ -48,7 +48,7 @@ public interface TextSplitter {
    * <code>TextStore</code> is <em>not</em> cleared before.</p>
    */
   TextSplitter NULLSPLITTER = new TextSplitter() {
-      public void split(TextStore ts, StringBuffer source, int start) {
+      public void split(TextStore ts, StringBuilder source, int start) {
 	ts.appendPart(source, start, source.length());
       }
     };

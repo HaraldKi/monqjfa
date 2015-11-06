@@ -71,7 +71,7 @@ public class Run extends AbstractFaAction {
     steps[steps.length-1] = a;
     return this;
   }
-  public void invoke(StringBuffer out, int start, DfaRun r) 
+  public void invoke(StringBuilder out, int start, DfaRun r) 
     throws CallbackException
   {
     for(int i=0; i<steps.length; i++) {

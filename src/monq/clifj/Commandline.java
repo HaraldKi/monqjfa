@@ -78,7 +78,7 @@ public class Commandline {
     this(ProgramName, usage, null, null, 0, 0);
   }
   /**********************************************************************/
-  private static void breakLine(StringBuffer s, int startLine, int indent) {
+  private static void breakLine(StringBuilder s, int startLine, int indent) {
     int M = 77;
     while( s.length()-startLine>M ) {
       int lastBlank = -1;
@@ -115,7 +115,7 @@ public class Commandline {
   }
   /**********************************************************************/
   private String usage() {
-    StringBuffer s = new StringBuffer();
+    StringBuilder s = new StringBuilder();
     s.append("usage: ").append(ProgramName);
 
     Vector<String> lines = new Vector<String>();
@@ -318,7 +318,7 @@ public class Commandline {
 
     // check if we have all options required
     int L = optOrder.size();
-    StringBuffer err = new StringBuffer();
+    StringBuilder err = new StringBuilder();
     for(int i=0; i<L; i++) {
       Option o = (Option)(options.get(optOrder.get(i)));
       if( o.isRequired() && !o.available() ) {

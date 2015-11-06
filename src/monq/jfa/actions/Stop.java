@@ -46,7 +46,7 @@ public class Stop extends AbstractFaAction {
    * have to specify a priority.
    */
   public Stop(int priority) {this.priority = priority;}
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     runner.setIn(new EmptyCharSource());
   }
   public String toString() {return "Stop";}

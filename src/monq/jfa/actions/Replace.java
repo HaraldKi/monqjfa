@@ -39,12 +39,12 @@ public class Replace extends AbstractFaAction {
     this.priority = prio;
     this.s = s;
   }
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     out.setLength(start);
     out.append(s);
   }
   public String toString() {
-    StringBuffer sb = new StringBuffer(30);
+    StringBuilder sb = new StringBuilder(30);
     sb.append(super.toString())
       .append("[\"").append(s).append("\"]")
       ;

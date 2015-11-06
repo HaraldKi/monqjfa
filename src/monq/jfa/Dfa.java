@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -61,7 +61,7 @@ public class Dfa implements Serializable {
    */
   public long matchMax = -1;
   /**********************************************************************/
-  
+
   private FaState startState;
 
   // The action to be used by DfaRun when eof is hit
@@ -76,6 +76,7 @@ public class Dfa implements Serializable {
    * which can be called but does nothing.
    */
   static SubmatchData dummySmd = new SubmatchData() {
+      @Override
       public void add(FaState s) {}
     };
 
@@ -134,7 +135,7 @@ public class Dfa implements Serializable {
     startState = null;
     return nfa;
   }
-  private void addLastState(FaState state, 
+  private void addLastState(FaState state,
 			    FaState newLast,
 			    IdentityHashMap<FaState,Object> known) {
     // NOTE: We only need the key part of the map, too bad there is no
@@ -168,10 +169,10 @@ public class Dfa implements Serializable {
    * no match can be found.
    *
    * @throws java.io.IOException only if <code>in.read()</code>
-   * throws. 
+   * throws.
    */
-  FaAction match(CharSource in, StringBuffer out, SubmatchData smd) 
-    throws java.io.IOException 
+  FaAction match(CharSource in, StringBuilder out, SubmatchData smd)
+    throws java.io.IOException
   {
     int startPos = out.length();
     int lastStopPos = startPos;
@@ -197,10 +198,10 @@ public class Dfa implements Serializable {
       out.append((char)ch);
       current = current.follow((char)ch);
     }
-   
+
     // we might have read a few characters after the last stop
     // state. Those characters must be pushed back into the input
-    // source. 
+    // source.
     //System.out.println("LLL("+out+")"+endPos+" "+out.length());
     in.pushBack(out, lastStopPos);
 
@@ -226,12 +227,12 @@ public class Dfa implements Serializable {
    * after first clearing it.</p>
    *
    * @param subMatches may be null, if no submatch analysis is
-   * requested. 
+   * requested.
    *
    * @return either the action associated with the match found or
    * <code>null</code> if no match was found.
    */
-  public FaAction match(CharSource in, StringBuffer out, 
+  public FaAction match(CharSource in, StringBuilder out,
 			TextStore subMatches) throws IOException {
     if( subMatches==null ) {
       return match(in, out, dummySmd);
@@ -249,4 +250,4 @@ public class Dfa implements Serializable {
   /**********************************************************************/
 
 }
- 
+

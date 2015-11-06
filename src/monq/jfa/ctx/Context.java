@@ -49,7 +49,7 @@ public class Context extends AbstractFaAction {
   private static final Pop POP = new Pop();
 
   private static class Pop extends AbstractFaAction {
-    public void invoke(StringBuffer yytext, int start, DfaRun r)
+    public void invoke(StringBuilder yytext, int start, DfaRun r)
       throws CallbackException 
     {
       List stack = ((ContextStackProvider)r.clientData).getStack();      
@@ -161,7 +161,7 @@ public class Context extends AbstractFaAction {
     throw new UnsupportedOperationException("read the docs, please");
   }
   /**********************************************************************/
-  public void invoke(StringBuffer yytext, int start, DfaRun r) 
+  public void invoke(StringBuilder yytext, int start, DfaRun r) 
     throws CallbackException {
 //      System.out.println("pushing "+this+" on `"
 //  		       +yytext.substring(start)+"'");
@@ -181,7 +181,7 @@ public class Context extends AbstractFaAction {
 
   /**********************************************************************/
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(super.toString())
       .append('[')
       .append(name)

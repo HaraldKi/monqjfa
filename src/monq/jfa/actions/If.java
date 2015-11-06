@@ -51,7 +51,7 @@ public class If extends AbstractFaAction {
     this.thendo = thendo;
     this.elsedo = elsedo;
   }
-  public void invoke(StringBuffer yytext, int start, DfaRun r) 
+  public void invoke(StringBuilder yytext, int start, DfaRun r) 
     throws CallbackException
   {
     if( v.ok(r) ) thendo.invoke(yytext, start, r);

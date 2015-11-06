@@ -94,10 +94,10 @@ public class Nfa  {
    * rules of the current <code>ReParser</code> set for
    * <code>this</code>.</p>
    *
-   * @see  ReParser#escape(StringBuffer, CharSequence, int)
+   * @see  ReParser#escape(StringBuilder, CharSequence, int)
    */
   public String escape(String s) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     getReParser().escape(sb, s, 0);
     return sb.toString();
   }
@@ -105,9 +105,9 @@ public class Nfa  {
    * <p>is only a pass-through to
    * <code>getReParser().escape(...)</code>.</p> 
    *
-   * @see ReParser#escape(StringBuffer, CharSequence, int)
+   * @see ReParser#escape(StringBuilder, CharSequence, int)
    */
-  public void escape(StringBuffer out, CharSequence in, int startAt) {
+  public void escape(StringBuilder out, CharSequence in, int startAt) {
     getReParser().escape(out, in, startAt);
   }
   /**
@@ -451,7 +451,7 @@ public class Nfa  {
 //     start = new AbstractFaState.NfaState();
 //     start.setTrans(ivals.toCharTrans());
 //   }
-//   void initialize(StringBuffer s) {
+//   void initialize(StringBuilder s) {
 //     //System.out.println("+++"+s.toString());
 //     start = new AbstractFaState.NfaState();
 
@@ -1002,7 +1002,7 @@ public class Nfa  {
   private boolean hasAction(Set nfaStates) {
     Vector<Object[]> clashes = new Vector<Object[]>(3);
     Set<FaAction> actions = new HashSet<FaAction>(3);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     return null!=findAction(sb, 'a', 'a', clashes, actions, nfaStates);
   }
   /**********************************************************************/
@@ -1043,7 +1043,7 @@ public class Nfa  {
   private String clashToString(Vector clashes) 
     throws CompileDfaException {
 
-    StringBuffer s = new StringBuffer(200);
+    StringBuilder s = new StringBuilder(200);
     s.append(CompileDfaException.EAMBIGUOUS)
       .append(".\nThe following set(s) of clashes exist:\n");
     for(int i=0; i<clashes.size(); i++) {
@@ -1110,7 +1110,7 @@ public class Nfa  {
   // nfaStates -- is the set of NFA states within which we look for
   // the highest priority action. A clash is defined by having too or
   // more non-identical highest priority actions.
-  private static FaAction findAction(StringBuffer dfaPath, 
+  private static FaAction findAction(StringBuilder dfaPath, 
 				     char first, char last,
 				     Vector<Object[]> clashes,
 				     Set<FaAction> actions, 
@@ -1160,7 +1160,7 @@ public class Nfa  {
 
     // convert dfaPath into something more readable, folding character
     // ranges with first==last into one character
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     int L = dfaPath.length();
     for(int i=0; i<L; i+=2) {
       char from, to;
@@ -1310,7 +1310,7 @@ public class Nfa  {
     // stack of character ranges stored as character here. The
     // sequence of ranges denotes a shortes path through the Dfa going
     // to the state the children are currently being constructed.
-    StringBuffer dfaPath = new StringBuffer();
+    StringBuilder dfaPath = new StringBuilder();
 
     // Even the start state can have an action associated and thereby
     // be a stop state. This is important for subsequent applications

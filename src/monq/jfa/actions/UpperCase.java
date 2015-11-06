@@ -39,7 +39,7 @@ public class UpperCase extends AbstractFaAction {
 
   private UpperCase() {}
   public UpperCase(int prio) {this.priority = prio;}
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     int L = out.length();
     while( start<L ) {
       out.setCharAt(start, Character.toUpperCase(out.charAt(start)));

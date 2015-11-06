@@ -31,10 +31,10 @@ public interface CharSource {
   /**
    * <p>moves the tail of <code>buf</code> starting with character
    * index <code>startAt</code> back onto the character source while
-   * deleting them from the given <code>StringBuffer</code>. The data
+   * deleting them from the given <code>StringBuilder</code>. The data
    * is pushed from back to front such that a sequence of
    * read/pushBack/read will read two times the same string.
    */
-  void pushBack(StringBuffer from, int startAt);
+  void pushBack(StringBuilder from, int startAt);
 }
  

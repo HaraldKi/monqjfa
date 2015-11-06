@@ -42,7 +42,7 @@ public class Statistics {
   public Map<Class,Int> charTransTypes = new HashMap<Class,Int>();
 
   private int currentDepth = 0;
-  private StringBuffer sb = new StringBuffer();
+  private StringBuilder sb = new StringBuilder();
 
   private String lineSeparator 
     = System.getProperty("line.separator", "\n");
@@ -52,7 +52,7 @@ public class Statistics {
   private static class Int { public int i=0; }
   /********************************************************************/
   private static class TrivTupel {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     int elems = 0;
   }
   /********************************************************************/
@@ -176,7 +176,7 @@ public class Statistics {
     currentDepth -= 1;
   }
   /********************************************************************/
-  private void appendStep(StringBuffer sb, char a, char b) {
+  private void appendStep(StringBuilder sb, char a, char b) {
     if( sb.length()>0 ) sb.append('|');
     if( a==b ) {
       nc(sb, a);
@@ -190,7 +190,7 @@ public class Statistics {
     sb.append(']');
   }
   /********************************************************************/
-  private void nc(StringBuffer b, char ch) {
+  private void nc(StringBuilder b, char ch) {
     if( ch=='\n' ) b.append("\\n");
     else if( ch=='\t' ) b.append("\\t");
     else if( ch=='\r' ) b.append("\\r");

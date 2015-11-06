@@ -43,7 +43,7 @@ public class Unmatched {
   // immediately be called. If someone casts and then messes it up, it
   // is not my fault, right?
   public static final FaAction DROP = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	r.setOnFailedMatch(DfaRun.UNMATCHED_DROP);
       }
     };
@@ -54,7 +54,7 @@ public class Unmatched {
    */
   public static final FaAction COPY = new AbstractFaAction() {
       //public int getPriority() {return 0;}
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	r.setOnFailedMatch(DfaRun.UNMATCHED_COPY);
       }
     };
@@ -65,7 +65,7 @@ public class Unmatched {
    */
   public static final FaAction THROW = new AbstractFaAction() {
       //public int getPriority() {return 0;}
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	r.setOnFailedMatch(DfaRun.UNMATCHED_THROW);
       }
     };

@@ -41,7 +41,7 @@ class FilterConnection {
 
   private String host;
   private int port = -1;
-  private StringBuffer tail = new StringBuffer();
+  private StringBuilder tail = new StringBuilder();
 
   // the upstream connection
   private Socket socket = null;
@@ -62,7 +62,7 @@ class FilterConnection {
       requestParser = new
 	Nfa("[.]?"+PipelineRequest.KEYRE+"=([^;\n]|\\\\;|\\\\\n)*",
 	    new AbstractFaAction() {
-	      public void invoke(StringBuffer yytext, 
+	      public void invoke(StringBuilder yytext, 
 				 int start, DfaRun r) {
 		//System.out.println(">>>"+ts);
 		@SuppressWarnings("unchecked")
@@ -97,7 +97,7 @@ class FilterConnection {
 	    })
 	.or(";+", Drop.DROP)
 	.or("\n.*", new AbstractFaAction() {
-	    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	    public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	      yytext.deleteCharAt(0);
 	      r.setIn(new EmptyCharSource());
 	    }

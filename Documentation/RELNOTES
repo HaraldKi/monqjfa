@@ -1,3 +1,6 @@
+VERSION 1.2.1
+Replace all instances of StringBuffer to StringBuilder
+
 VERSION 1.2
 Got the build system going again and publishing on my homepage.
 

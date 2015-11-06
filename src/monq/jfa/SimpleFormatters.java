@@ -37,23 +37,23 @@ public class SimpleFormatters {
    * destination buffer.
    */
   public static class FixedString implements Formatter {
-    private StringBuffer text;
+    private StringBuilder text;
     /**
      * creates a {@link Formatter} to append the content of
      * the <code>other</code> when its <code>format</code> method is
      * called.
      */
-    public FixedString(StringBuffer other) {
-      text = new StringBuffer(other.length());
+    public FixedString(StringBuilder other) {
+      text = new StringBuilder(other.length());
       text.append(other);
     }
     /**
      * appends the content of <code>sb</code> to the predifined string
      * to be used by <code>format</code>.
      */
-    public void append(StringBuffer sb) { text.append(sb); }
+    public void append(StringBuilder sb) { text.append(sb); }
     public void append(FixedString other) { other.format(text, null, null); }
-    public void format(StringBuffer sb, TextStore sp, Map m) {
+    public void format(StringBuilder sb, TextStore sp, Map m) {
       sb.append(text);
     }
   }
@@ -78,7 +78,7 @@ public class SimpleFormatters {
       this.from = from;
       this.to = to;
     }
-    public void format(StringBuffer sb, TextStore sp, Map m) {
+    public void format(StringBuilder sb, TextStore sp, Map m) {
       if( from==0 && to==0) {
 	sp.getPart(sb, partNo);
 	return;
@@ -114,7 +114,7 @@ public class SimpleFormatters {
     public PartSeq(int from, int to) {
       this(from, to, null, 0, 0);
     }
-    public void format(StringBuffer sb, TextStore sp, Map m) {
+    public void format(StringBuilder sb, TextStore sp, Map m) {
       int L = sp.getNumParts();
       int start, end;
       start = (from<0) ? L+from : from;
@@ -133,7 +133,7 @@ public class SimpleFormatters {
    * {@link TextStore} passed in.
    */
   public static final Formatter NumParts = new Formatter() {
-      public void format(StringBuffer sb, TextStore sp, Map m) { 
+      public void format(StringBuilder sb, TextStore sp, Map m) { 
 	sb.append(sp.getNumParts()); 
       }
     };
@@ -147,7 +147,7 @@ public class SimpleFormatters {
   public static class PartLen implements Formatter {
     private int partNo;
     public PartLen(int partNo) { this.partNo = partNo; }
-    public void format(StringBuffer sb, TextStore sp, Map m) { 
+    public void format(StringBuilder sb, TextStore sp, Map m) { 
       sb.append(sp.getPartLen(partNo)); 
     }
   }      
@@ -168,7 +168,7 @@ public class SimpleFormatters {
     public GetVar(String key) {
       this.key = key;
     }
-    public void format(StringBuffer out, TextStore sp, Map m) {
+    public void format(StringBuilder out, TextStore sp, Map m) {
       Object o = m.get(key);
       out.append(o==null ? "" : o);
     }

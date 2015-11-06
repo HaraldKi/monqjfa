@@ -103,7 +103,7 @@ public class PipelineRequest {
     m.put(key, value);
   }
   /**********************************************************************/
-  private void encodeValue(StringBuffer out, String value) {
+  private void encodeValue(StringBuilder out, String value) {
     int l = value.length();
     for(int i=0; i<l; i++) {
       char ch = value.charAt(i);
@@ -113,12 +113,12 @@ public class PipelineRequest {
   }
   /**********************************************************************/
   /**
-   * encode this request into the given StringBuffer. The very first
+   * encode this request into the given StringBuilder. The very first
    * request in the control string does not need host/port to be
    * encoded, because they are taken directly from the request
    * itself. Use withHead=false in this case.
    */
-  void encode(StringBuffer out, boolean withHead) {
+  void encode(StringBuilder out, boolean withHead) {
     if( withHead ) {
       if( out.length()>0 ) out.append(';');
       out.append(".host=");

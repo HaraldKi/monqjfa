@@ -203,7 +203,7 @@ public class ActionTest {
       .or("b", new AbstractFaAction() {
 	  private Hold hh = h;
 	  @Override
-    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    yytext.insert(hh.getStart(r), "[");
 	    yytext.append(']');
 	  }

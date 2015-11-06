@@ -97,7 +97,7 @@ public class Printf extends AbstractFaAction {
     this(false, format, 0);
   }
   /**********************************************************************/
-  public void invoke(StringBuffer out, int start, DfaRun runner) 
+  public void invoke(StringBuilder out, int start, DfaRun runner) 
     throws CallbackException
   {
     TextStore ts;

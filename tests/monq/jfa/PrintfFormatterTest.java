@@ -317,7 +317,7 @@ public class PrintfFormatterTest extends TestCase {
     // digits are a submatch such that we can replace the brackets
     // with parentheses
     Formatter f = new Formatter() {
-	public void format(StringBuffer out, TextStore ts, Map m) {
+	public void format(StringBuilder out, TextStore ts, Map m) {
 	  int L = ts.getNumParts();
 	  for(int i=1; i<L; i++) {
 	    out.append('(');

@@ -48,14 +48,14 @@ public final class Xml {
 
   /**
    * use this to retrieve the name of the tag from the map passed to
-   * {@link #splitElement(java.util.Map,java.lang.StringBuffer,int)
-   * splitElement(Map,StringBuffer,int)}.
+   * {@link #splitElement(java.util.Map,java.lang.StringBuilder,int)
+   * splitElement(Map,StringBuilder,int)}.
    */
   public static final String TAGNAME = "<";
   /**
    * use this to retrieve the element content from the map passed to
-   * {@link #splitElement(java.util.Map,java.lang.StringBuffer,int)
-   * splitElement(Map,StringBuffer,int)}.
+   * {@link #splitElement(java.util.Map,java.lang.StringBuilder,int)
+   * splitElement(Map,StringBuilder,int)}.
    */
   public static final String CONTENT = ">";
 
@@ -436,7 +436,7 @@ public final class Xml {
   /**
    * <p>a regular expression matching the XML Declaration. The match
    * of an XMLDecl can be taken apart with {@link
-   * #splitElement(Map,StringBuffer,int)}.</p>
+   * #splitElement(Map,StringBuilder,int)}.</p>
    *
    * @see <a href="http://www.w3.org/TR/REC-xml/#NT-XMLDecl">Xml
    * syntax: XMLDecl</a>
@@ -467,14 +467,14 @@ public final class Xml {
   }
   /**********************************************************************/
   /**
-   * <p>calls {@link #splitElement(Map,StringBuffer,int)} with a freshly
+   * <p>calls {@link #splitElement(Map,StringBuilder,int)} with a freshly
    * allocated <code>HashMap</code> and returns the filled map.</p>
    *
    * <p><b>Hint:</b> to prevent frequent reallocation of the map,
    * allocate it yourself and call {@link
-   * #splitElement(Map,StringBuffer,int)} directly.</p>
+   * #splitElement(Map,StringBuilder,int)} directly.</p>
    */
-  public static Map<String,String> splitElement(StringBuffer s, int start) {
+  public static Map<String,String> splitElement(StringBuilder s, int start) {
     Map<String,String> h = new HashMap<String,String>();
     splitElement(h, s, start);
     return h;
@@ -500,7 +500,7 @@ public final class Xml {
    * input is not a well formed according to the allowed input listed
    * above. An exception is trailing space.</p>
    */
-  public static void splitElement(Map<String,String> dst, StringBuffer s, int start) {
+  public static void splitElement(Map<String,String> dst, StringBuilder s, int start) {
     // use tail of s as scratch area, need start of that area for reset
     int l = s.length();
 
@@ -580,13 +580,13 @@ public final class Xml {
   /**********************************************************************/
   /**
    * <p>return the name of an end tag. Under the assumption that the
-   * given <code>StringBuffer</code>, starting at <code>start</code>,
+   * given <code>StringBuilder</code>, starting at <code>start</code>,
    * contains an XML end tag, possibly followed by characters not
    * containing a '&gt;' character, the name of the end tag is
    * returned. At start, however, it is assumed and not tested that
    * the initial '&lt;' of the end tag is located.</p>
    */
-  public static String getETagName(StringBuffer s, int start) {
+  public static String getETagName(StringBuilder s, int start) {
     int i = s.length()-1;
     while( s.charAt(i)!='>' ) i -= 1;
     i -= 1;

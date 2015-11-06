@@ -130,7 +130,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * returned by {@link #next next()} on EOF.
    */
   public static final FaAction EOF = new AbstractFaAction() {
-      public void invoke(StringBuffer sb, int start, DfaRun r) {}
+      public void invoke(StringBuilder sb, int start, DfaRun r) {}
       public String toString() { return "DfaRun.EOF"; }
     };
 
@@ -203,7 +203,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
 
   // A string buffer for convenient use of some methods which don't
   // require the caller to supply one.
-  private StringBuffer readBuf = new StringBuffer(1024);
+  private StringBuilder readBuf = new StringBuilder(1024);
   private TextStore readTs = new TextStore();
 
   // reusable field for calling Dfa.match() and the action returned by
@@ -380,15 +380,15 @@ public class DfaRun extends EmptyCharSource implements Serializable {
 
   /**
    * <p>is a helper function which should only be called immediately after
-   * calling {@link #next next()} or {@link #read(StringBuffer)} to get
+   * calling {@link #next next()} or {@link #read(StringBuilder)} to get
    * the position where the match starts. This is only needed when the
    * machine is in {@link #UNMATCHED_COPY} mode, because otherwise the
    * match will be the first thing appended to the
-   * <code>StringBuffer</code> given to <code>next()</code> or
+   * <code>StringBuilder</code> given to <code>next()</code> or
    * <code>read()</code>.</p>
    *
    * <p><b>Hint:</b> When using this method together with
-   * <code>read(StringBuffer)</code>, be aware that the callback
+   * <code>read(StringBuilder)</code>, be aware that the callback
    * handling the match is in principle allowed to delete characters
    * even before the value returned here, rendering the returned value
    * completely useless. &mdash; Know your callbacks!</p>
@@ -410,11 +410,11 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /**
    * <p>shoves back characters into the input of the
    * <code>DfaRun</code> while deleting them from the given
-   * <code>StringBuffer</code>. The characters will be the first to be
+   * <code>StringBuilder</code>. The characters will be the first to be
    * read when the machine performs the next match, e.g. when {@link
    * #read} is called.</p>
    */
-  public void unskip(StringBuffer s, int startAt) {
+  public void unskip(StringBuilder s, int startAt) {
     in.pushBack(s, startAt);
   }
   /**
@@ -422,11 +422,11 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * <code>DfaRun</code>.</p>
    * <p><b>Warning:</b> Do not use this method in time critical
    * applications. It calls the other unskip method with a freshly
-   * created <code>StringBuffer</code>.</p>
-   * @see #unskip(StringBuffer, int)
+   * created <code>StringBuilder</code>.</p>
+   * @see #unskip(StringBuilder, int)
    */
   public void unskip(String s) {
-    unskip(new StringBuffer(s), 0);
+    unskip(new StringBuilder(s), 0);
   }
 
   /**
@@ -448,7 +448,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * submatches must be 
    * done before the match is changed in any way. A typical call
    * within an {@link FaAction} looks like <pre>
-   *   public void invoke(StringBuffer out, int start, DfaRun r) 
+   *   public void invoke(StringBuilder out, int start, DfaRun r) 
    *     throws CallbackException {
    *   {
    *     TextStore ts = r.submatches(out, start);
@@ -468,7 +468,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * locally in a callback. After returning from the callback, the
    * contents of the result may soon change.
    */
-  public TextStore submatches(StringBuffer txt, int start) {
+  public TextStore submatches(StringBuilder txt, int start) {
     readTs.clear();
     //System.out.println("-->"+txt+"<--, `"+txt.substring(start)
     //+"'  "+smd.size);
@@ -535,7 +535,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * </dl>
    *
    */
-  public FaAction next(StringBuffer out) 
+  public FaAction next(StringBuilder out) 
     throws java.io.IOException 
   {
     matchStart = out.length();
@@ -584,7 +584,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    */
   private String lookahead() {
     // Read up to 30 chars for a decent error message
-    StringBuffer sb = new StringBuffer(30);
+    StringBuilder sb = new StringBuilder(30);
     int i;
     try {
       for(i=0; i<30; i++) {
@@ -623,7 +623,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * returned, <code>out</code> is not necessarily changed, but there
    * is more input available to process.
    */
-  private boolean crunch(StringBuffer out) throws java.io.IOException {
+  private boolean crunch(StringBuilder out) throws java.io.IOException {
     int l = out.length();
     action = next(out);
     if( action==null ) return true;
@@ -663,7 +663,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * one call to {@link #next next()}, and the application of the
    * returned callback. The data may be prefixed with filtered data
    * not yet delivered by a previous call to {@link
-   * #read(StringBuffer,int)}. Because the callback may delete the
+   * #read(StringBuilder,int)}. Because the callback may delete the
    * matching text, the string returned may be empty.</p>
    *
    * <p>If an {@link FaAction#invoke FaAction.invoke()} callback
@@ -693,7 +693,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * if <code>false</code> is returned, all input is completely
    * processed and <code>out</code> was not changed.</p>
    */
-  public boolean read(StringBuffer out) throws java.io.IOException {
+  public boolean read(StringBuilder out) throws java.io.IOException {
     // copy stuff which might have been pushed back to the output
     int popped = pop(out);
 
@@ -707,13 +707,13 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * reads and filters input until <code>out</code> is grown by
    * <code>count</code> characters. Less characters are returned if
    * all input was processed. The field {@link #collect} is
-   * hounored in the same way as by {@link #read(StringBuffer)}.
+   * hounored in the same way as by {@link #read(StringBuilder)}.
    *
    * @return <code>true</code>, if at least one character can be
    * delivered or if <code>count==0</code>. A return of
    * <code>false</code> signals that all input was processed.
    */
-  public boolean read(StringBuffer out, int count) 
+  public boolean read(StringBuilder out, int count) 
     throws java.io.IOException 
   {
     int l = out.length();
@@ -733,7 +733,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /**
    * reads and filters input until at least one character is available
    * or EOF is hit. The field {@link #collect} is hounored in the same
-   * way as by {@link #read(StringBuffer)}.
+   * way as by {@link #read(StringBuilder)}.
    *
    * @return the resulting character casted to <code>int</code> or -1
    * to signal EOF.
@@ -761,7 +761,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * <p>reads and filters input, copying it to the output
    * until EOF is hit.</p>
    */
-  public void filter(StringBuffer out) throws java.io.IOException {
+  public void filter(StringBuilder out) throws java.io.IOException {
     // Note: we don't have to care about .collect because the caller
     // will only see the final result, while .collect is used to hold
     // back partial results from being delivered with read
@@ -775,7 +775,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   public void filter(PrintStream out) 
     throws java.io.IOException
   {
-    StringBuffer sb = new StringBuffer(4200);
+    StringBuilder sb = new StringBuilder(4200);
     while( read(sb) ) {
       if( sb.length()<4096 ) continue;
       out.print(sb);
@@ -802,7 +802,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * <p>run the machine until EOF is hit. This is useful, when the
    * callbacks don't produce output text but rather perform different
    * work.</p>
-   * <b>Note:</b>This method sets up a <code>StringBuffer</code>
+   * <b>Note:</b>This method sets up a <code>StringBuilder</code>
    * into which filtered data is dumped. The buffer is regularly
    * cleared, in particular after each match. To prevent this from
    * happening, use {@link #collect} as for the other

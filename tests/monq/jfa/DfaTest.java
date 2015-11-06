@@ -27,7 +27,7 @@ public class DfaTest extends TestCase {
   private static class Xaction extends AbstractFaAction {
     private String name;
     public Xaction(String name) { this.name = name;}
-    public void invoke(StringBuffer s, int start, DfaRun r) {}
+    public void invoke(StringBuilder s, int start, DfaRun r) {}
     public String toString() {return name;}
   }
   /**********************************************************************/
@@ -35,7 +35,7 @@ public class DfaTest extends TestCase {
     Dfa dfa = 
       new Nfa("a+", new Xaction("xxx"))
       .compile(DfaRun.UNMATCHED_DROP);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     CharSource cs = new CharSequenceCharSource("aaaaa");
     TextStore ts = null;

@@ -233,7 +233,7 @@ public class DistPipeFilter {
 //    */
 //   public void filter(PipelineRequest[] request, 
 // 		     CharSequence in, String csSend,
-// 		     StringBuffer out, String csReceive) 
+// 		     StringBuilder out, String csReceive) 
 //     throws IOException 
 //   {
 //     char[] buf = new char[1024];

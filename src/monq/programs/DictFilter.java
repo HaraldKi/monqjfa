@@ -273,7 +273,7 @@ public class DictFilter implements ServiceFactory {
       FaAction eofAction = 
 	new IfContext(null, Drop.DROP)
 	.elsedo(new AbstractFaAction() {
-	    public void invoke(StringBuffer b, int start, DfaRun r) 
+	    public void invoke(StringBuilder b, int start, DfaRun r) 
 	      throws CallbackException
 	    {
 	      ReadHelper rh = (ReadHelper)r.clientData;
@@ -407,7 +407,7 @@ public class DictFilter implements ServiceFactory {
   /********************************************************************/
   private static final FaAction do_template = new AbstractFaAction() {
     Map<String,String>  m = new HashMap<String,String>();
-      public void invoke(StringBuffer yytext, int start, DfaRun r) 
+      public void invoke(StringBuilder yytext, int start, DfaRun r) 
 	throws CallbackException
       {
 	ReadHelper rh = (ReadHelper)r.clientData;
@@ -461,7 +461,7 @@ public class DictFilter implements ServiceFactory {
       }
     }
     
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException
     {
       ReadHelper rh = (ReadHelper)r.clientData;
@@ -534,7 +534,7 @@ public class DictFilter implements ServiceFactory {
       // the map must be empty by now (except one last key/value pair)
       m.remove(Xml.TAGNAME);
       if( m.size()>0 ) {
-	StringBuffer sb = new StringBuffer();
+	StringBuilder sb = new StringBuilder();
 	sb.append("superfluous attributes:");
 	Iterator it = m.keySet().iterator();
 	while( it.hasNext() ) {
@@ -568,7 +568,7 @@ public class DictFilter implements ServiceFactory {
       this.tc = tc;
       this.priority = prio;
     }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException
     {
       int L = yytext.length();
@@ -587,7 +587,7 @@ public class DictFilter implements ServiceFactory {
       }
     }
     public String toString() {
-      StringBuffer sb = new StringBuffer(80);
+      StringBuilder sb = new StringBuilder(80);
       sb.append(super.toString()).append("[store=`");
       store.getPart(sb, 0);
       //sb.append("', prio=").append(getPriority())

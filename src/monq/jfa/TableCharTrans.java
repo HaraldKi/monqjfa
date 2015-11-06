@@ -47,10 +47,10 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
    * We do not support emtpy transitions here. Consequently there
    * should be at least one range in <code>sb</code>
    */
-  public TableCharTrans(StringBuffer sb, List<Object> values) {
-    int L = sb.length();
-    first = sb.charAt(0);
-    last = sb.charAt(L-1);
+  public TableCharTrans(StringBuilder ranges, List<Object> values) {
+    int L = ranges.length();
+    first = ranges.charAt(0);
+    last = ranges.charAt(L-1);
 
     // To the outside world we have to maintain the idea of
     // non-overlapping intervals mapped to a value. Therefore the
@@ -60,13 +60,13 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
     targets = new Object[last-first+1];
     L = values.size();
     for(int pos=0, i=0; pos<L; pos++) {
-      char from = sb.charAt(2*pos);
-      char to = sb.charAt(2*pos+1);
+      char from = ranges.charAt(2*pos);
+      char to = ranges.charAt(2*pos+1);
       Object o = values.get(pos);
       //System.out.println("from="+from+", to="+to+", pos="+pos);
       for(int ch=from; ch<=to; ch++) targets[i++] = o;
       if( pos+1<L ) {
-	char next = sb.charAt(2*pos+2);
+	char next = ranges.charAt(2*pos+2);
 	for(int ch=to+1; ch<next; ch++) targets[i++] = null;
       }
     }
@@ -117,7 +117,7 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
   /**********************************************************************/
   ///CLOVER:OFF
   public String toString() {
-    StringBuffer s = new StringBuffer(100);
+    StringBuilder s = new StringBuilder(100);
     s.append('[').append(first).append(',').append(last).append(' ');
     for(int i=0; i<targets.length; i++) {
       if( targets[i]==null ) s.append('0');

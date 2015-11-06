@@ -75,7 +75,7 @@ public class Hold extends AbstractFaAction {
     }
   }
   /**********************************************************************/
-  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+  public void invoke(StringBuilder yytext, int start, DfaRun r) {
     Map<Object,Object> m = ((MapProvider)(r.clientData)).getMap();
     @SuppressWarnings("unchecked")
     List<StackElem> stack = (List)m.get(this);
@@ -116,7 +116,7 @@ public class Hold extends AbstractFaAction {
   private class Do extends AbstractFaAction {
     private final boolean drop;
     Do(boolean drop) { this.drop = drop; }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException
     {
       StackElem elem = null;

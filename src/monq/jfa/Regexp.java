@@ -42,7 +42,7 @@ import monq.jfa.actions.*;
 public class Regexp {
   private Dfa dfa;
   private CharSequenceCharSource in = new CharSequenceCharSource();
-  private StringBuffer out = new StringBuffer();
+  private StringBuilder out = new StringBuilder();
   private SubmatchData smd = new SubmatchData();
   private TextStore ts = new TextStore();
   boolean analyzed;

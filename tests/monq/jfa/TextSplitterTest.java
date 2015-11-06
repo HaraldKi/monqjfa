@@ -59,7 +59,7 @@ public class TextSplitterTest extends TestCase {
     assertEquals(0, store.getNumParts());
   }
   public void testBeforeSplit2() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Exception e = null;
     store.getPart(sb, 1);
     assertEquals("", sb.toString());
@@ -71,7 +71,7 @@ public class TextSplitterTest extends TestCase {
     //assertTrue(e instanceof ArrayIndexOutOfBoundsException);
   }
   public void testBeforeSplit3() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Exception e = null;
     store.getPart(sb, 0);
     assertEquals("", sb.toString());
@@ -83,7 +83,7 @@ public class TextSplitterTest extends TestCase {
 //     assertTrue(e instanceof ArrayIndexOutOfBoundsException);
   }
   public void testBeforeSplit4() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Exception e = null;
     store.getPart(sb, 0, 0, 0);
     assertEquals("", sb.toString());
@@ -95,7 +95,7 @@ public class TextSplitterTest extends TestCase {
 //     assertTrue(e instanceof ArrayIndexOutOfBoundsException);
   }
   public void testBeforeSplit5() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Exception e = null;
     store.getPart(sb, 0, 0, 1);
     assertEquals("", sb.toString());
@@ -113,9 +113,9 @@ public class TextSplitterTest extends TestCase {
   public void testGeneric1() {
     for(int i=0; i<tests.length; i++) {
       store.clear();
-      client.split(store, new StringBuffer(tests[i][0]), 0);
+      client.split(store, new StringBuilder(tests[i][0]), 0);
       assertEquals(tests[i].length, store.getNumParts());
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       store.getPart(sb, 0);
       assertEquals(tests[i][0], sb.toString());
       for(int j=1; j<tests[i].length; j++) {
@@ -127,8 +127,8 @@ public class TextSplitterTest extends TestCase {
   }
 
   public void testSubstring() {
-    client.split(store, new StringBuffer(testAIn), 3);
-    StringBuffer sb = new StringBuffer();
+    client.split(store, new StringBuilder(testAIn), 3);
+    StringBuilder sb = new StringBuilder();
     for(int i=0; i<2; i++) {
       int L = testAOut[i].length();
 
@@ -234,7 +234,7 @@ public class TextSplitterTest extends TestCase {
   public void test_REsplitterEmptyRE() throws Exception {
     TextSplitter sp = new RegexpSplitter("[@]", RegexpSplitter.SPLIT);
     Formatter fmt = new PrintfFormatter("[%(1,0,][)]");
-    StringBuffer b = new StringBuffer("abc@def@123");
+    StringBuilder b = new StringBuilder("abc@def@123");
     TextStore ts = new TextStore();
     sp.split(ts, b, 0);
     b.setLength(0);

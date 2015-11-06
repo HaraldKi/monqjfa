@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * <p>implements a {@link Formatter} which uses a format string to
  * print parts from a {@link TextStore} into a
- * <code>StringBuffer</code>. An additional
+ * <code>StringBuilder</code>. An additional
  * <code>java.util.Map</code> may supply additional material to
  * populate the output string.</p>
  *
@@ -55,7 +55,7 @@ import java.util.Map;
  * the string, but <em>s</em>=0 denotes the start.</p></li>
  *
  * <li><p><code>%(</code><em>i</em><code>,</code><em>j</em><code>)</code>
- * requests all parts <em>k</em> with 
+ * requests all parts <em>k</em> with
  * <em>i</em>&le;<em>k</em>&lt;<em>j</em>. Like above, <em>i</em> and
  * <em>j</em> may be negative to denote an index relative to the end
  * of the list.</p></li>
@@ -123,15 +123,15 @@ public class PrintfFormatter implements Formatter {
   void addtoFormat(Formatter op) {
     // if op is a FixedString and the last op in the list is also a
     // FixedString, we join them
-    if( numOps>0 
-	&& op instanceof SimpleFormatters.FixedString 
+    if( numOps>0
+	&& op instanceof SimpleFormatters.FixedString
 	&& ops[numOps-1] instanceof SimpleFormatters.FixedString ) {
-      SimpleFormatters.FixedString previousOp = 
+      SimpleFormatters.FixedString previousOp =
 	(SimpleFormatters.FixedString)ops[numOps-1];
       previousOp.append((SimpleFormatters.FixedString)op);
       return;
     }
-    
+
     if( numOps>=ops.length ) {
       Formatter[] tmp = new Formatter[numOps+4];
       System.arraycopy(ops, 0, tmp, 0, numOps);
@@ -140,7 +140,7 @@ public class PrintfFormatter implements Formatter {
     ops[numOps++] = op;
   }
   /********************************************************************/
-  static int chewInt(StringBuffer yytext, int start) {
+  static int chewInt(StringBuilder yytext, int start) {
     int i=start;
     int L = yytext.length();
     if( i<L && '-'==yytext.charAt(i) ) i+=1;
@@ -150,7 +150,8 @@ public class PrintfFormatter implements Formatter {
     return result;
   }
   private static FaAction createOpSpecial = new AbstractFaAction() {
-      public void invoke(StringBuffer out, int start, DfaRun runner) {
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun runner) {
 	// add a fixed string to be found starting at index 1 of the
 	// match
 	out.delete(0, 1);
@@ -161,7 +162,8 @@ public class PrintfFormatter implements Formatter {
     };
 
   private static FaAction createOpString = new AbstractFaAction() {
-      public void invoke(StringBuffer out, int start, DfaRun runner) {
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun runner) {
 	PrintfFormatter f = (PrintfFormatter)runner.clientData;
 	f.addtoFormat(new SimpleFormatters.FixedString(out));
 	out.setLength(0);
@@ -169,7 +171,8 @@ public class PrintfFormatter implements Formatter {
     };
 
   private static FaAction createOpNumParts = new AbstractFaAction() {
-      public void invoke(StringBuffer out, int start, DfaRun runner) {
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun runner) {
 	((PrintfFormatter)runner.clientData)
 	  .addtoFormat(SimpleFormatters.NumParts);
 	out.setLength(0);
@@ -177,15 +180,17 @@ public class PrintfFormatter implements Formatter {
     };
 
   private static FaAction createOpPartLen = new AbstractFaAction() {
-      public void invoke(StringBuffer out, int start, DfaRun runner) {
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun runner) {
 	int partNo = Integer.parseInt(out.substring(2));
 	PrintfFormatter f = (PrintfFormatter)runner.clientData;
 	f.addtoFormat(new SimpleFormatters.PartLen(partNo));
 	out.setLength(0);
-      }	
+      }
     };
   private static FaAction createOpPart = new AbstractFaAction() {
-      public void invoke(StringBuffer out, int start, DfaRun runner) {
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun runner) {
 	// we are looking at something like "%-2(5,-3)" were the
 	// parentheses part is optional
 	int partNo = chewInt(out, start+1);
@@ -203,7 +208,8 @@ public class PrintfFormatter implements Formatter {
     };
 
   private static FaAction createOpPartSeq = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun runner) {
+      @Override
+      public void invoke(StringBuilder yytext, int start, DfaRun runner) {
 	// in the full blown case we are looking at somthing like
 	// "%(3,-5, separator with '\)')(1,-2)"
 	// The 'separator' part as well as the trailing parentheses
@@ -225,7 +231,7 @@ public class PrintfFormatter implements Formatter {
 	    current = yytext.indexOf(")", current);
 	  }
 	  sep = yytext.substring(start+4, current);
-	} 
+	}
 
 	// put current just after ')'
 	current += 1;
@@ -248,7 +254,8 @@ public class PrintfFormatter implements Formatter {
     };
 
   private static FaAction createOpGetVar = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun runner) {
+      @Override
+      public void invoke(StringBuilder yytext, int start, DfaRun runner) {
 	String key = yytext.substring(2, yytext.length()-1);
 	PrintfFormatter f = (PrintfFormatter)runner.clientData;
 	f.addtoFormat(new SimpleFormatters.GetVar(key));
@@ -264,7 +271,7 @@ public class PrintfFormatter implements Formatter {
     String optRange = "([(]"+range+"[)])?";
     String optSep = "(,([^)]|[\\\\][)])+)?";
     try {
-      formatScanner = 
+      formatScanner =
 	new Nfa("%-?[0-9]+"+optRange, createOpPart)
 	.or("%[(]"+range+optSep+"[)]"+optRange, createOpPartSeq)
 	.or("%n", createOpNumParts) // request number of parts
@@ -276,13 +283,13 @@ public class PrintfFormatter implements Formatter {
 	.compile(DfaRun.UNMATCHED_THROW)
 	;
     } catch( ReSyntaxException e ) {
-      ///CLOVER:OFF      
+      ///CLOVER:OFF
       throw new Error("this cannot happen", e);
     } catch( CompileDfaException e) {
       throw new Error("this cannot happen", e);
       ///CLOVER:ON
     }
-    
+
   }
   /********************************************************************/
   //  /**
@@ -292,7 +299,7 @@ public class PrintfFormatter implements Formatter {
 //    * callbacks stored within it should not have a mutable internal
 //    * state.
 //    */
-//   public PrintfFormatter(CharSequence format, int start, Map vars) 
+//   public PrintfFormatter(CharSequence format, int start, Map vars)
 //     throws ReSyntaxException
 //   {
 //     this(format, start, null);
@@ -300,7 +307,7 @@ public class PrintfFormatter implements Formatter {
 //   /**
 //    * @deprecated see {@link #PrintfFormatter(CharSequence,int,Map)}
 //    */
-//   public PrintfFormatter(CharSequence format, Map vars) 
+//   public PrintfFormatter(CharSequence format, Map vars)
 //     throws ReSyntaxException
 //   {
 //     this(format, 0, vars);
@@ -311,7 +318,7 @@ public class PrintfFormatter implements Formatter {
     this(format, 0);
   }
 
-  public PrintfFormatter(CharSequence format, int start) 
+  public PrintfFormatter(CharSequence format, int start)
     throws ReSyntaxException
   {
     // of course we interprete the format string with an automaton. It
@@ -321,7 +328,7 @@ public class PrintfFormatter implements Formatter {
     // translating the format with scanFormat may leave an unhandled
     // tail at the end of the format. We collect it in tail and handle it
     // below.
-    r = new DfaRun(formatScanner, 
+    r = new DfaRun(formatScanner,
 		   new CharSequenceCharSource(format, start));
 
     // The DfaRun will load "this" with all the operations
@@ -331,8 +338,8 @@ public class PrintfFormatter implements Formatter {
       r.filter();
     } catch( NomatchException e) {
       // there was an error in the format string. We prepare a decent
-      // message. 
-      StringBuffer msg = new StringBuffer(100);
+      // message.
+      StringBuilder msg = new StringBuilder(100);
       int i = 24;
       for(;;) {
 	int ch = 0;
@@ -353,7 +360,7 @@ public class PrintfFormatter implements Formatter {
       throw new ReSyntaxException(ReSyntaxException.EFORMAT,
 				  msg.toString(), 0, 1);
     } catch( java.io.IOException e ) {
-      ///CLOVER:OFF 
+      ///CLOVER:OFF
       throw new Error("impossible", e);
       ///CLOVER:ON
     }
@@ -363,7 +370,8 @@ public class PrintfFormatter implements Formatter {
     r = null;
   }
   /********************************************************************/
-  public void format(StringBuffer yytext, TextStore ts, Map m) 
+  @Override
+  public void format(StringBuilder yytext, TextStore ts, Map m)
     throws CallbackException
   {
     for(int i=0; i<numOps; i++) {
@@ -373,8 +381,9 @@ public class PrintfFormatter implements Formatter {
     }
   }
   /********************************************************************/
+  @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(super.toString())
       .append('[')
       .append(numOps)
@@ -383,4 +392,4 @@ public class PrintfFormatter implements Formatter {
     return sb.toString();
   }
 }
- 
+

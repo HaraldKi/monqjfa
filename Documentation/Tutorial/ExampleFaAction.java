@@ -41,7 +41,7 @@ public class ExampleFaAction {
       this.pre = pre;
       this.post = post;
     }
-    public void invoke(StringBuffer iotext, int start, DfaRun r) {
+    public void invoke(StringBuilder iotext, int start, DfaRun r) {
       iotext.insert(start, pre);
       iotext.append(post);
     }

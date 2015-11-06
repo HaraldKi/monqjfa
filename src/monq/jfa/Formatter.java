@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * defines the interface to classes which rearrange text parts stored
  * in a {@link TextStore} and/or in a <code>java.util.Map</code>
- * append them to a <code>StringBuffer</code>.
+ * append them to a <code>StringBuilder</code>.
  *
  * <p><b>Hint:</b>Typically a {@link TextSplitter}> and a
  * <code>Formatter</code> are used in tandem and communicate via a
@@ -40,6 +40,6 @@ public interface Formatter extends java.io.Serializable {
    * <p><b>Postcondition</b>: This method may not change the content of
    * <code>dest</code> other than by appending to it.</p>
    */
-  void format(StringBuffer out, TextStore st, Map m) throws CallbackException;
+  void format(StringBuilder out, TextStore st, Map m) throws CallbackException;
 }
  

@@ -38,6 +38,6 @@ public interface ReParser {
    * matches exactly the input sequence.</p>
    * 
    */
-  void escape(StringBuffer out, CharSequence in, int startAt);
+  void escape(StringBuilder out, CharSequence in, int startAt);
 
 }

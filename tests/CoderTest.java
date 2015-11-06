@@ -58,7 +58,7 @@ public class CoderTest {
       if (excludes.contains(chs.displayName())) continue;
 
       Coder cod = new Coder(chs);
-      StringBuffer a = new StringBuffer("hallo");
+      StringBuilder a = new StringBuilder("hallo");
       ByteBuffer b = ByteBuffer.allocate(1);
       b = cod.encode(a, b);
       a.setLength(0);
@@ -79,7 +79,7 @@ public class CoderTest {
       if( !chs.displayName().startsWith("UTF") ) continue;
       i += 1;
       Coder cod = new Coder(chs);
-      StringBuffer a = new StringBuffer("�������");
+      StringBuilder a = new StringBuilder("�������");
       ByteBuffer b = ByteBuffer.allocate(1);
       b = cod.encode(a, b);
       a.setLength(0);

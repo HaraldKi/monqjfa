@@ -40,7 +40,7 @@ public class DistFilter {
    */
   private static void addKeys(PipelineRequest req, 
 			      TextStore ts, int start,
-			      StringBuffer fiddle) {
+			      StringBuilder fiddle) {
     for(int kk=start; kk<ts.getNumParts(); kk+=2) {
       String value = ts.getPart(kk+1);
       fiddle.setLength(0);
@@ -108,7 +108,7 @@ public class DistFilter {
     Regexp hostportre = new Regexp("host=(![^;]+);port=(![0-9]+)"+tailre);
     Regexp svrre = new Regexp("svr=(![^;]+)"+tailre);
     Regexp pipere = new Regexp("pipe=(![^;]+)"+tailre);
-    StringBuffer fiddle =  new StringBuffer();
+    StringBuilder fiddle =  new StringBuilder();
 
     for(int i=0; i<tmp.length; i++) {
       TextStore ts = null;

@@ -154,7 +154,7 @@ public class NfaTest extends TestCase {
     Dfa dfa = new Nfa("a", Drop.DROP).compile(DfaRun.UNMATCHED_COPY);
     String s = "aaa";
     CharSource cs = new ReaderCharSource(new StringReader(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     DfaRun r = new DfaRun(dfa);
     r.setIn(cs);
 
@@ -171,7 +171,7 @@ public class NfaTest extends TestCase {
     Dfa dfa = new Nfa("(ab)|(cd)", Drop.DROP).compile(DfaRun.UNMATCHED_COPY);
     String s =  "abcdcdab";
     CharSource cs = new ReaderCharSource(new StringReader(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     DfaRun r = new DfaRun(dfa);
     r.setIn(cs);
 
@@ -199,7 +199,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abba";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
@@ -220,7 +220,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abba";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
@@ -244,7 +244,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abba";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
@@ -291,7 +291,7 @@ public class NfaTest extends TestCase {
   {
     //System.out.println("testDfaRunWithEpsRecognizer");
     FaAction a = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) {
+	public void invoke(StringBuilder out, int start, DfaRun r) {
 	  if( out.length()==start ) {
 	    // we matched epsilon, so we make something up
 	    try {
@@ -323,7 +323,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abcdefghijklmnopqrstuvwxyz";
     CharSource cs = new ReaderCharSource(new StringReader(s));
-    StringBuffer sb = new StringBuffer(32);
+    StringBuilder sb = new StringBuilder(32);
     DfaRun r = new DfaRun(dfa);
     r.setIn(cs);
 
@@ -347,7 +347,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY);
     String s = "abcderstuvwxyz";
     CharSource cs = new ReaderCharSource(new StringReader(s));
-    StringBuffer sb = new StringBuffer(32);
+    StringBuilder sb = new StringBuilder(32);
     DfaRun r = new DfaRun(dfa);
     r.setIn(cs);
 
@@ -391,7 +391,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "abasdfj asdfj asdfj as;ldfj asdjf ";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while(r.read(sb)) /**/;
     assertEquals("aaaaaa", sb.toString());
   }
@@ -404,7 +404,7 @@ public class NfaTest extends TestCase {
     Dfa dfa = new Nfa("[a-c]+", a).compile(DfaRun.UNMATCHED_COPY);
     String s = "cccHabcabaAaaaaRbbbbAabcLaDcc";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for(int i=0; i<7; i++) {
       assertTrue(r.read(sb));
     }
@@ -419,7 +419,7 @@ public class NfaTest extends TestCase {
       new Nfa("[A-Z]+", Copy.COPY).compile(DfaRun.UNMATCHED_DROP);
     String s = "KaIxRaSbCcH";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for(int i=0; i<6; i++) {
       assertTrue(r.read(sb));
     }
@@ -434,7 +434,7 @@ public class NfaTest extends TestCase {
       new Nfa("[A-Z]+", Copy.COPY).compile(DfaRun.UNMATCHED_THROW);
     String s = "xKaIxRaSbCcH";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for(int i=0; i<6; i++) {
       int start = 0;
       Exception e = null;
@@ -459,7 +459,7 @@ public class NfaTest extends TestCase {
     // The 2nd step will used the marked stuff to upcase the marked
     // character 
     FaAction upCase = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun runner) {
+	public void invoke(StringBuilder out, int start, DfaRun runner) {
 	  char ch = out.charAt(start+2);
 	  out.setLength(start);
 	  out.append(' ').append(Character.toUpperCase(ch));
@@ -473,7 +473,7 @@ public class NfaTest extends TestCase {
     DfaRun r = new DfaRun(dfa1, new CharSequenceCharSource(s));
     r = new DfaRun(dfa2, r);
 
-    StringBuffer sb = new StringBuffer(50);
+    StringBuilder sb = new StringBuilder(50);
     assertTrue(r.read(sb, 100));
     assertFalse(r.read(sb));
     assertEquals(" Alle Meine Entchen Schwimmen Auf Dem See",
@@ -489,7 +489,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "abc000def0000xyz0r0000";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for(int i=0; i<4; i++) {
       assertTrue(r.read(sb));
     }
@@ -506,7 +506,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "abcxxxdefxxx";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
     assertFalse(r.read(sb));
@@ -523,7 +523,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "abcxxxdefxxx";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
     assertTrue(r.read(sb));
@@ -547,7 +547,7 @@ public class NfaTest extends TestCase {
     Dfa dummy = new Nfa("x", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
 
     Dfa dfa = new Nfa("a*", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     DfaRun r = new DfaRun(dummy);
     r.setDfa(dfa);
 
@@ -585,8 +585,8 @@ public class NfaTest extends TestCase {
       new Nfa("a", new Printf("b"))
       .or("(a*x)!", Drop.DROP)
       .compile(DfaRun.UNMATCHED_THROW);
-    StringBuffer in = new StringBuffer(L);
-    StringBuffer out = new StringBuffer(L);
+    StringBuilder in = new StringBuilder(L);
+    StringBuilder out = new StringBuilder(L);
     for(int i=0; i<L; i++) in.append('a');
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(in));
     for(int i=0; i<L; i++) {
@@ -649,7 +649,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "......ab1....xy2....rr4....rr...ab5";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while(r.read(sb)) /**/;
     assertEquals("xxxx", sb.toString());
   }
@@ -662,7 +662,7 @@ public class NfaTest extends TestCase {
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "......ab1....xy2....rr4....rr...ab5";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while(r.read(sb)) /**/;
     assertEquals("xxxx", sb.toString());
   }
@@ -757,11 +757,11 @@ public class NfaTest extends TestCase {
 	  assertTrue(count<3);
 	  return 'a';
 	}
-	public void pushBack(StringBuffer s, int i) {}
+	public void pushBack(StringBuilder s, int i) {}
       };
     DfaRun r = 
       new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), s);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     r.read(sb);
   }    
 
@@ -802,7 +802,7 @@ public class NfaTest extends TestCase {
       ;
     String s = "Harald; Kirsch- hat's erfünden";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while( r.read(sb) ) ;
     assertEquals("Harald%Kirsch%hat%serf%nden", sb.toString());
   }
@@ -825,7 +825,7 @@ public class NfaTest extends TestCase {
     throws java.io.IOException, ReSyntaxException, CompileDfaException 
   {
     FaAction a = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun runner) {
+	public void invoke(StringBuilder out, int start, DfaRun runner) {
 	  runner.unskip(out, out.length()-(out.length()-start)/2);
 	  out.setLength(start);
 	  out.append('b');
@@ -847,7 +847,7 @@ public class NfaTest extends TestCase {
       ;
     DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_COPY), 
 			  new CharSequenceCharSource("xxaxxbxxabxxba"));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while( r.read(sb) ) /*just run*/;
     assertEquals("xxxxxx(ab)xx(ba)", sb.toString());
   }
@@ -870,21 +870,21 @@ public class NfaTest extends TestCase {
     throws java.io.IOException, ReSyntaxException, CompileDfaException 
   {
     FaAction switchToDrop = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) {
+	public void invoke(StringBuilder out, int start, DfaRun r) {
 	  r.setOnFailedMatch(DfaRun.UNMATCHED_DROP);
 	}
       };
 
     FaAction unskipXX = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) {
+	public void invoke(StringBuilder out, int start, DfaRun r) {
 	  out.setLength(start);
 	  r.unskip("XX");
 	}
       };
 
-    // use the filter version which copies to StringBuffer to have
+    // use the filter version which copies to StringBuilder to have
     // this tested as well somewhere
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Nfa nfa = new Nfa("aa", unskipXX).or("XX", switchToDrop);
     DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_COPY));
     r.setIn(new CharSequenceCharSource("1234aaxxxx"));
@@ -899,7 +899,7 @@ public class NfaTest extends TestCase {
     throws java.io.IOException, ReSyntaxException, CompileDfaException 
   {
     FaAction switchToCollect = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) {
+	public void invoke(StringBuilder out, int start, DfaRun r) {
 	  if( r.collect ) return; // go for longest match
 	  r.collect = true;
 	  r.clientData = new Integer(start);
@@ -907,7 +907,7 @@ public class NfaTest extends TestCase {
       };
 
     FaAction dropCollected = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) {
+	public void invoke(StringBuilder out, int start, DfaRun r) {
 	  int startPos = ((Integer)r.clientData).intValue();
 	  out.setLength(startPos);
 	  r.collect = false;
@@ -915,7 +915,7 @@ public class NfaTest extends TestCase {
 	}
       };
     FaAction release = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) {
+	public void invoke(StringBuilder out, int start, DfaRun r) {
 	  out.setLength(start);
 	  r.collect = false;
 	}
@@ -932,8 +932,8 @@ public class NfaTest extends TestCase {
     DfaRun run = new DfaRun(nfa.compile(DfaRun.UNMATCHED_COPY), 
 			    new CharSequenceCharSource(s));
     //System.out.println("\n"+run);
-    StringBuffer result = new StringBuffer();
-    StringBuffer scratch = new StringBuffer();
+    StringBuilder result = new StringBuilder();
+    StringBuilder scratch = new StringBuilder();
     while( run.read(scratch) ) {
       result.append(scratch);
       scratch.setLength(0);
@@ -947,7 +947,7 @@ public class NfaTest extends TestCase {
     throws ReSyntaxException, CompileDfaException 
   {
     FaAction switchToCollect = new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) {
+	public void invoke(StringBuilder out, int start, DfaRun r) {
 	  r.collect = true;
 	}
       };
@@ -957,7 +957,7 @@ public class NfaTest extends TestCase {
       ;
     DfaRun run = new DfaRun(nfa.compile(DfaRun.UNMATCHED_COPY), 
 			    new CharSequenceCharSource("aaa"));
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     try {
       run.read(result);
     } catch( Exception _e) {
@@ -984,7 +984,7 @@ public class NfaTest extends TestCase {
     Nfa nfa = new Nfa("a+", Copy.COPY);
     DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), 
 			  new CharSequenceCharSource("aaaaab"));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     int l = 0;
     while( r.read(sb, 1) ) {
       assertEquals(1, sb.length()-l);
@@ -1000,7 +1000,7 @@ public class NfaTest extends TestCase {
     Nfa nfa = new Nfa("a+", Copy.COPY);
     DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), 
 			  new CharSequenceCharSource("ababab"));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     int ch;
     while( -1!=(ch=r.read()) ) {sb.append((char)ch);}
     assertEquals("aaa", sb.toString());
@@ -1125,7 +1125,7 @@ public class NfaTest extends TestCase {
     Dfa dfa = new Nfa("a|b", new Printf("[%0]"))
       .compile(DfaRun.UNMATCHED_COPY);
     DfaRun r = new DfaRun(dfa, new ReaderCharSource(in));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while( r.read(sb) ) /**/;
     assertEquals("[a] [b] c", sb.toString());
   }
@@ -1172,11 +1172,11 @@ public class NfaTest extends TestCase {
   }
   /**********************************************************************/
 //   public static void test_Escape2() {
-//     StringBuffer in = new StringBuffer().append(Nfa.specialChars);
-//     StringBuffer out = new StringBuffer();
+//     StringBuilder in = new StringBuilder().append(Nfa.specialChars);
+//     StringBuilder out = new StringBuilder();
 //     Nfa.escape(out, in, 0);
 
-//     StringBuffer b = new StringBuffer();
+//     StringBuilder b = new StringBuilder();
 //     for(int i=0; i<Nfa.specialChars.length; i++) {
 //       b.append('\\').append(Nfa.specialChars[i]);
 //     }
@@ -1196,7 +1196,7 @@ public class NfaTest extends TestCase {
     Exception e = null;
     try {
       String s = new Nfa("a", new AbstractFaAction() {
-	  public void invoke(StringBuffer out, int start, DfaRun r) 
+	  public void invoke(StringBuilder out, int start, DfaRun r) 
 	    throws CallbackException
 	  {
 	    throw new CallbackException("shit happens");
@@ -1215,7 +1215,7 @@ public class NfaTest extends TestCase {
     Exception e = null;
     try {
       String s = new Nfa("a", new AbstractFaAction() {
-	  public void invoke(StringBuffer out, int start, DfaRun r) 
+	  public void invoke(StringBuilder out, int start, DfaRun r) 
 	    throws CallbackException
 	  {
 	    throw new CallbackException("shit happens", new Error("arg"));
@@ -1279,11 +1279,11 @@ public class NfaTest extends TestCase {
 	  assertTrue(count<3);
 	  return 'e';
 	}
-	public void pushBack(StringBuffer s, int i) {}
+	public void pushBack(StringBuilder s, int i) {}
       };
     DfaRun r = 
       new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), s);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     r.read(sb);
   }    
   /**********************************************************************/
@@ -1341,7 +1341,7 @@ public class NfaTest extends TestCase {
   }
   /********************************************************************/
   // after some tiny but important changes to DfaRun,
-  // DfaRun.read(StringBuffer) should be a useful tokenizer.
+  // DfaRun.read(StringBuilder) should be a useful tokenizer.
   public static void test_Toknize() throws Exception {
     Nfa nfa = new
       Nfa("[a-zA-Z]+", Copy.COPY)
@@ -1352,7 +1352,7 @@ public class NfaTest extends TestCase {
       .createRun()
       ;
     r.setIn(new CharSequenceCharSource("  hello, it is 7:30."));
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     String[] toks = {"hello", "it", "is", "7:30"};
     for(int i=0; i<toks.length; i++) {
       assertTrue(r.read(sb));
@@ -1382,28 +1382,28 @@ public class NfaTest extends TestCase {
   // did not take care of .collect
   private static class I {
     public int i;
-    public StringBuffer value = new StringBuffer();
+    public StringBuilder value = new StringBuilder();
     public int rlen;
   }
   public static void test_filter_with_collect() throws Exception {
     final 
     Dfa dfa = new 
       Nfa("[(]", new AbstractFaAction() {
-	  public void invoke(StringBuffer sb, int start, DfaRun r) {
+	  public void invoke(StringBuilder sb, int start, DfaRun r) {
 	    I i = (I)r.clientData;
 	    i.i = start;
 	    r.collect = true;
 	  }
 	})
       .or("[)]", new AbstractFaAction() {
-	  public void invoke(StringBuffer sb, int start, DfaRun r) {
+	  public void invoke(StringBuilder sb, int start, DfaRun r) {
 	    I i = (I)r.clientData;
 	    i.value.append(sb.substring(i.i));
 	    r.collect = false;
 	  }
 	})
       .or("END", new AbstractFaAction() {
-	  public void invoke(StringBuffer sb, int start, DfaRun r) {
+	  public void invoke(StringBuilder sb, int start, DfaRun r) {
 	    I i = (I)r.clientData;
 	    i.rlen = sb.length();
 	  }
@@ -1422,7 +1422,7 @@ public class NfaTest extends TestCase {
     DfaRun r = new Nfa("x", new Replace("0123456789"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun();
-    StringBuffer sb = new StringBuffer("bla ri lu");
+    StringBuilder sb = new StringBuilder("bla ri lu");
     for(int i=0; i<410; i++) sb.append('x');
     sb.append("done");
     ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -1445,7 +1445,7 @@ public class NfaTest extends TestCase {
     String s = "x0000x00000x000000x";
     r.setIn(new CharSequenceCharSource(s));
     r.maxCopy = 5;
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     FaAction a;
 
     // fetch matching x with Copy.COPY
@@ -1503,7 +1503,7 @@ public class NfaTest extends TestCase {
   // completely screwed up in the callback
   public static void test_CallbackException() throws Exception {
     Dfa dfa = new Nfa("xxx", new AbstractFaAction() {
-	public void invoke(StringBuffer yytext, int start, DfaRun r) 
+	public void invoke(StringBuilder yytext, int start, DfaRun r) 
 	  throws CallbackException 
 	{
 	  yytext.setLength(0);
@@ -1511,7 +1511,7 @@ public class NfaTest extends TestCase {
 	}
       })
       .or("yyy", new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) 
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) 
 	    throws CallbackException 
 	  {
 	    throw new CallbackException("boom");

@@ -70,7 +70,7 @@ public interface FaAction {
    * object which called this function. Of interest are its fields
    * {@link DfaRun#clientData} and {@link DfaRun#collect}.</p>
    */
-  void invoke(StringBuffer yytext, int start, DfaRun runner)
+  void invoke(StringBuilder yytext, int start, DfaRun runner)
     throws CallbackException;
 
   /**

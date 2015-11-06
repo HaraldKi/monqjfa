@@ -128,7 +128,7 @@ public class IfContext extends AbstractFaAction {
   /**
    * required by interface {@link monq.jfa.FaAction}.
    */
-  public void invoke(StringBuffer yytext, int start, DfaRun r) 
+  public void invoke(StringBuilder yytext, int start, DfaRun r) 
     throws CallbackException 
   {
     List stack = ((ContextStackProvider)r.clientData).getStack();
@@ -174,7 +174,7 @@ public class IfContext extends AbstractFaAction {
   }
   /**********************************************************************/
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(super.toString());
     Iterator it = m.keySet().iterator();
     char sep = '[';
