@@ -200,49 +200,39 @@
 	<isset property="pretend"/>
       </or>
     </condition>
-    
+
+    <fail unless="svnclean">The command svn status -u produces the output 
+${svnstatus}
+EXITING.
+    </fail>
+
+
   </target>
 
   <!-- *************************************************************** -->
   <!-- create a .tar.gz as for the source distribution -->
-  <target name="tgz" 
-    description="create .tar.gz for shipping the source (basically an svn-export) !!! not yet operational">
-    <exec executable="svn" dir="dist">
-      <arg line="-d ~/transfer -F -ver RELNOTES -s '2005-02-01'" />
+  <target name="tgz" depends="setVersion, svnclean"
+    description="create .tar.gz for shipping the source">
+    <delete dir="build/monq-${version}"/>
+    <exec executable="svn" dir="build">
+      <arg line="export --ignore-keywords -r head .. monq-src-${version}"/>
     </exec>
+    <zip destfile="build/sitecontent/download/monq-src-${version}.zip"
+         basedir="build"
+         includes="monq-src-${version}"
+         whenempty="fail"/>
   </target>
-  
+
   <!-- *************************************************************** -->
-  <target name="distftp" depends="svnclean,jar,apidocjar,apidoc"
-    description="upload software distro files to berlios">
-
-    <fail unless="svnclean">
-      The command svn status -u produces the output 
-${svnstatus}
-      Please make sure that everything is up to date and checked in
-      before publishing.      
-    </fail>
-
-    <!-- HINT: For ftp, apt-get install libcommons-net-java or similar
-    is required here in addition consider a soft link in ~/.ant/lib to
-    this library.
-    -->
-
-    <ftp server="ftp.berlios.de"
-      userid="anonymous"
-      password="monqJfaDeveloper"
-      remotedir="incoming">
-      <fileset dir="dist">
-	<include name="monq-${version}.jar"/>
-	<include name="monqApiDoc-${version}.jar"/>
-      </fileset>
-    </ftp>
+  <target name="cleanall">
+    <delete dir="build"/>
   </target>
 
   <!-- *************************************************************** -->
   <!-- create a tgz of the home page files -->
   <target name="pubsite"
-          depends="jar,apidoc,apidocjar,tutorial,test-coverage">
+       depends="cleanall,svnclean,jar,apidoc,apidocjar,tutorial,test-coverage">
+
     <copy file="Documentation/RELNOTES" todir="build/sitecontent"/>
     <exec executable="rsync" dir="." failonerror="true">
       <arg value="-avrc"/>
