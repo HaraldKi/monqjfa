@@ -210,8 +210,8 @@ EXITING.
   </target>
 
   <!-- *************************************************************** -->
-  <!-- create a .tar.gz as for the source distribution -->
-  <target name="tgz" depends="setVersion, svnclean"
+  <!-- create a .zip for the source distribution -->
+  <target name="srczip" depends="setVersion, svnclean"
     description="create .tar.gz for shipping the source">
     <delete dir="build/monq-${version}"/>
     <exec executable="svn" dir="build">
@@ -231,7 +231,9 @@ EXITING.
   <!-- *************************************************************** -->
   <!-- create a tgz of the home page files -->
   <target name="pubsite"
-       depends="cleanall,svnclean,jar,apidoc,apidocjar,tutorial,test-coverage">
+          depends="cleanall,svnclean,jar,apidoc,apidocjar,
+                   srczip,
+                   tutorial,test-coverage">
 
     <copy file="Documentation/RELNOTES" todir="build/sitecontent"/>
     <exec executable="rsync" dir="." failonerror="true">
