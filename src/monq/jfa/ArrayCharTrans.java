@@ -100,7 +100,7 @@ class ArrayCharTrans implements Serializable, CharTrans {
 
     // access via getLastAt
     // 20.8%  1109  +     0    monq.jfa.ArrayCharTrans.getPos
-    // Ist im Rahmen der Me�ungenauigkeit identisch.
+    // Ist im Rahmen der Meßungenauigkeit identisch.
   *****/
   private int getPos(char ch) {
     int lo, hi; 
