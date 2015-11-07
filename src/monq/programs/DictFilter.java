@@ -331,7 +331,7 @@ public class DictFilter implements ServiceFactory {
     }
 
     if( memDebug ) {
-      Map<Class, Map<Class,Pair>> h;
+      Map<Class<?>, Map<Class<?>,Pair>> h;
       System.err.println("# Size of Nfa");
       h = monq.stuff.Sizeof.sizeof(nfa);
       monq.stuff.Sizeof.printTypes(System.err, h);
@@ -536,7 +536,7 @@ public class DictFilter implements ServiceFactory {
       if( m.size()>0 ) {
 	StringBuilder sb = new StringBuilder();
 	sb.append("superfluous attributes:");
-	Iterator it = m.keySet().iterator();
+	Iterator<String> it = m.keySet().iterator();
 	while( it.hasNext() ) {
 	  Object key = it.next();
 	  sb.append(' ').append(key).append('=').append(m.get(key));
