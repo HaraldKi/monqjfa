@@ -5,8 +5,11 @@ certain use case of finding N=35 English words in a text of 2.2
 million English words, this resulted in a speed-up of ~1.8 (reduction
 in runtime from 56 to 30 seconds on the same machine).
 
+
 Version 1.2
+
 Got the build system going again and publishing on my homepage.
+
 
 VERSION 1.1.1
 
