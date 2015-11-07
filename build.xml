@@ -219,7 +219,7 @@ EXITING.
     </exec>
     <zip destfile="build/sitecontent/download/monq-src-${version}.zip"
          basedir="build"
-         includes="monq-src-${version}"
+         includes="monq-src-${version}/**"
          whenempty="fail"/>
   </target>
 
