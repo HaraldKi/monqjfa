@@ -3,9 +3,9 @@
 
 <project name="monq" default="compile" basedir=".">
   <property file="${user.home}/.ant.properties"/>
-  <import file="scripts/util.xml"/>
-  <import file="scripts/cobertura.xml"/>
-  <import file="scripts/junit.xml"/>
+  <import file="ant-macros/util.xml"/>
+  <import file="ant-macros/cobertura.xml"/>
+  <import file="ant-macros/junit.xml"/>
   <taskdef resource="net/sf/antcontrib/antlib.xml"/>
   
   <do-assert-var-set var="junit.jar"
