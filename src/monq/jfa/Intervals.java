@@ -26,7 +26,9 @@ import java.util.List;
  * @author &copy; 2004, 2005 Harald Kirsch
  */
 class Intervals {
-
+  // the higher, the more memory is used to gain speed
+  public static double MEMORY_FOR_SPEED_TRADE_FACTOR = 1.5;
+  
   // Every element of the array denotes a range starting at this
   // character and reaching up to just before the next character or
   // Character.MAX_VALUE.
@@ -193,7 +195,6 @@ class Intervals {
     //System.out.println("toTrans: "+toString());
 
     int dst = 0;
-    int combined = 0;
     int L = values.size();
     for(int i=0; i<L; i++) {
       Object o = values.get(i);
@@ -203,7 +204,6 @@ class Intervals {
 	  && vtmp.get(dst-1)==o ) {
 	// just extend the interval at dst-1
 	ranges.setCharAt(2*(dst-1)+1, getLastAt(i));
-	combined += 1;
 	continue;
       }
       vtmp.add(o);
@@ -211,6 +211,9 @@ class Intervals {
       ranges.append(getLastAt(i));
       dst += 1;
     }
+    
+    
+    
     //if( combined>0 ) System.err.println("combined "+combined+" intervals");
     if( vtmp.size()==0 ) {
       reset();
@@ -231,19 +234,18 @@ class Intervals {
       }
     } else {
       // estimate the size of an ArrayCharTrans
-      int s1 = ArrayCharTrans.estimateSize(vtmp.size());
-      int s2 = TableCharTrans.estimateSize
+      int arrayTransSize = ArrayCharTrans.estimateSize(vtmp.size());
+      int tableTransSize = TableCharTrans.estimateSize
 	(ranges.charAt(2*vtmp.size()-1)-ranges.charAt(0)+1);
-      //System.out.println("+++"+this);
-      //System.out.println("Array:"+s1);
-      //System.out.println("Table:"+s2);
 
-      if( s1<s2 ) {
+      System.out.println("array: "+arrayTransSize);
+      System.out.println("table: "+tableTransSize);
+
+                   if( arrayTransSize*MEMORY_FOR_SPEED_TRADE_FACTOR<tableTransSize ) {
 	t = new ArrayCharTrans(ranges, vtmp);
 	stats[2] += 1;
       } else {
 	t = new TableCharTrans(ranges, vtmp);
-	//System.out.println(">>>"+t);
 	stats[3] += 1;
       }
 
@@ -267,6 +269,8 @@ class Intervals {
     return sb.toString();
   }
   ///CLOVER:ON
+  /*+******************************************************************/
+
 }
       
     

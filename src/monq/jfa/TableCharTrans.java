@@ -18,6 +18,8 @@ package monq.jfa;
 
 import java.util.List;
 
+import monq.stuff.Sizeof;
+
 /**
  * @author &copy; 2004 Harald Kirsch
  */
@@ -38,9 +40,11 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
    * <code>span==last-first+1</code> covered characters.
    */
   public static int estimateSize(int span) {
-    // compute the size of the Object[] 
-    int n2 = 16 + 8*( (4*span-4 + 7)/8 );
-    return n2+24;
+    int thisSize = Sizeof.roundUp(Sizeof.MEM_OBJ_OVERHEAD
+                                          + 2
+                                          + Sizeof.MEM_PTR_SIZE);
+    int targetsSize = Sizeof.objectArrayMemEstimate(span);
+    return thisSize + targetsSize;
   }
   /**********************************************************************/
   /**

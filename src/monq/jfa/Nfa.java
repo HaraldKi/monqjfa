@@ -1449,6 +1449,12 @@ public class Nfa  {
       }
       System.err.println("all states in known:"+count);
     }
+    if (true) {
+      for(long l : Intervals.stats) {
+        System.out.print(l+" ");
+      }
+      System.out.println();
+    }
     return dfaStart;
   }
   //-*****************************************************************

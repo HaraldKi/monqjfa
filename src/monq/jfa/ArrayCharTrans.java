@@ -19,6 +19,8 @@ package monq.jfa;
 import java.io.Serializable;
 import java.util.List;
 
+import monq.stuff.Sizeof;
+
 /**
   <p>an implementation of interface <code>CharTrans</code> based on
   explicit arrays for ranges and the objects they are mapped to.</p>
@@ -39,12 +41,14 @@ class ArrayCharTrans implements Serializable, CharTrans {
   public static long stats = 0;
   /**********************************************************************/
   public static int estimateSize(int n) {
-    // size of the ranges array.
-    int n1 = n<=2 ? 16 : 16+8*( (2*n-4 + 7)/8 );
-    ///CLOVER:OFF
-    int n2 =  16 + 8*( (4*n-4 + 7)/8 );
-    ///CLOVER:ON
-    return 16+n1+n2;
+    int thisSize =
+        Sizeof.roundUp(Sizeof.MEM_OBJ_OVERHEAD+2*Sizeof.MEM_PTR_SIZE);
+    
+    int rangesSize = Sizeof.charArrayMemEstimate(2*n);
+
+    int valuesSize = Sizeof.objectArrayMemEstimate(n);
+
+    return thisSize + rangesSize + valuesSize;
   }
   /**********************************************************************/
   ///CLOVER:OFF
