@@ -109,18 +109,6 @@ public class Dfa implements Serializable {
     return new DfaRun(this);
   }
   /**********************************************************************/
-  /*  *
-   * <p>convenience function to get a <code>DfaRun</code> for this
-   * automaton.
-   *
-   * @deprecated The way how non-matching input shall be handled is
-   * now defined when the <code>Dfa</code> is created. Overriding it
-   * here is a bad idea.
-   */
-//   public DfaRun createRun(DfaRun.FailedMatchBehaviour fmb) {
-//     return new DfaRun(this, fmb);
-//   }
-  /**********************************************************************/
   /**
    * <p>converts the <code>Dfa</code> back into an <code>Nfa</code> in
    * a way that <code>this</code> is totally useless afterwards. Make
@@ -142,7 +130,7 @@ public class Dfa implements Serializable {
     // IdentitySet.
     known.put(state, null);
 
-    Iterator i = state.getChildIterator();
+    Iterator<FaState> i = state.getChildIterator();
     while( i.hasNext() ) {
       FaState child = (FaState)i.next();
       if( known.containsKey(child) ) continue;
