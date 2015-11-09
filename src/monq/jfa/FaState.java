@@ -70,7 +70,7 @@ interface FaState {
    * transitions. This iterator <b>must</b> support the 
    * {@link java.util.Iterator#remove remove} operation.
    */
-  Iterator getChildIterator();
+  Iterator<FaState> getChildIterator();
 
   //boolean isStop();
 
@@ -116,7 +116,7 @@ interface FaState {
    * subautomata assignments from a set of nfa states. This method
    * performs the transfer of the assignments.</p>
    */
-  void mergeSubinfos(Set nfaStates);
+  void mergeSubinfos(Set<FaState> nfaStates);
 
   /**
    * returns a <code>Map</code> from {@link FaAction} objects to a
@@ -124,6 +124,6 @@ interface FaState {
    * <code>FaAction</code> the set denotes the subautomata this state
    * belongs to.
    */
-  Map getSubinfos();
+  Map<FaAction,Set<FaSubinfo>> getSubinfos();
 
 }
