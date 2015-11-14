@@ -3,6 +3,7 @@
 
 <project name="monq" default="compile" basedir=".">
   <property file="${user.home}/.ant.properties"/>
+  <import file="ant-macros/svnrevision.xml"/>
   <import file="ant-macros/util.xml"/>
   <import file="ant-macros/cobertura.xml"/>
   <import file="ant-macros/junit.xml"/>
@@ -182,31 +183,20 @@
   --> <!-- check whether svn status -u produces no output (except one
   line) and set property svnclean if this is so -->
 
-  <target name="svnclean"
-    description="check that svn status -u has no output">
-
-    <exec executable="svn">
-      <arg line="status -u" />
-      <redirector outputproperty="svnstatus">
-	<outputfilterchain>
-	  <tailfilter lines="-1" skip="1"/>
-	</outputfilterchain>
-      </redirector>
-    </exec>
-
-    <condition property="svnclean">
-      <or>
-	<equals arg1="${svnstatus}" arg2="" trim="true"/>
-	<isset property="pretend"/>
-      </or>
-    </condition>
-
-    <fail unless="svnclean">The command svn status -u produces the output 
-${svnstatus}
-EXITING.
-    </fail>
-
-
+  <target name="svnclean" description="check that svn status is clean">
+    
+    <do-svnrevision/>
+    <if>
+      <equals arg1="0" arg2="${svn.clean}"/>
+      <then>
+        <concat>
+          <header>The command svn status -u -q produces the output
+</header>
+          <fileset file="build/svnstatus"/>
+        </concat>
+        <fail>EXITING.</fail>
+      </then>
+    </if>
   </target>
 
   <!-- *************************************************************** -->
