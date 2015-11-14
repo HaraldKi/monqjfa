@@ -109,7 +109,7 @@ public class StdCharEntities {
       throw new Error("impossible", e);
     }
     text.setLength(start);
-    Misc.append(text, sb, 0, sb.length());
+    text.append(sb);
   }
   /**********************************************************************/
   public void decode(StringBuilder text, int start) {

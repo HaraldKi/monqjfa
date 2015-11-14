@@ -111,7 +111,7 @@ public class TextStore implements Serializable {
    * or {@link #addPart addPart()} afterwards.</p>
    */
   public void append(StringBuilder s, int start, int end) {
-    Misc.append(text, s, start, end);
+    text.append(s, start, end);
   }
 
 
@@ -222,7 +222,7 @@ public class TextStore implements Serializable {
   public void getPart(StringBuilder sb, int part) {
     int idx = part2idx(part);
     if( idx<0 ) return;
-    Misc.append(sb, text, parts[idx], parts[idx+1]);
+    sb.append(text, parts[idx], parts[idx+1]);
   }
 
   /**
@@ -285,7 +285,7 @@ public class TextStore implements Serializable {
     if( start<parts[idx] ) start=parts[idx];
     if( end>parts[idx+1] ) end=parts[idx+1];
     if( start>end) start = end = 0;
-    Misc.append(sb, text, start, end);
+    sb.append(text, start, end);
   }
 
   /**

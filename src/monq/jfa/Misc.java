@@ -118,31 +118,4 @@ public class Misc {
     }
     return sb.toString();
   }
-
-  /**
-  * There is no method in StringBuilder to append a substring of
-  * another StringBuilder. Consequently, a substring would have to be
-  * created from the source to be appended to the destination. This
-  * results in two copy operations plus a mandatory new String object
-  * generated. In addition, the latter forces reallocation of the
-  * source StringBuilder's internal buffer as soon as it is changed. In
-  * 1.5 it will be possible to append a substring of a CharSequence to
-  * a StringBuilder, but looking into the implementation, I find a
-  * character-by-character copying with charAt(). Consequently, I
-  * prefer this method. It copies the characters twice, but spares
-  * reallocation of a new object most of the time and uses (hopefully)
-  * fast array copying.
-  */
-  public static StringBuilder append(StringBuilder dst, 
-                                    StringBuilder src, int start, int end) {
-    synchronized( appendBuf ) {
-      int len = end-start;
-      if( len>appendBuf.length ) appendBuf = new char[len];
-    
-      src.getChars(start, end, appendBuf, 0);
-      dst.append(appendBuf, 0, len);
-    }
-    return dst;
-  }
-  private static char[] appendBuf = new char[100];
 }
