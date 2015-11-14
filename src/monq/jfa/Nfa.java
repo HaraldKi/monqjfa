@@ -59,7 +59,8 @@ public class Nfa  {
   private int subgraphID = 0;
 
   private final ParserView pView = new ParserView();
-
+  private double memoryForSpeedTradeFactor = 1.0;
+  
   /**
    * <p>is used by each <code>Nfa</code> to obtain a default regular
    * expression parser.</p>
@@ -181,6 +182,36 @@ public class Nfa  {
   public Nfa(CharSequence regex) throws ReSyntaxException {
     this(regex, null);
   }
+  
+  /**
+   * <p>
+   * when creating DFA transitions during NFA to DFA compilation, the
+   * transition tables use different implementations, depending on how dense
+   * the transition table is. The fastest transition table uses an array that
+   * is indexed by the transition character. For sparse tables, this is a
+   * significant memory overhead, therefore a denser table can be used which
+   * uses a binary search for lookup.
+   * </p>
+   * 
+   * <p>
+   * The factor given defines how much larger the fast table may be, before
+   * the denser table is used. If the factor is 1.0, the implementation with
+   * the smaller estimated memory footprint is used. The larger the factor
+   * is, the more likely is it that even sparse tables still use the faster
+   * implementation. With a factor of several thousand, nearly all transition
+   * tables will be fast, possibly using up a lot of heap space.
+   * </p>
+   * 
+   * The default is 1.0.
+   * 
+   * @param f
+   */
+  public void setMemoryForSpeedTradeFactor(float f) {
+    memoryForSpeedTradeFactor = f;
+  }
+  public double getMemoryForSpeedTradeFactor() {
+    return memoryForSpeedTradeFactor;
+  }
   //-*******************************************************************
   /**
    * <p>initializes this automaton to recogize nothing.<p>
@@ -208,7 +239,7 @@ public class Nfa  {
       }
     }
     if( invert ) ivals.invert(lastState);
-    start.setTrans(ivals.toCharTrans());
+    start.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
   }
   //-*******************************************************************
   // initialize to a sequence of states that recognize exactly the
@@ -226,35 +257,33 @@ public class Nfa  {
       other = new AbstractFaState.DfaState();
       ch = s.charAt(i);
       assemble.overwrite(ch, ch, other);
-      current.setTrans(assemble.toCharTrans());
+      current.setTrans(assemble.toCharTrans(memoryForSpeedTradeFactor));
       current = other;
     }
     lastState = new AbstractFaState.EpsState();
     ch = s.charAt(i);
     assemble.overwrite(ch, ch, lastState);
-    current.setTrans(assemble.toCharTrans());
+    current.setTrans(assemble.toCharTrans(memoryForSpeedTradeFactor));
   }
   private void initializeAsSequence(FaState start1, FaState last1,
 				    FaState start2, 
 				    AbstractFaState.EpsState last2) {
-    if( false) {
-      // FIX ME: 
-      // Since we are sure that start2 has no incoming transitions, we
-      // can drop that state if we transfer all its transitions to
-      // last1. Because last1 does not have any outgoing transitions,
-      // the transfer does not require any merging.
-      // BUT: This requires changing the type of lastState throughout to
-      // a class which accepts a CharTrans, which EpsState currently
-      // does not. Therefore the slightly less efficient solution below:
-      //last1.addEps(start2.getEps());
+    // FIX ME: 
+    // Since we are sure that start2 has no incoming transitions, we
+    // can drop that state if we transfer all its transitions to
+    // last1. Because last1 does not have any outgoing transitions,
+    // the transfer does not require any merging.
+    // BUT: This requires changing the type of lastState throughout to
+    // a class which accepts a CharTrans, which EpsState currently
+    // does not. Therefore the slightly less efficient solution below:
+    //last1.addEps(start2.getEps());
       //last1.setTrans(start2.getTrans());
+    if( !start2.isImportant() ) {
+      last1.addEps(start2.getEps());
     } else {
-      if( !start2.isImportant() ) {
-	last1.addEps(start2.getEps());
-      } else {
-	last1.addEps(start2);
-      }
+      last1.addEps(start2);
     }
+
     start = start1;
     lastState = last2;
   }
@@ -345,38 +374,6 @@ public class Nfa  {
     return this;
   }
   //-********************************************************************/
-//   /**
-//    * used in high volume Nfa creation to conserve space. To be able to
-//    * parse a regular expression, an Nfa creates an internal parser
-//    * object. To prevent the parser object to be created and thereby
-//    * save quite some space, use this method of an already available
-//    * Nfa to create new Nfas instead of creating them with the
-//    * constructor. 
-//    * @deprecated will disappear soon.
-//    */
-//   public Nfa parse(CharSequence s, FaAction a) throws ReSyntaxException {
-//     // the parsing will mess with start and lastState, so we have to
-//     // keep them on the side.
-//     FaState keepStart = start;
-//     AbstractFaState.EpsState keepLast = lastState;
-
-//     setRegex(s);
-//     addAction(a);
-
-//     Nfa result = new Nfa(start, lastState);
-//     start = keepStart;
-//     lastState = keepLast;
-//     return result;
-//   }
-
-//   /**
-//    * <p>expert only.</p>
-//    * @deprecated will disappear soon.
-//    */
-//   public Nfa parse(CharSequence s) throws ReSyntaxException {
-//     return parse(s, null);
-//   }
-  /**********************************************************************/
   FaState getStart() {return start;}
   //private AbstractFaState.EpsState getLastState() {return lastState;}
 
@@ -410,7 +407,7 @@ public class Nfa  {
   private void addSubAction(FaState s, FaAction a, Set<FaState> known) {
     s.reassignSub(null, a);
     known.add(s);
-    Iterator children = s.getChildIterator();
+    Iterator<FaState> children = s.getChildIterator();
     while( children.hasNext() ) {
       Object o = children.next();
       if( known.contains(o) ) continue;
@@ -425,65 +422,13 @@ public class Nfa  {
 
   /**********************************************************************/
   /**
-   * makes sure this.reParser is not null and then calls it to parse the
-   * regex.
-   */
-//   private void setRegex(CharSequence s) throws ReSyntaxException {
-//     ReParser rp = getReParser();
-//     Nfa nfa = rp.parse(s);
-//     this.start = nfa.start;
-//     this.lastState = nfa.lastState;
-//   }
-  /**
    * for internal use by {@link Dfa#toNfa()} only.
    */
   Nfa(FaState start, AbstractFaState.EpsState lastState) {
     this.start = start;
     this.lastState = lastState;
   }
-//   void initialize(Intervals ivals) {
-//     lastState = new AbstractFaState.EpsState();
-//     int L = ivals.size();
-//     for(int i=0; i<L; i++) {
-//       if( ivals.getAt(i)==null ) continue;
-//       ivals.setAt(i, lastState);
-//     }
-//     start = new AbstractFaState.NfaState();
-//     start.setTrans(ivals.toCharTrans());
-//   }
-//   void initialize(StringBuilder s) {
-//     //System.out.println("+++"+s.toString());
-//     start = new AbstractFaState.NfaState();
 
-//     Intervals assemble = new Intervals();
-//     FaState current = start;
-//     FaState other;
-//     char ch;
-//     int i, L;
-//     for(i=0, L=s.length(); i<L-1; i++) {
-//       other = new AbstractFaState.DfaState();
-//       ch = s.charAt(i);
-//       assemble.overwrite(ch, ch, other);
-//       current.setTrans(assemble.toCharTrans());
-//       current = other;
-//     }
-//     lastState = new AbstractFaState.EpsState();
-//     ch = s.charAt(i);
-//     assemble.overwrite(ch, ch, lastState);
-//     current.setTrans(assemble.toCharTrans());
-//   }    
-  /********************************************************************/
-  /**
-   * creates a generally useful empty <code>CharTrans</code>. It is
-   * expected, that this function will be modified in the future if
-   * different kinds of CharTrans classes become available.
-   *
-   * @return a generally useful empty <code>CharTrans</code>.
-   */
-//   public static CharTrans createCharTrans() { 
-//     //return new SimpleCharTrans();
-//     return new ArrayCharTrans();
-//   }
   /**********************************************************************/
   /**
    * <p>marks this automaton as a reporting subautomaton. It will of
@@ -640,7 +585,7 @@ public class Nfa  {
     u.useful = 'x';
 
     // if we find one useful child, this state is useful too
-    Iterator i = s.getChildIterator();
+    Iterator<FaState> i = s.getChildIterator();
     while( i.hasNext() ) {
       FaState child = (FaState)i.next();
       char useful = isUseful(child, known, false);
@@ -711,7 +656,7 @@ public class Nfa  {
       ivals.setAt(i, null);
       removedOne = true;
     }
-    if( removedOne ) s.setTrans(ivals.toCharTrans());
+    if( removedOne ) s.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
   }
   /**********************************************************************/
   /**
@@ -733,7 +678,7 @@ public class Nfa  {
     }
     if( s.getAction()!=null ) s.clearAction();
     else s.addEps(last);
-    s.setTrans(worker.setFrom(t).complete(sink).toCharTrans());
+    s.setTrans(worker.setFrom(t).complete(sink).toCharTrans(memoryForSpeedTradeFactor));
   }
   /**
    * <p>inverts the automaton, such that the resulting automaton will
@@ -773,7 +718,8 @@ public class Nfa  {
 
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
     FaState sinkState = AbstractFaState.createDfaState(null, true);
-    sinkState.setTrans(worker.complete(sinkState).toCharTrans());
+    sinkState.setTrans(worker.complete(sinkState)
+                       .toCharTrans(memoryForSpeedTradeFactor));
 
     sinkState.addEps(newLast);
     invertState(dfaStart, Nfa.<FaState>newSet(), sinkState, newLast, worker);
@@ -869,7 +815,7 @@ public class Nfa  {
     // subgraph information. We have to remove it again.
     s.reassignSub(mark, null);
 
-    Iterator i = s.getChildIterator();
+    Iterator<FaState> i = s.getChildIterator();
     while( i.hasNext() ) {
       FaState child = (FaState)i.next();
       if( known.contains(child) ) continue;
@@ -999,7 +945,7 @@ public class Nfa  {
   }
   /**********************************************************************/
   // is a convenience wrapper around findAction for use in findPath
-  private boolean hasAction(Set nfaStates) {
+  private boolean hasAction(Set<FaState> nfaStates) {
     Vector<Object[]> clashes = new Vector<Object[]>(3);
     Set<FaAction> actions = new HashSet<FaAction>(3);
     StringBuilder sb = new StringBuilder();
@@ -1022,7 +968,7 @@ public class Nfa  {
 
     for(int i=0, L=s.length(); i<L && current.size()>0; i++) {
       char ch = s.charAt(i);      
-      for(Iterator j=current.iterator(); j.hasNext(); ) {
+      for(Iterator<FaState> j=current.iterator(); j.hasNext(); ) {
 	FaState state = (FaState)j.next();
 	state = state.follow(ch);
 	if( state!=null ) {
@@ -1040,7 +986,7 @@ public class Nfa  {
   /**********************************************************************/
   // generate a human readable exception from the clash information
   // collected during compilation.
-  private String clashToString(Vector clashes) 
+  private String clashToString(Vector<Object[]> clashes) 
     throws CompileDfaException {
 
     StringBuilder s = new StringBuilder(200);
@@ -1084,7 +1030,7 @@ public class Nfa  {
 
     // Delete unimportant states from tmpResult while copying back into
     // states. 
-    for(Iterator i=tmpResult.iterator(); i.hasNext(); /**/) {
+    for(Iterator<FaState> i=tmpResult.iterator(); i.hasNext(); /**/) {
       FaState ns = (FaState)i.next();
       if( ns.isImportant() ) states.add(ns);
     }
@@ -1114,18 +1060,18 @@ public class Nfa  {
 				     char first, char last,
 				     Vector<Object[]> clashes,
 				     Set<FaAction> actions, 
-				     Set nfaStates) 
+				     Set<FaState> nfaStates) 
     //throws CompileDfaException 
   {
     FaAction action = null;
     actions.clear();
 
-    for(Iterator i=nfaStates.iterator(); i.hasNext(); /**/) {
+    for(Iterator<FaState> i=nfaStates.iterator(); i.hasNext(); /**/) {
       FaState ns = (FaState)i.next();
       FaAction a = ns.getAction();
       if( a==null ) continue;
-      for(Iterator ia=actions.iterator(); ia.hasNext(); /**/) {
-	FaAction oldAction = (FaAction)ia.next();
+      for(Iterator<FaAction> ia=actions.iterator(); ia.hasNext(); /**/) {
+	FaAction oldAction = ia.next();
 
 	// XXX: try to merge the two actions either way. This is the
 	// closest to symmetric operation I can think of. Is there a
@@ -1355,7 +1301,7 @@ public class Nfa  {
       // The stack has always a dfa-state and its defining set of nfa
       // states 
       FaState currentState = (FaState)stack.pop();
-      Set currentNfaSet = (Set)stack.pop();
+      Set<FaState> currentNfaSet = (Set<FaState>)stack.pop();
       int[] howWeCameHere = (int[])stack.pop();
       if( howWeCameHere[2]>0 ) {
 	dfaPath.setLength(howWeCameHere[2]*2-2);
@@ -1368,7 +1314,7 @@ public class Nfa  {
       // currentTrans. Note that during this operation, the objects
       // stored in currentTrans are not destination states but
       // Sets of destination states.
-      for(Iterator i=currentNfaSet.iterator(); i.hasNext(); /**/) {
+      for(Iterator<FaState> i=currentNfaSet.iterator(); i.hasNext(); /**/) {
 	CharTrans trans = ((FaState)i.next()).getTrans();
 	if( trans==null ) continue;
 	int L = trans.size();
@@ -1422,7 +1368,7 @@ public class Nfa  {
 
       // make a (space minimal) copy of currentTrans and stick it into
       // the current state finally.
-      CharTrans ct = currentTrans.toCharTrans();
+      CharTrans ct = currentTrans.toCharTrans(memoryForSpeedTradeFactor);
       //System.out.println("resulting transition:"+ct);
       currentState.setTrans(ct);
     }
@@ -1434,27 +1380,10 @@ public class Nfa  {
       // The resulting automaton recognizes nothing, not even the
       // empty string. Should there be now a huge network of states,
       // they are useless. We return a much more concise
-      // representation of an automaton which matching nothing:
+      // representation of an automaton which matches nothing.
       return AbstractFaState.createDfaState(null, true);
     }
-
-    if( false ) {
-      System.out.println("known.size()="+known.size());
-      Set v = known.keySet();
-      Iterator it = v.iterator();
-      int count = 0;
-      while( it.hasNext() ) {
-	Set s = (Set)it.next();
-	count += s.size();
-      }
-      System.err.println("all states in known:"+count);
-    }
-    if (true) {
-      for(long l : Intervals.stats) {
-        System.out.print(l+" ");
-      }
-      System.out.println();
-    }
+    
     return dfaStart;
   }
   //-*****************************************************************

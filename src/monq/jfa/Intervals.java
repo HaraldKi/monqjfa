@@ -26,9 +26,6 @@ import java.util.List;
  * @author &copy; 2004, 2005 Harald Kirsch
  */
 class Intervals {
-  // the higher, the more memory is used to gain speed
-  public static double MEMORY_FOR_SPEED_TRADE_FACTOR = 1.5;
-  
   // Every element of the array denotes a range starting at this
   // character and reaching up to just before the next character or
   // Character.MAX_VALUE.
@@ -39,15 +36,35 @@ class Intervals {
   private StringBuilder ranges = new StringBuilder();
   private List<Object> vtmp = new ArrayList<Object>();
 
-  public static long[] stats = new long[4];
+  public static final long[] stats = new long[4];
   /**********************************************************************/
   public Intervals() {
     init();
   }
   /**********************************************************************/
+  /**
+   * initialized the intervals from the given {@code CharTrans}.
+   *
+   * @param memoryForSpeedTradeFactor
+   */
   public Intervals(CharTrans t) {
     init();
     setFrom(t);
+  }
+  /**********************************************************************/
+  public static String logStats() {
+    StringBuilder sb = new StringBuilder(200);
+    sb.append(Intervals.class.getName()).append(" stats:");
+    for (int i=0; i<stats.length; i++) {
+      sb.append(' ').append(stats[i]);
+    }
+    return sb.toString();
+  }
+  /**********************************************************************/
+  public static void resetStats() {
+    for (int i=0; i<stats.length; i++) {
+      stats[i] = 0;
+    }
   }
   /**********************************************************************/
   public Intervals setFrom(CharTrans t) {
@@ -186,7 +203,7 @@ class Intervals {
     return lo;
   }
   /**********************************************************************/
-  public CharTrans toCharTrans() {
+  public CharTrans toCharTrans(double memoryForSpeedTradeFactor) {
     // We have to do the following:
     // 1) convert right open intervals to ranges [a,b]
     // 2) drop intervals which map to null
@@ -238,10 +255,10 @@ class Intervals {
       int tableTransSize = TableCharTrans.estimateSize
 	(ranges.charAt(2*vtmp.size()-1)-ranges.charAt(0)+1);
 
-      System.out.println("array: "+arrayTransSize);
-      System.out.println("table: "+tableTransSize);
+      //System.out.println("array: "+arrayTransSize);
+      //System.out.println("table: "+tableTransSize);
 
-                   if( arrayTransSize*MEMORY_FOR_SPEED_TRADE_FACTOR<tableTransSize ) {
+      if( arrayTransSize*memoryForSpeedTradeFactor<tableTransSize ) {
 	t = new ArrayCharTrans(ranges, vtmp);
 	stats[2] += 1;
       } else {

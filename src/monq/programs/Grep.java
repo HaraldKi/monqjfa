@@ -218,6 +218,7 @@ public class Grep implements ServiceFactory {
     int prioInc = autoPrio ? 1 : 0;
 
     Nfa nfa = new Nfa(Nfa.NOTHING);
+    nfa.setMemoryForSpeedTradeFactor(1e9f);
     for(int i=0; i<args.length; i+=2) {
       nfa.or(args[i], new Printf(true, args[i+1]).setPriority(prio));
       prio += prioInc;
@@ -281,6 +282,7 @@ public class Grep implements ServiceFactory {
     // a combination of Hold/Match/Decide callbacks to do the
     // work. Otherwise, a simple Printf suffices.
     Nfa nfa = new Nfa(Nfa.NOTHING);
+    nfa.setMemoryForSpeedTradeFactor(1e9f);
     if( select ) {
       this.needCom = true;
       toWorkAction = new Hold(toWorkAction);
@@ -309,6 +311,7 @@ public class Grep implements ServiceFactory {
     // into the ROI
     SwitchDfa toWork = new SwitchDfa(toWorkAction);
     Nfa envelope = new Nfa(roiOn, toWork);
+    envelope.setMemoryForSpeedTradeFactor(1e9f);
     main = envelope.compile(fmMain);
 
     // connect the SwitchDfa objects to their DFAs

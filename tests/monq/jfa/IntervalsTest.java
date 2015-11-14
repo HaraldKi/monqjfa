@@ -34,7 +34,7 @@ public class IntervalsTest extends TestCase {
     Intervals ivals = new Intervals();
     ivals.invert(outer);
     ivals.overwrite('e', 'e', inner);
-    CharTrans t = ivals.toCharTrans();
+    CharTrans t = ivals.toCharTrans(1.0);
     ivals.setFrom(t);
     assertEquals(3, ivals.size());
     assertEquals(outer, ivals.getAt(0));
@@ -57,7 +57,7 @@ public class IntervalsTest extends TestCase {
     for(int i=0; i<10; i++) {
       ivals.overwrite((char)('a'+i), (char)('a'+i), new Integer(i));
     }
-    TableCharTrans t = (TableCharTrans)ivals.toCharTrans();
+    TableCharTrans t = (TableCharTrans)ivals.toCharTrans(1.0);
     String s = t.toString();
     //System.out.println(s);
     assertEquals("[a,j ..........]", s);

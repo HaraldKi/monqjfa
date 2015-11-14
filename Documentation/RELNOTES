@@ -1,3 +1,11 @@
+VERSION 1.4
+
+Added a new setting to Nfa objects which trades RAM for speed when
+generating transition tables during DFA compilation. A performance
+test with randomly generated text reflecting the bi-gram statistics of
+English text and search for around 100 words in parallel, showed a
+speedup of around 20% and more.
+
 VERSION 1.3
 
 Replaced all instances of StringBuffer with StringBuilder. For a
