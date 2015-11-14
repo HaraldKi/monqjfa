@@ -121,7 +121,7 @@ public final class ArrayUtil {
    */
   public static Object[] resize(Object[] old, int newSize) {
     int copySize = newSize>old.length ? old.length : newSize;
-    Class elemType = old.getClass().getComponentType();
+    Class<?> elemType = old.getClass().getComponentType();
     Object[] tmp = (Object[])Array.newInstance(elemType, newSize);
     System.arraycopy(old, 0, tmp, 0, copySize);
     return tmp;
