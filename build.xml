@@ -117,6 +117,7 @@
          includes="monq/**">
       <manifest>
 	<attribute name="Monq-Version" value="${version}"/>
+        <attribute name="Main-Class" value="monq.programs.Grep"/>
       </manifest>
     </jar>
   </target>
