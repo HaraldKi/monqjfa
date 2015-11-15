@@ -1,4 +1,4 @@
-VERSOIN 1.5
+VERSION 1.5
 
 Inspection of the test coverage data revealed a subtle bug in the
 Dfa.toNfa() method. A not so subtle bug was a stack based recursion
