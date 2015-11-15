@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -16,23 +16,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+
+import monq.jfa.actions.Copy;
+import monq.jfa.actions.Drop;
 
 /**
  *
  * @author &copy; 2004 Harald Kirsch
  */
-public class DfaTest extends TestCase {
+public class DfaTest  {
   private static class Xaction extends AbstractFaAction {
     private String name;
-    public Xaction(String name) { this.name = name;}
+    private Xaction(String name) { this.name = name;}
+    @Override
     public void invoke(StringBuilder s, int start, DfaRun r) {}
+    @Override
     public String toString() {return name;}
   }
   /**********************************************************************/
-  public static void test_publicmatch() throws Exception {
-    Dfa dfa = 
+  @Test
+  public void test_publicmatch() throws Exception {
+    Dfa dfa =
       new Nfa("a+", new Xaction("xxx"))
       .compile(DfaRun.UNMATCHED_DROP);
     StringBuilder sb = new StringBuilder();
@@ -47,17 +56,17 @@ public class DfaTest extends TestCase {
     assertNull(dfa.match(cs, sb, ts));
     assertEquals(0, sb.length());
 
-    dfa = 
+    dfa =
       new Nfa("a(!b+)c", new Xaction("xxx"))
       .or("a(!XX|YY)(!z+)", new Xaction("yyy"))
-      .compile(DfaRun.UNMATCHED_DROP); 
+      .compile(DfaRun.UNMATCHED_DROP);
 
     ts = new TextStore();
     cs = new CharSequenceCharSource("abbbcd");
     assertEquals("xxx", dfa.match(cs, sb, ts).toString());
     assertEquals("abbbc", ts.getPart(0));
     assertEquals("bbb", ts.getPart(1));
-    
+
     cs = new CharSequenceCharSource("aXXzzz");
     assertEquals("yyy", dfa.match(cs, sb, ts).toString());
     assertEquals("aXXzzz", ts.getPart(0));
@@ -72,9 +81,40 @@ public class DfaTest extends TestCase {
     assertEquals("zzzz", ts.getPart(2));
 
   }
-  /**********************************************************************/
-  public static void main(String[] argv)   {
-    // Fa fa = new Fa();
-    junit.textui.TestRunner.run(new TestSuite(DfaTest.class));
+
+  @Test
+  public void toNfa() throws Exception {
+    Nfa nfa = new Nfa();
+    nfa.or("a*", Copy.COPY);
+    nfa.or("b+", Drop.DROP);
+    
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    nfa = dfa.toNfa();
+    
+    dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    nfa = dfa.toNfa();
+    
+    dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    StringBuilder out = new StringBuilder(10);
+    dfa.match(new CharSequenceCharSource("c"), out, new SubmatchData());
+    assertEquals(0, out.length());
+    dfa.match(new CharSequenceCharSource("bbb"), out, new SubmatchData());
+    assertEquals("bbb", out.toString());
+  }
+
+  @Test
+  public void bug_r1024_stackOverflowOnDeepToNfa() throws Exception {
+    final int SIZE = 200_000;
+    char[] chars = new char[SIZE];
+    Arrays.fill(chars, 'a');
+    String longWord = new String(chars);
+    Nfa nfa = new Nfa(longWord, Copy.COPY);
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    nfa = dfa.toNfa();
+    dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    
+    StringBuilder out = new StringBuilder(SIZE);
+    dfa.match(new CharSequenceCharSource(longWord), out, new SubmatchData());
+    assertEquals(SIZE, out.length());
   }
 }

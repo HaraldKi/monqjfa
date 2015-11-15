@@ -379,7 +379,7 @@ public class Nfa  {
 
   /**
    * <p>adds an action to the Nfa (expert only).  This is done by
-   * adding an epsilon transition to the last state of this Nfa to a
+   * adding an epsilon transition of the last state of this Nfa to a
    * new last state which will carry the action.</p>
    *
    * <p>If the automaton has free subgraphs, these will be bound to
@@ -392,11 +392,17 @@ public class Nfa  {
   public Nfa addAction(FaAction a) {
     if( a==null ) return this;
 
-    AbstractFaState.EpsStopState newLast;
-    newLast = new AbstractFaState.EpsStopState(a);
+    AbstractFaState.EpsStopState newLast = new AbstractFaState.EpsStopState(a);
     lastState.addEps(newLast);
     lastState = newLast;
-    addSubAction(start, a, Nfa.<FaState>newSet());
+    
+    FaStateTraverser<FaAction> fasVis = new FaStateTraverser<>(a);
+    fasVis.traverse(start, new FaStateTraverser.StateVisitor<FaAction>() {
+      @Override
+      public void visit(FaState state, FaAction action) {
+        state.reassignSub(null, action);
+      }
+    });
     
     // All unbound subgraphs are now bound to an action. Since a
     // subgraph is identified by a pair (FaAction a, byte id), now is
@@ -404,18 +410,7 @@ public class Nfa  {
     subgraphID = 0;
     return this;
   }
-  private void addSubAction(FaState s, FaAction a, Set<FaState> known) {
-    s.reassignSub(null, a);
-    known.add(s);
-    Iterator<FaState> children = s.getChildIterator();
-    while( children.hasNext() ) {
-      Object o = children.next();
-      if( known.contains(o) ) continue;
-      addSubAction((FaState)o, a, known);
-    }
-    
-  }
-
+  /*+******************************************************************/  
   public void toDot(PrintStream out) {
     FaToDot.print(out, start, lastState);
   }

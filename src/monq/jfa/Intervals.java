@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author &copy; 2004, 2005 Harald Kirsch
  */
-class Intervals {
+public class Intervals {
   // Every element of the array denotes a range starting at this
   // character and reaching up to just before the next character or
   // Character.MAX_VALUE.

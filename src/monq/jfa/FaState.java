@@ -119,11 +119,10 @@ interface FaState {
   void mergeSubinfos(Set<FaState> nfaStates);
 
   /**
-   * returns a <code>Map</code> from {@link FaAction} objects to a
-   * <code>Set</code> of {@link FaSubinfo} objects. For every
-   * <code>FaAction</code> the set denotes the subautomata this state
-   * belongs to.
+   * returns a <code>Map</code> from {@link FaAction} objects to an array of
+   * {@link FaSubinfo} objects. For every <code>FaAction</code> the set
+   * denotes the subautomata this state belongs to.
    */
-  Map<FaAction,Set<FaSubinfo>> getSubinfos();
+  Map<FaAction,FaSubinfo[]> getSubinfos();
 
 }

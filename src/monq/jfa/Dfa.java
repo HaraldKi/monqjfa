@@ -110,33 +110,33 @@ public class Dfa implements Serializable {
   }
   /**********************************************************************/
   /**
-   * <p>converts the <code>Dfa</code> back into an <code>Nfa</code> in
-   * a way that <code>this</code> is totally useless afterwards. Make
-   * sure it is not used somewhere else meanwhile. The approach was
-   * taken for efficiency reasons. A deep copy operation is not yet
-   * implemented.</p>
+   * <p>
+   * converts the <code>Dfa</code> back into an <code>Nfa</code> in a way
+   * that <code>this</code> is totally useless afterwards. Make sure it is
+   * not used somewhere else meanwhile. The approach was taken for efficiency
+   * reasons. A deep copy operation is not implemented.
+   * </p>
+   * 
+   * @return an {@link Nfa} containing all <code>Dfa</code> nodes plus a
+   *         common stop state required by the <code>Nfa</code> data
+   *         structure.
    */
   public Nfa toNfa() {
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
-    addLastState(startState, newLast, new IdentityHashMap<FaState, Object>());
+    
+    FaStateTraverser<FaState> fasTrav = new FaStateTraverser<FaState>(newLast);
+    fasTrav.traverse(startState, new FaStateTraverser.StateVisitor<FaState>() {
+      @Override public void visit(FaState state, FaState last) {
+        if (state.getAction()!=null) {
+          state.addEps(last);
+        }
+      }
+    });
+    
+    // addLastState(startState, newLast, new IdentityHashMap<FaState, Object>());
     Nfa nfa = new Nfa(startState, newLast);
     startState = null;
     return nfa;
-  }
-  private void addLastState(FaState state,
-			    FaState newLast,
-			    IdentityHashMap<FaState,Object> known) {
-    // NOTE: We only need the key part of the map, too bad there is no
-    // IdentitySet.
-    known.put(state, null);
-
-    Iterator<FaState> i = state.getChildIterator();
-    while( i.hasNext() ) {
-      FaState child = (FaState)i.next();
-      if( known.containsKey(child) ) continue;
-      if( child.getAction()!=null ) child.addEps(newLast);
-      addLastState(child, newLast, known);
-    }
   }
   /**********************************************************************/
   /**

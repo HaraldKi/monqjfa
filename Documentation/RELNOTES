@@ -1,3 +1,13 @@
+VERSOIN 1.5
+
+Inspection of the test coverage data revealed a subtle bug in the
+Dfa.toNfa() method. A not so subtle bug was a stack based recursion
+visiting all state of an Nfa or Dfa that easily led to a
+StackOverflowError for deep finite automata. A visitor pattern was
+introduced and used in two places to circumvent the error while also
+leading to much better code readability.
+
+
 VERSION 1.4
 
 Added a new setting to Nfa objects which trades RAM for speed when
