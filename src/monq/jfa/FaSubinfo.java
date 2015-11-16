@@ -23,7 +23,7 @@ import java.io.Serializable;
  *
  * @author &copy; 2004, 2005 Harald Kirsch
  */
-class FaSubinfo implements Comparable, Serializable {
+class FaSubinfo implements Comparable<FaSubinfo>, Serializable {
  
   private static final byte SUBINNER = 0x1;
   private static final byte SUBSTART = 0x2;
@@ -39,7 +39,7 @@ class FaSubinfo implements Comparable, Serializable {
   private byte id;
 
   /**********************************************************************/
-  public int compareTo(Object other) {
+  public int compareTo(FaSubinfo other) {
     FaSubinfo o = (FaSubinfo)other;
     if( id<o.id ) return -1;
     if( id>o.id ) return 1;
