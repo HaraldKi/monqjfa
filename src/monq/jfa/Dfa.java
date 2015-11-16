@@ -19,8 +19,6 @@ package monq.jfa;
 import java.io.Serializable;
 import java.io.PrintStream;
 import java.io.IOException;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
 
 /**
  * implements a deterministic finite automaton. In contrast to class
@@ -116,14 +114,14 @@ public class Dfa implements Serializable {
    * not used somewhere else meanwhile. The approach was taken for efficiency
    * reasons. A deep copy operation is not implemented.
    * </p>
-   * 
+   *
    * @return an {@link Nfa} containing all <code>Dfa</code> nodes plus a
    *         common stop state required by the <code>Nfa</code> data
    *         structure.
    */
   public Nfa toNfa() {
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
-    
+
     FaStateTraverser<FaState> fasTrav = new FaStateTraverser<FaState>(newLast);
     fasTrav.traverse(startState, new FaStateTraverser.StateVisitor<FaState>() {
       @Override public void visit(FaState state, FaState last) {
@@ -132,7 +130,7 @@ public class Dfa implements Serializable {
         }
       }
     });
-    
+
     // addLastState(startState, newLast, new IdentityHashMap<FaState, Object>());
     Nfa nfa = new Nfa(startState, newLast);
     startState = null;
