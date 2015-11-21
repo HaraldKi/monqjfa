@@ -16,8 +16,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import java.util.*;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.Vector;
+
+import monq.jfa.FaState.IterType;
 
 /**
  * <p>models a non-deterministic finite automaton.</p>
@@ -396,7 +408,7 @@ public class Nfa  {
     lastState.addEps(newLast);
     lastState = newLast;
     
-    FaStateTraverser<FaAction> fasVis = new FaStateTraverser<>(a);
+    FaStateTraverser<FaAction> fasVis = new FaStateTraverser<>(IterType.ALL, a);
     fasVis.traverse(start, new FaStateTraverser.StateVisitor<FaAction>() {
       @Override
       public void visit(FaState state, FaAction action) {
@@ -580,7 +592,7 @@ public class Nfa  {
     u.useful = 'x';
 
     // if we find one useful child, this state is useful too
-    Iterator<FaState> i = s.getChildIterator();
+    Iterator<FaState> i = s.getChildIterator(IterType.ALL);
     while( i.hasNext() ) {
       FaState child = (FaState)i.next();
       char useful = isUseful(child, known, false);
@@ -655,25 +667,28 @@ public class Nfa  {
   }
   /**********************************************************************/
   /**
-   * recursively completes all transition tables, removes actions and
-   * adds epsilon transitions to a new last state. Only character
-   * transitions are traversed because the automaton was compiled just
-   * before.
+   * recursively completes all transition tables, removes actions and adds
+   * epsilon transitions to a new last state. Only character transitions, not
+   * epsilon transitions, are traversed because the automaton was compiled
+   * just before.
    */
-  private void invertState(FaState s, Set<FaState> known, 
-			   FaState sink, FaState last,
-			   Intervals worker) {
-    known.add(s);
-    CharTrans t = s.getTrans();
-    int L = t==null ? 0 : t.size();
-    for(int i=0; i<L; i++) {
-      FaState child = (FaState)(t.getAt(i));
-      if( known.contains(child) ) continue;
-      invertState(child, known, sink, last, worker);
-    }
-    if( s.getAction()!=null ) s.clearAction();
-    else s.addEps(last);
-    s.setTrans(worker.setFrom(t).complete(sink).toCharTrans(memoryForSpeedTradeFactor));
+  private void invertState(FaState start, 
+			   final FaState sink, final FaState last,
+			   final Intervals worker) {
+    FaStateTraverser<Void> fasTrav = new FaStateTraverser<>(IterType.CHAR, null);
+
+    fasTrav.traverse(start, new FaStateTraverser.StateVisitor<Void>() {
+      @Override public void visit(FaState state, Void xd) {
+        if (state.getAction()==null) {
+          state.addEps(last);
+        } else {
+          state.clearAction();
+        }
+        worker.setFrom(state.getTrans());
+        worker.complete(sink);
+        state.setTrans(worker.toCharTrans(memoryForSpeedTradeFactor));
+      }});
+
   }
   /**
    * <p>inverts the automaton, such that the resulting automaton will
@@ -717,18 +732,18 @@ public class Nfa  {
                        .toCharTrans(memoryForSpeedTradeFactor));
 
     sinkState.addEps(newLast);
-    invertState(dfaStart, Nfa.<FaState>newSet(), sinkState, newLast, worker);
-
+    
+    invertState(dfaStart, sinkState, newLast, worker);
+    
     start = new AbstractFaState.EpsState();
     start.addEps(dfaStart);
     lastState = newLast;
     
-    // all this can have produced useless state. We don't want to keep
-    // them.
+    // this may have produced useless state. We don't want to keep them.
     deleteUseless(start, new IdentityHashMap<FaState,Useful>());
     return this;
   }
-  /**********************************************************************/
+  /*+******************************************************************/
   /**
    * <p>implements the request <em>match everthing but X</em>. While
    * {@link #invert} implements the more theoretical set complement
@@ -810,7 +825,7 @@ public class Nfa  {
     // subgraph information. We have to remove it again.
     s.reassignSub(mark, null);
 
-    Iterator<FaState> i = s.getChildIterator();
+    Iterator<FaState> i = s.getChildIterator(IterType.ALL);
     while( i.hasNext() ) {
       FaState child = (FaState)i.next();
       if( known.contains(child) ) continue;

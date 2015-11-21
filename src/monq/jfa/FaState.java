@@ -67,13 +67,13 @@ interface FaState {
    * returns a {@link java.util.Iterator} which iterates over all
    * children of the state. This includes those reachable by character
    * transitions as well as those reachable by epsilon
-   * transitions. This iterator <b>must</b> support the 
-   * {@link java.util.Iterator#remove remove} operation.
+   * transitions.
    */
-  Iterator<FaState> getChildIterator();
+  Iterator<FaState> getChildIterator(IterType iType);
 
-  //boolean isStop();
-
+  enum IterType {
+    EPSILON, CHAR, ALL;
+  }
   /**
    * <p>returns the state which can be reached from this state by
    * character <code>ch</code>. If the given character does not lead

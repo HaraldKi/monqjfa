@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
+import monq.jfa.FaState.IterType;
+
 /**
  * contains a static function to output a finite automaton as a graph
  * to be printed by the fine <a
@@ -133,7 +135,7 @@ public class FaToDot {
     }
 
     // go recursive
-    for(Iterator<FaState> i=s.getChildIterator(); i.hasNext(); /**/) {
+    for(Iterator<FaState> i=s.getChildIterator(IterType.ALL); i.hasNext(); /**/) {
       FaState child = (FaState)i.next();
       if( known.contains(child) ) continue;
       print(child, out, start, last, known);

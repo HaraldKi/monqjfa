@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.io.Serializable;
+
+import monq.jfa.FaState.IterType;
+
 import java.io.PrintStream;
 import java.io.IOException;
 
@@ -122,7 +125,8 @@ public class Dfa implements Serializable {
   public Nfa toNfa() {
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
 
-    FaStateTraverser<FaState> fasTrav = new FaStateTraverser<FaState>(newLast);
+    FaStateTraverser<FaState> fasTrav = 
+        new FaStateTraverser<FaState>(IterType.ALL, newLast);
     fasTrav.traverse(startState, new FaStateTraverser.StateVisitor<FaState>() {
       @Override public void visit(FaState state, FaState last) {
         if (state.getAction()!=null) {

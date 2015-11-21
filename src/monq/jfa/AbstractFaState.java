@@ -182,7 +182,7 @@ abstract class AbstractFaState
    * implements an {@link java.util.Iterator} over all states reachable
    * from this state. It iterates first over the character transitions
    * and then over the epsilon transitions.
-   * <p>The {@link java.util.Iterator#remove() remove()} operation is
+   * <p>The {@link java.util.Iterator#remove() remove()} operation is not
    * implemented.</p> 
    *
    * <p>Use {@link FaState#getChildIterator() getChildIterator()} of
@@ -195,11 +195,15 @@ abstract class AbstractFaState
     private int eps_i = 0;
     private int eps_L = 0;
       
-    ChildIterator() {
-      FaState[] eps = getEps();
-      if( eps!=null ) eps_L = eps.length;
-      CharTrans t = getTrans();
-      if( t!=null ) trans_L = t.size();
+    ChildIterator(IterType iType) {
+      if (iType==IterType.ALL || iType==IterType.EPSILON) {
+        FaState[] eps = getEps();
+        if( eps!=null ) eps_L = eps.length;
+      }
+      if (iType==IterType.ALL || iType==IterType.CHAR) {
+        CharTrans t = getTrans();
+        if( t!=null ) trans_L = t.size();
+      }
     }
 
     public boolean hasNext() {
@@ -218,8 +222,9 @@ abstract class AbstractFaState
     }
   }
   /**********************************************************************/
-  public Iterator<FaState> getChildIterator() {
-    return new ChildIterator();
+  @Override
+  public Iterator<FaState> getChildIterator(IterType iType) {
+    return new ChildIterator(iType);
   }
   /********************************************************************/
   public static FaState 
