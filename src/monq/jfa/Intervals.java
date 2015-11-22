@@ -24,6 +24,8 @@ import java.util.List;
  * implementations.</p>
  *
  * @author &copy; 2004, 2005 Harald Kirsch
+ * 
+ * @TODO: Either make it generic or store FaState only
  */
 public class Intervals {
   // Every element of the array denotes a range starting at this
@@ -67,6 +69,11 @@ public class Intervals {
     }
   }
   /**********************************************************************/
+  /**
+   * adds or overwrites transitions from the given CharTrans.
+   * 
+   * TODO: rename to add or overwrite, because this sounds like a reset.
+   */
   public Intervals setFrom(CharTrans t) {
     if( t==null ) return this;
 

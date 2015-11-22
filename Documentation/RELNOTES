@@ -1,3 +1,13 @@
+VERSION 1.6
+
+Replaced a three internal algorithms to not use recursion, since this
+bombs out easily on degenerate automata with a large depth. The
+ugliest was the one to remove useless states. The way it was
+implemented, I was not able anymore to convince me that is really
+worked in all cases. The new algorithm is still not exactly "clean
+code", but it is rather straight forward.
+
+
 VERSION 1.5
 
 Inspection of the test coverage data revealed a subtle bug in the

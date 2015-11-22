@@ -156,7 +156,7 @@ abstract class AbstractFaState
   public boolean isImportant() {
     return getTrans()!=null || getAction()!=null || subinfos!=null;
   }
-  //public boolean isStop() {return getAction()!=null;}
+
   public FaState[] getEps() {return null;}
 
   public void addEps(FaState other) {

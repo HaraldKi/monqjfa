@@ -16,12 +16,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
+import monq.jfa.AbstractFaState.EpsState;
 //import jfa.*;
 import monq.jfa.actions.*;
 
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import java.io.StringReader;
+import java.lang.reflect.Method;
+import org.junit.Test;
+
 import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 
@@ -744,21 +747,22 @@ public class NfaTest extends TestCase {
     // removed.
     Nfa nfa = new Nfa("(.*)~|a", Drop.DROP);
 
+
     // This CharSource will fail with an assertion on the
     // third character read.
     CharSource s = new CharSource() {
-	int count = 0;
-	@Override
-  public int read() {
-	  count +=1;
-	  assertTrue(count<3);
-	  return 'a';
-	}
-	@Override
-  public void pushBack(StringBuilder s, int i) {}
-      };
+      int count = 0;
+      @Override
+      public int read() {
+        count +=1;
+        assertTrue(count<3);
+        return 'a';
+      }
+      @Override
+      public void pushBack(StringBuilder s, int i) {}
+    };
     DfaRun r =
-      new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), s);
+        new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), s);
     StringBuilder sb = new StringBuilder();
     r.read(sb);
   }
@@ -1552,11 +1556,59 @@ public class NfaTest extends TestCase {
     assertTrue(e.getMessage().indexOf("[[yyy]]")>0);
 
   }
-  /**********************************************************************/
+  /*+******************************************************************/
 
-  public static void main(String[] argv)   {
-    // Fa fa = new Fa();
-    junit.textui.TestRunner.run(new TestSuite(NfaTest.class));
+  @Test
+  public void test_LongInvertBombsStack() throws Exception {
+    final int NCHARS = 10_000;
+    StringBuilder sb = new StringBuilder(NCHARS+10);
+    sb.append('(');
+    for (int i=0; i<NCHARS; i++) {
+      sb.append('c');
+    }
+    sb.append(")~X");
+    Nfa nfa = new Nfa(sb, new Copy(0));
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
+    //dfa.toDot(System.out);
+    sb.delete(0, 1);
+    sb.setLength(NCHARS);
+    sb.append('X');
+    CharSource text = new CharSequenceCharSource(sb);
+    assertNull(dfa.match(text, new StringBuilder(), (TextStore)null));
+
+    sb.delete(0, 1);
+    text = new CharSequenceCharSource(sb);
+    assertNotNull(dfa.match(text, new StringBuilder(), (TextStore)null));
+
+    text = new CharSequenceCharSource("blacccblaX");
+    assertNotNull(dfa.match(text, new StringBuilder(), (TextStore)null));
+
+  }
+
+  @Test
+  public void test_deleteUseless() throws Exception {
+    FaState[] children = new FaState[3];
+    EpsState start = new EpsState();
+    start.setEps(children);
+    FaState stop = AbstractFaState.createDfaState(new Copy(0), false);
+    FaState useless = new EpsState();
+    FaState useless2 = new EpsState();
+    useless.setEps(new FaState[]{useless2});
+    useless2.setEps(new FaState[]{useless});
+    FaState loop = new EpsState();
+    loop.setEps(new FaState[]{start});
+
+    children[0] = useless;
+    children[1] = loop;
+    children[2] = stop;
+    Nfa nfa = new Nfa(start, (EpsState)stop);
+    //nfa.toDot(System.out);
+    Method deleteUseless = Nfa.class.getDeclaredMethod("removeUseless");
+
+    deleteUseless.setAccessible(true);
+    deleteUseless.invoke(nfa);
+    assertEquals(2, start.getEps().length);
+    //nfa.toDot(System.out);
   }
 }
 

@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -18,6 +18,7 @@ package monq.jfa;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,14 +73,14 @@ public class Nfa  {
 
   private final ParserView pView = new ParserView();
   private double memoryForSpeedTradeFactor = 1.0;
-  
+
   /**
    * <p>is used by each <code>Nfa</code> to obtain a default regular
    * expression parser.</p>
    *
    * @see #setReParser
    */
-  private static ReParserFactory defaultParserFactory 
+  private static ReParserFactory defaultParserFactory
     = ReClassicParser.factory;
   /**********************************************************************/
   /**
@@ -87,7 +88,7 @@ public class Nfa  {
    * obtain a default <code>ReParser</code>.</p>
    * @see #setReParser
    */
-  public static synchronized void 
+  public static synchronized void
     setDefaultParserFactory(ReParserFactory rpf) {
       defaultParserFactory = rpf;
     }
@@ -116,7 +117,7 @@ public class Nfa  {
   }
   /**
    * <p>is only a pass-through to
-   * <code>getReParser().escape(...)</code>.</p> 
+   * <code>getReParser().escape(...)</code>.</p>
    *
    * @see ReParser#escape(StringBuilder, CharSequence, int)
    */
@@ -130,7 +131,7 @@ public class Nfa  {
     return getReParser().specialChars();
   }
   /**********************************************************************/
-  
+
   /**
    * <p>is used for an enumeration type which determines which type of
    * empty <code>Nfa</code> is generated when calling {@link
@@ -173,10 +174,10 @@ public class Nfa  {
     if( type==EPSILON ) {
       // automaton recognizing the empty string
       optional();
-    }      
+    }
   }
   /**
-   * <p>creates an <code>Nfa</code> from the given 
+   * <p>creates an <code>Nfa</code> from the given
    * <a href="doc-files/resyntax.html">regular expression</a> and
    * assigns the given action to the stop state. More regex/action
    * pairs are then normally added with {@link
@@ -194,7 +195,7 @@ public class Nfa  {
   public Nfa(CharSequence regex) throws ReSyntaxException {
     this(regex, null);
   }
-  
+
   /**
    * <p>
    * when creating DFA transitions during NFA to DFA compilation, the
@@ -204,7 +205,7 @@ public class Nfa  {
    * significant memory overhead, therefore a denser table can be used which
    * uses a binary search for lookup.
    * </p>
-   * 
+   *
    * <p>
    * The factor given defines how much larger the fast table may be, before
    * the denser table is used. If the factor is 1.0, the implementation with
@@ -213,9 +214,9 @@ public class Nfa  {
    * implementation. With a factor of several thousand, nearly all transition
    * tables will be fast, possibly using up a lot of heap space.
    * </p>
-   * 
+   *
    * The default is 1.0.
-   * 
+   *
    * @param f
    */
   public void setMemoryForSpeedTradeFactor(float f) {
@@ -230,7 +231,7 @@ public class Nfa  {
    */
   private void initialize() {
     start = new AbstractFaState.EpsState();
-    lastState = new AbstractFaState.EpsState();    
+    lastState = new AbstractFaState.EpsState();
   }
   //-*******************************************************************
   private void initialize(final CharSequence pairs, boolean invert) {
@@ -278,9 +279,9 @@ public class Nfa  {
     current.setTrans(assemble.toCharTrans(memoryForSpeedTradeFactor));
   }
   private void initializeAsSequence(FaState start1, FaState last1,
-				    FaState start2, 
+				    FaState start2,
 				    AbstractFaState.EpsState last2) {
-    // FIX ME: 
+    // FIX ME:
     // Since we are sure that start2 has no incoming transitions, we
     // can drop that state if we transfer all its transitions to
     // last1. Because last1 does not have any outgoing transitions,
@@ -300,9 +301,9 @@ public class Nfa  {
     lastState = last2;
   }
   //-*******************************************************************
-  private void initializeAsOr(FaState start1, 
+  private void initializeAsOr(FaState start1,
 			      AbstractFaState.EpsState last1,
-			      FaState start2, 
+			      FaState start2,
 			      AbstractFaState.EpsState last2) {
     // To conserve objects, we want to use one of the last states as
     // the new lastState. However, a state with an action is not a
@@ -320,7 +321,7 @@ public class Nfa  {
 	// this one can serve as a useful new lastState
 	lastState = last2;
 	last1.addEps(lastState);
-      } 
+      }
     } else {
       // last1 is a good new lastState
       lastState = last1;
@@ -342,7 +343,7 @@ public class Nfa  {
   }
   //-*******************************************************************
 //   /**
-//    * creates an <code>Nfa</code> from the given 
+//    * creates an <code>Nfa</code> from the given
 //    * <a href="doc-files/resyntax.html">regular expression</a>.
 //    */
 //   public Nfa(CharSequence s) throws ReSyntaxException {
@@ -360,12 +361,12 @@ public class Nfa  {
 
    private static <E> Set<E> newSet() { return new HashSet<E>(16, 1.0F); }
    private static <E> Set<E> newSet(int s) { return new HashSet<E>(s, 1.0F); }
-   private static <E> Set<E> newSet(Collection<E> c) { 
+   private static <E> Set<E> newSet(Collection<E> c) {
      Set<E> h = new HashSet<E>(c.size()+1, 1.0F);
      h.addAll(c);
      return h;
    }
-  
+
   //-*******************************************************************/
   /**
    * <p>returns the regular expression parser currently used by this
@@ -407,7 +408,7 @@ public class Nfa  {
     AbstractFaState.EpsStopState newLast = new AbstractFaState.EpsStopState(a);
     lastState.addEps(newLast);
     lastState = newLast;
-    
+
     FaStateTraverser<FaAction> fasVis = new FaStateTraverser<>(IterType.ALL, a);
     fasVis.traverse(start, new FaStateTraverser.StateVisitor<FaAction>() {
       @Override
@@ -415,14 +416,14 @@ public class Nfa  {
         state.reassignSub(null, action);
       }
     });
-    
+
     // All unbound subgraphs are now bound to an action. Since a
     // subgraph is identified by a pair (FaAction a, byte id), now is
     // the time to reset the id counter in our ReParser.
     subgraphID = 0;
     return this;
   }
-  /*+******************************************************************/  
+  /*+******************************************************************/
   public void toDot(PrintStream out) {
     FaToDot.print(out, start, lastState);
   }
@@ -481,7 +482,7 @@ public class Nfa  {
   // marked as an inner state. States that a merely reachable via an
   // epsilon transition, are not marked. The parent is not touched
   // here.
-  private void _markAsSub(FaState parent, 
+  private void _markAsSub(FaState parent,
 			  FaSubinfo innerInfo, boolean innerValid,
 			  Set<FaState> known) {
     known.add(parent);
@@ -527,11 +528,11 @@ public class Nfa  {
   // | The following operators maintain the two assertion:
   // | A) the start state has no incoming transitions
   // | B) the stop state has no outgoing transitions
-  // | This is required for Thompson's construction to work properly. 
+  // | This is required for Thompson's construction to work properly.
   // ------------------------------------------------------
   /**
    * <p>transforms this finite automaton to match the empty string
-   * too. All actions defining stop states are kept as they are. 
+   * too. All actions defining stop states are kept as they are.
    * This method implements the operator <code>?</code>.<p>
    *
    * @return the return value is <code>this</code>.
@@ -560,119 +561,128 @@ public class Nfa  {
     embed();
     return this;
   }
-  
+
   /**********************************************************************/
-  private static class Useful {
-    // This can be '?', 'x', 'y' or 'n'. 
-    // Initially '?' tells us we don't know yet
-    // It will be 'x' while currently trying to recursively figure out
-    // Finally, 'y' for "yes" and 'n' for" "no" will be set, where 'n'
-    // can only be decided on in the toplevel invocation.
-    char useful = '?';
-    boolean isPruned = false;
-  }
-  
-  private char isUseful(FaState s, IdentityHashMap<FaState,Useful> known,
-                        boolean top) {
-    Useful u = (Useful)known.get(s);
-    if( u==null ) {
-      u = new Useful();
-      known.put(s, u);
-    } else {
-      if( u.useful!='?' ) return u.useful;
-    }
+  private void removeUseless() {
+    // TODO: refactor, at least by extracting the loops into methods
+    Map<FaState,Boolean> stateUseful = new IdentityHashMap<>();
+    ArrayList<FaState> states = new ArrayList<>();
 
-    // lastState and stop states are useful
-    if( null!=s.getAction() || s==lastState ) {
-      u.useful = 'y';
-      return u.useful;
-    }
-
-    // guard against recursively checking this state again
-    u.useful = 'x';
-
-    // if we find one useful child, this state is useful too
-    Iterator<FaState> i = s.getChildIterator(IterType.ALL);
-    while( i.hasNext() ) {
-      FaState child = (FaState)i.next();
-      char useful = isUseful(child, known, false);
-      if( useful!='y' ) continue;
-      u.useful = 'y';
-      return u.useful;
-    }
-
-    // If we arrive here, we could not prove in any branch that this
-    // state is useful. If we are at the top of the recursive calls,
-    // this means the state is indeed not useful. However, deep down
-    // in the recursive invocations, it means nothing
-    u.useful = top ? 'n' : '?';
-    return u.useful;
-  }
-
-  /**
-   * deletes states which have no path to neither a stop state nor to
-   * lastState. 
-   */
-  private void deleteUseless(FaState s, IdentityHashMap<FaState,Useful> known) {
-    //System.err.println("dU"+s);
-    Useful u = (Useful)known.get(s);
-    if( u==null ) {
-      u = new Useful();
-      known.put(s, u);
-    }
-    u.isPruned = true;
-
-    // we cannot use the child iterator because we may want to delete
-    // outgoing transitions.
-    int L = 0;
-    FaState[] eps = s.getEps();
-    if( eps!=null ) L = eps.length;
-    int dst = 0;    
-    for(int i=0; i<L; i++) {
-      FaState child = eps[i];
-      Useful cu = (Useful)known.get(child);
-      if( cu==null || !cu.isPruned ) deleteUseless(child, known);
-      char useful = isUseful(child, known, true);
-      if( 'y'==useful ) eps[dst++] = eps[i];
-    }
-    if( dst<L ) {
-      FaState[] newEps = null;
-      if( dst>0 ) {
-	newEps = new FaState[dst];
-	System.arraycopy(eps, 0, newEps, 0, dst);
+    states.add(start);
+    int nextState = 0;
+    while (nextState<states.size()) {
+      FaState state = states.get(nextState++);
+      stateUseful.put(state, state.getAction()!=null || state==lastState);
+      Iterator<FaState> children = state.getChildIterator(IterType.ALL);
+      while (children.hasNext()) {
+        FaState child = children.next();
+        if (stateUseful.containsKey(child)) {
+          continue;
+        }
+        states.add(child);
       }
-      s.setEps(newEps);
+    }
+    // repeatedly iterate over all states and see if one of their children is
+    // useful, which makes the state itself useful. Repeat until no new
+    // useful state is found.
+    boolean foundOne;
+    do {
+      foundOne = false;
+      // reverse iteration tends to hit children earlier, allowing to mark as
+      // useful many states in one sweep
+      for (int i=states.size()-1; i>=0; i--) {
+        FaState state = states.get(i);
+        if (stateUseful.get(state)) {
+          continue;
+        }
+        Iterator<FaState> children = state.getChildIterator(IterType.ALL);
+        while (children.hasNext()) {
+          if (stateUseful.get(children.next())) {
+            stateUseful.put(state, Boolean.TRUE);
+            foundOne = true;
+            break;
+          }
+        }
+      }
+    } while (foundOne);
+
+    // TODO: refactor this mess
+    // remove all useless states
+    if (!stateUseful.get(start)) {
+      initialize();
+      return;
     }
 
-    CharTrans t = s.getTrans();
+    Intervals worker = new Intervals();
+    for (int i=0; i<states.size(); i++) {
+      FaState state = states.get(i);
+      Boolean b = stateUseful.get(state);
+      if (!b) {
+        continue;
+      }
+      removeUselessEps(state, stateUseful);
+      removeUselessCharTrans(state, stateUseful, worker);
+      worker.reset();
+    }
+  }
+  /*+******************************************************************/
+  private void removeUselessCharTrans(FaState state,
+                                      Map<FaState,Boolean> useful,
+                                      Intervals ivalsWorker) {
+    CharTrans t = state.getTrans();
     if( t==null ) return;
 
     // Since CharTrans is immutable, we move things into an Intervals
-    // object. Onle if we remove at least one transition will be
+    // object. Only if we remove at least one transition will be
     // create a new CharTrans from the Intervals.
-    Intervals ivals = new Intervals(t);
+
     boolean removedOne = false;
-    L = ivals.size();
+    ivalsWorker.setFrom(t);
+    int L = ivalsWorker.size();
     for(int i=0; i<L; i++) {
-      FaState child = (FaState)ivals.getAt(i);
-      if( child==null ) continue;
-      Useful cu = (Useful)known.get(child);
-      if( cu==null || !cu.isPruned ) deleteUseless(child, known);
-      char useful = isUseful(child, known, true);
-      if( 'y'==useful ) continue;
-      ivals.setAt(i, null);
-      removedOne = true;
+      FaState child = (FaState)ivalsWorker.getAt(i);
+      if (child==null) {
+        continue;
+      }
+      Boolean b = useful.get(child);
+      if (!b) {
+        ivalsWorker.setAt(i, null);
+        removedOne = true;
+      }
     }
-    if( removedOne ) s.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
+    if (removedOne) {
+      state.setTrans(ivalsWorker.toCharTrans(memoryForSpeedTradeFactor));
+    }
   }
-  /**********************************************************************/
+  /*+******************************************************************/
+  private void removeUselessEps(FaState state, Map<FaState,Boolean> useful) {
+    FaState[] eps = state.getEps();
+    if (eps==null) {
+      return;
+    }
+    int dst = 0;
+    for (int i=0; i<eps.length; i++) {
+      if (useful.get(eps[i])) {
+        eps[dst++] = eps[i];
+      }
+    }
+    if (dst==0) {
+      state.setEps(null);
+    } else {
+      if (dst<eps.length) {
+        eps = Arrays.copyOf(eps, dst);
+      }
+      state.setEps(eps);
+    }
+  }
+  /*+******************************************************************/
   /**
    * recursively completes all transition tables, removes actions and adds
    * epsilon transitions to a new last state. Only character transitions, not
    * epsilon transitions, are traversed because the automaton was compiled
    * just before.
    */
-  private void invertState(FaState start, 
+  private void invertState(FaState start,
 			   final FaState sink, final FaState last,
 			   final Intervals worker) {
     FaStateTraverser<Void> fasTrav = new FaStateTraverser<>(IterType.CHAR, null);
@@ -718,7 +728,7 @@ public class Nfa  {
       FaAction mark = new monq.jfa.actions.Copy(Integer.MIN_VALUE);
       addAction(mark);
     }
-    
+
     // need to manufacture some CharTrans, so we need this.
     Intervals worker = new Intervals();
 
@@ -732,15 +742,16 @@ public class Nfa  {
                        .toCharTrans(memoryForSpeedTradeFactor));
 
     sinkState.addEps(newLast);
-    
+
     invertState(dfaStart, sinkState, newLast, worker);
-    
+
     start = new AbstractFaState.EpsState();
     start.addEps(dfaStart);
     lastState = newLast;
-    
+
     // this may have produced useless state. We don't want to keep them.
-    deleteUseless(start, new IdentityHashMap<FaState,Useful>());
+
+    removeUseless();
     return this;
   }
   /*+******************************************************************/
@@ -759,7 +770,7 @@ public class Nfa  {
    *
    * After application of <code>invert()</code>, the result, namely
    * <code>"([A-Z]+)~"</code>, will match all strings
-   * 
+   *
    * <blockquote>which are <span style="color:red">not</span> completely
    * uppercase.</blockquote>
    *
@@ -775,7 +786,7 @@ public class Nfa  {
    * <p>The following is an example application of
    * <code>not()</code>. It shows a way to enclose words
    * separated by white space with angle brackets:</p><pre>
-   * Nfa n = new Nfa("([ \t\n\r]+)^", 
+   * Nfa n = new Nfa("([ \t\n\r]+)^",
    *                 new AbstractFaAction.Printf("[%0]"))
    * </pre>
    * <p>The caret (<code>"^"</code>) is the operator applying
@@ -806,7 +817,7 @@ public class Nfa  {
    * used below by <code>shortest</code> to recursively prune outgoing
    * transitions of stop states.
    */
-  private void trimStopState(FaState s, Set<FaState> known, 
+  private void trimStopState(FaState s, Set<FaState> known,
 			     FaState newLast, FaAction mark) {
     known.add(s);
     FaAction a = s.getAction();
@@ -827,7 +838,7 @@ public class Nfa  {
 
     Iterator<FaState> i = s.getChildIterator(IterType.ALL);
     while( i.hasNext() ) {
-      FaState child = (FaState)i.next();
+      FaState child = i.next();
       if( known.contains(child) ) continue;
       trimStopState(child, known, newLast, mark);
     }
@@ -840,7 +851,7 @@ public class Nfa  {
    * <em>shortest matches</em> of the given Nfa. This operation is
    * best understood by its implementation, which compiles the Nfa
    * into a Dfa and then removes all outgoing links of any stop
-   * states. 
+   * states.
    *
    * <p>If <code>this</code> has not stop state yet, the operation
    * is actually not well defined. Therefore and to avoid
@@ -877,7 +888,7 @@ public class Nfa  {
 
     return this;
   }
-  
+
   /**********************************************************************/
   /**
    * <p>extend the current automaton to recognize <code>regex</code>
@@ -885,21 +896,21 @@ public class Nfa  {
    * given action to be called if the suffix was recognized. If the
    * action is <code>null</code>, no action will be added.</p>
    */
-  public Nfa seq(CharSequence regex, FaAction a) 
-    throws ReSyntaxException 
+  public Nfa seq(CharSequence regex, FaAction a)
+    throws ReSyntaxException
   {
     getReParser().parse(pView, regex);
     addAction(a);
     pView.seq();
     return this;
-  } 
+  }
   /**
    * <p>calls {@link #seq(CharSequence,FaAction)} with
    * <code>null</code> as the 2nd parameter.</p>
    */
   public Nfa seq(CharSequence s) throws ReSyntaxException {
     return seq(s, null);
-  } 
+  }
   /**
    * <p> Concatenates <code>other</code> to <code>this</code> such that a
    * sequence of characters <em>vw</em> is matched where <em>v</em> is
@@ -922,8 +933,8 @@ public class Nfa  {
    * <p>adds the given regular expression <code>re</code> to the
    * automaton and associates it with the given action. </p>
    */
-  public Nfa or(CharSequence regex, FaAction action) 
-    throws ReSyntaxException 
+  public Nfa or(CharSequence regex, FaAction action)
+    throws ReSyntaxException
   {
     getReParser().parse(pView, regex);
     addAction(action);
@@ -964,7 +975,7 @@ public class Nfa  {
   /**********************************************************************/
   /**
    * is a very inefficient way to use an Nfa for matching, mainly
-   * intended for crosschecks in unit-testing. 
+   * intended for crosschecks in unit-testing.
    */
   int findPath(String s) {
     int lastMatch;
@@ -977,9 +988,9 @@ public class Nfa  {
     else lastMatch = -1;
 
     for(int i=0, L=s.length(); i<L && current.size()>0; i++) {
-      char ch = s.charAt(i);      
+      char ch = s.charAt(i);
       for(Iterator<FaState> j=current.iterator(); j.hasNext(); ) {
-	FaState state = (FaState)j.next();
+	FaState state = j.next();
 	state = state.follow(ch);
 	if( state!=null ) {
 	  //System.out.println("followed "+ch);
@@ -996,14 +1007,14 @@ public class Nfa  {
   /**********************************************************************/
   // generate a human readable exception from the clash information
   // collected during compilation.
-  private String clashToString(Vector<Object[]> clashes) 
+  private String clashToString(Vector<Object[]> clashes)
     throws CompileDfaException {
 
     StringBuilder s = new StringBuilder(200);
     s.append(CompileDfaException.EAMBIGUOUS)
       .append(".\nThe following set(s) of clashes exist:\n");
     for(int i=0; i<clashes.size(); i++) {
-      Object[] actions = (Object[])clashes.get(i);
+      Object[] actions = clashes.get(i);
       s.append(i+1)
 	.append(") path `")
 	.append(actions[actions.length-1])
@@ -1028,7 +1039,7 @@ public class Nfa  {
     states.clear();
 
     while( stack.size()>0 ) {
-      FaState ns = (FaState)stack.remove(stack.size()-1);
+      FaState ns = stack.remove(stack.size()-1);
       tmpResult.add(ns);
       FaState[] eps = ns.getEps();
       if( eps==null ) continue;
@@ -1039,9 +1050,9 @@ public class Nfa  {
    }
 
     // Delete unimportant states from tmpResult while copying back into
-    // states. 
+    // states.
     for(Iterator<FaState> i=tmpResult.iterator(); i.hasNext(); /**/) {
-      FaState ns = (FaState)i.next();
+      FaState ns = i.next();
       if( ns.isImportant() ) states.add(ns);
     }
   }
@@ -1052,7 +1063,7 @@ public class Nfa  {
   // complete and helpful error report later.
   // dfaPath -- character ranges denoting a shortest path through the
   // Dfa to the parent state of the state we want to find an action
-  // for 
+  // for
 
   // first, last -- contain the last step not yet reflected in
   // dfaPath. It is not yet in there for efficiency reasons because it
@@ -1060,24 +1071,24 @@ public class Nfa  {
   // inverted to show that it is not really a step
 
   // clashes -- will receive an additional FaAction[] if a clash
-  // happens 
+  // happens
   // actions -- is preallocated reusable space to keep track of the
   // actions found (reminds me a bit about old FORTRAN:-)
   // nfaStates -- is the set of NFA states within which we look for
   // the highest priority action. A clash is defined by having too or
   // more non-identical highest priority actions.
-  private static FaAction findAction(StringBuilder dfaPath, 
+  private static FaAction findAction(StringBuilder dfaPath,
 				     char first, char last,
 				     Vector<Object[]> clashes,
-				     Set<FaAction> actions, 
-				     Set<FaState> nfaStates) 
-    //throws CompileDfaException 
+				     Set<FaAction> actions,
+				     Set<FaState> nfaStates)
+    //throws CompileDfaException
   {
     FaAction action = null;
     actions.clear();
 
     for(Iterator<FaState> i=nfaStates.iterator(); i.hasNext(); /**/) {
-      FaState ns = (FaState)i.next();
+      FaState ns = i.next();
       FaAction a = ns.getAction();
       if( a==null ) continue;
       for(Iterator<FaAction> ia=actions.iterator(); ia.hasNext(); /**/) {
@@ -1153,7 +1164,7 @@ public class Nfa  {
     } else {
       // Need a fresh Set for the new interval pos, which starts with
       // ch
-      @SuppressWarnings("unchecked") 
+      @SuppressWarnings("unchecked")
       Set<FaState> s = (Set<FaState>)v.getAt(from);
       if( s!=null ) v.setAt(from, newSet(s));
     }
@@ -1164,7 +1175,7 @@ public class Nfa  {
       if( to<0 ) {
 	to = -(to+1);
       } else {
-        @SuppressWarnings("unchecked") 
+        @SuppressWarnings("unchecked")
 	Set<FaState> s = (Set<FaState>)v.getAt(to);
 	if( s!=null ) v.setAt(to, newSet(s));
       }
@@ -1173,7 +1184,7 @@ public class Nfa  {
     // now we are sure that interval borders nicely fit with first and
     // last
     for(int i=from; i<to; i++) {
-      @SuppressWarnings("unchecked") 
+      @SuppressWarnings("unchecked")
       Set<FaState> s = (Set<FaState>)v.getAt(i);
       if( s==null ) s = newSet();
       s.add(dst);
@@ -1199,7 +1210,7 @@ public class Nfa  {
    * which operates the <code>Dfa</code> created here
    * @param eofAction describes the action to run at the end of input
    * when the resulting Dfa is used with a <code>DfaRun</code>.
-   * 
+   *
    * @throws CompileDfaException if stop states with differing actions
    * are found that can not be merged by their {@link
    * FaAction#mergeWith mergeWith()} methods. To get rid of the
@@ -1208,8 +1219,8 @@ public class Nfa  {
    * can be merged. One way of merging is to use extend {@link
    * AbstractFaAction} and prioritize the assigned actions.
    **/
-  public Dfa compile(DfaRun.FailedMatchBehaviour fmb, FaAction eofAction) 
-    throws CompileDfaException 
+  public Dfa compile(DfaRun.FailedMatchBehaviour fmb, FaAction eofAction)
+    throws CompileDfaException
   {
     FaState tmpStart = compile_p(false);
     return new Dfa(tmpStart, fmb, eofAction);
@@ -1220,8 +1231,8 @@ public class Nfa  {
    * behaviour for non-matching input.</p>
    * @see #compile(DfaRun.FailedMatchBehaviour,FaAction)
    */
-  public Dfa compile(DfaRun.FailedMatchBehaviour fmb) 
-    throws CompileDfaException 
+  public Dfa compile(DfaRun.FailedMatchBehaviour fmb)
+    throws CompileDfaException
   {
     return compile(fmb, null);
   }
@@ -1244,12 +1255,12 @@ public class Nfa  {
   {
     // If we find multiple actions on some stop states, these are
     // registered as clashes here and will finally result in an
-    // exception. 
+    // exception.
     Vector<Object[]>clashes = new Vector<Object[]>(3);
 
     // reusable container for findAction()
     Set<FaAction> actions = newSet(3);
-  
+
     // If no stop state shows up during compilation, an exception is
     // thrown. This guards against an automaton which recognizes
     // nothing. The construction guarantees that if a stop state is
@@ -1270,13 +1281,13 @@ public class Nfa  {
 
     // Even the start state can have an action associated and thereby
     // be a stop state. This is important for subsequent applications
-    // of Nfa-operations like shortest(). 
+    // of Nfa-operations like shortest().
     // The start state will always have the possibility of epsilon
     // transtions going out in case the automaton will be subject to
     // later operations like 'or'.
     FaAction startAction = findAction(dfaPath, '1', '0',
 				      clashes, actions, starters);
-    FaState dfaStart = 
+    FaState dfaStart =
       AbstractFaState.createDfaState(startAction, true);
     dfaStart.mergeSubinfos(starters);
     haveStopState |= startAction!=null;
@@ -1309,7 +1320,7 @@ public class Nfa  {
     Intervals currentTrans = new Intervals();
     while( stack.size()>0 ) {
       // The stack has always a dfa-state and its defining set of nfa
-      // states 
+      // states
       FaState currentState = (FaState)stack.pop();
       Set<FaState> currentNfaSet = (Set<FaState>)stack.pop();
       int[] howWeCameHere = (int[])stack.pop();
@@ -1325,7 +1336,7 @@ public class Nfa  {
       // stored in currentTrans are not destination states but
       // Sets of destination states.
       for(Iterator<FaState> i=currentNfaSet.iterator(); i.hasNext(); /**/) {
-	CharTrans trans = ((FaState)i.next()).getTrans();
+	CharTrans trans = i.next().getTrans();
 	if( trans==null ) continue;
 	int L = trans.size();
 	for(int j=0; j<L; j++) {
@@ -1347,7 +1358,7 @@ public class Nfa  {
         Set<FaState> stateSet = (Set<FaState>)currentTrans.getAt(i);
 	if( stateSet==null ) continue;
 	eclosure(stateSet);
-	FaState dst = (FaState)known.get(stateSet);
+	FaState dst = known.get(stateSet);
 	//System.out.println(""+i+"-->"+dst);
 	if( dst!=null ) {
 	  // A set containing exactly the same states as the one just
@@ -1365,8 +1376,8 @@ public class Nfa  {
 	  dst = AbstractFaState.createDfaState(a, needEps);
 	  dst.mergeSubinfos(stateSet);
 	  int[] step = new int[3];
-	  step[0] = first; 
-	  step[1] = last; 
+	  step[0] = first;
+	  step[1] = last;
 	  step[2] = howWeCameHere[2]+1;
 	  known.put(stateSet, dst);
 	  stack.push(step);
@@ -1393,13 +1404,13 @@ public class Nfa  {
       // representation of an automaton which matches nothing.
       return AbstractFaState.createDfaState(null, true);
     }
-    
+
     return dfaStart;
   }
   //-*****************************************************************
   private class ParserView implements NfaParserView {
     private List<FaState> startStack = new ArrayList<FaState>();
-    private List<AbstractFaState.EpsState> lastStack 
+    private List<AbstractFaState.EpsState> lastStack
       = new ArrayList<AbstractFaState.EpsState>();
 
     private <T> T pop(List<T> stack) {
@@ -1415,42 +1426,55 @@ public class Nfa  {
       lastStack.clear();
     }
 
+    @Override
     public void pushCharSet(CharSequence pairs, boolean invert) {
       startStack.add(start);
       lastStack.add(lastState);
       initialize(pairs, invert);
     }
+    @Override
     public void pushDot() {
       pushCharSet("\u0000\uFFFF", false);
     }
+    @Override
     public void pushString(CharSequence str) {
       startStack.add(start);
       lastStack.add(lastState);
-      initialize(str);      
+      initialize(str);
     }
+    @Override
     public void swap() {
       start = swap(startStack, start);
       lastState = swap(lastStack, lastState);
     }
+    @Override
     public void or() {
       FaState oldStart = pop(startStack);
       AbstractFaState.EpsState oldLast = pop(lastStack);
       initializeAsOr(oldStart, oldLast, start, lastState);
     }
+    @Override
     public void seq() {
       FaState oldStart = pop(startStack);
       AbstractFaState.EpsState oldLast = pop(lastStack);
       initializeAsSequence(oldStart, oldLast, start, lastState);
     }
-    
+
+    @Override
     public void star() { Nfa.this.star(); }
+    @Override
     public void plus() { Nfa.this.plus(); }
+    @Override
     public void optional() { Nfa.this.optional(); }
+    @Override
     public void not() throws CompileDfaException { Nfa.this.not(); }
+    @Override
     public void invert() throws CompileDfaException { Nfa.this.invert(); }
+    @Override
     public void shortest() throws CompileDfaException { Nfa.this.shortest(); }
+    @Override
     public boolean markAsSub() { return Nfa.this.markAsSub(); }
   }
   //-*****************************************************************
 }
- 
+

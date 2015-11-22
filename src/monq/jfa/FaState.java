@@ -38,11 +38,10 @@ interface FaState {
   /**
     returns the states that can be reached by epsilon transitions. The
     result must be <code>null</code> if there are no epsilon
-    transitions. Otherwise the <code>Set</code> returned contains at
+    transitions. Otherwise the array returned contains at
     least one element.
   *****/
   FaState[] getEps();
-  //Set getEps();
 
   /**
     is an optional operation <code>FaState</code>.
