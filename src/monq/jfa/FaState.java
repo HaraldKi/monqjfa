@@ -52,6 +52,7 @@ interface FaState {
    * returns the character transition table of this state.
    */
   CharTrans getTrans();
+  
   /**
    * changes the character transition table of this state. The
    * paramter may be <code>null</code>. Some states don't have a

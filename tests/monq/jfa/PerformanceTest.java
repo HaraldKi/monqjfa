@@ -26,11 +26,17 @@ import org.junit.Test;
  * has indeed an effect of at least 20%.
  */
 public class PerformanceTest {
-
+  private double speedupFactor;
+  
   private CharStatistics[] charStats;
-    @Before
-    public void setup() throws Exception {
+  @Before
+  public void setup() throws Exception {
       charStats = readBiStats("resources/char-2stat-english.txt.gz");
+      if (null!=System.getProperty("cobertura.active")) {
+        speedupFactor = 1.01;
+      } else {
+        speedupFactor = 1.2;
+      }
     }
 
     @Test
@@ -52,7 +58,7 @@ public class PerformanceTest {
         assertTrue("slow and fast: "+slow+">"+fast, 
                    slow.dtSeconds()>fast.dtSeconds());
         assertEquals(slowMap, fastMap);
-        assertTrue(slow.speedUpOver(fast)>1.2);
+        assertTrue(slow.speedUpOver(fast)>speedupFactor);
       }
     }
 

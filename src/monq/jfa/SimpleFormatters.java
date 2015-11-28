@@ -170,7 +170,7 @@ public class SimpleFormatters {
     }
     public void format(StringBuilder out, TextStore sp, Map m) {
       Object o = m.get(key);
-      out.append(o==null ? "" : o);
+      out.append(o==null ? "" : o.toString());
     }
   }
   /**********************************************************************/

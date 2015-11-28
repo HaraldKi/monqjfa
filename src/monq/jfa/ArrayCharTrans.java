@@ -23,7 +23,7 @@ import monq.stuff.Sizeof;
 
 /**
   <p>an implementation of interface <code>CharTrans</code> based on
-  explicit arrays for ranges and the objects they are mapped to.</p>
+  explicit arrays for ranges and the objects they are mapObjectped to.</p>
   @author &copy; 2003,2004 Harald Kirsch
 *****/
 
@@ -36,7 +36,7 @@ class ArrayCharTrans implements Serializable, CharTrans {
 
   // contains the value onto which the corresponding interval above is
   // mapped.
-  Object[] values;
+  FaState[] values;
 
   public static long stats = 0;
   /**********************************************************************/
@@ -63,11 +63,10 @@ class ArrayCharTrans implements Serializable, CharTrans {
   }
   ///CLOVER:ON
   /**********************************************************************/
-  public ArrayCharTrans(StringBuilder ranges2, List<Object> values) {
+  public ArrayCharTrans(StringBuilder ranges2, List<FaState> values) {
     this.ranges = new char[ranges2.length()];
     ranges2.getChars(0, ranges2.length(), ranges, 0);
-    //this.size = values.size();
-    this.values = values.toArray();
+    this.values = values.toArray(new FaState[values.size()]);
   }
   /**********************************************************************/
   public int size() {return values.length; }
@@ -78,11 +77,11 @@ class ArrayCharTrans implements Serializable, CharTrans {
   public char getLastAt(int pos) {
     return ranges[2*pos+1];
   }
-  public Object getAt(int pos) {
+  public FaState getAt(int pos) {
     return values[pos];
   }
   /********************************************************************/
-  public Object get(char ch) {
+  public FaState get(char ch) {
     stats += 1;
 
     int pos = getPos(ch);

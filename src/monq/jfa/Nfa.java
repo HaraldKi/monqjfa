@@ -238,7 +238,8 @@ public class Nfa  {
     start = new AbstractFaState.NfaState();
     lastState = new AbstractFaState.EpsState();
 
-    Intervals ivals = new Intervals();
+    IntervalsFaState ivals = new IntervalsFaState();
+
     if( pairs!=null ) {
       if( pairs.length()%2!=0 ) {
 	throw new IllegalArgumentException
@@ -251,7 +252,9 @@ public class Nfa  {
 	ivals.overwrite(from, to, lastState);
       }
     }
-    if( invert ) ivals.invert(lastState);
+    if( invert ) {
+      ivals.invert(lastState);
+    }
     start.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
   }
   //-*******************************************************************
@@ -261,7 +264,7 @@ public class Nfa  {
     //System.out.println("+++"+s.toString());
     start = new AbstractFaState.NfaState();
 
-    Intervals assemble = new Intervals();
+    IntervalsFaState assemble = new IntervalsFaState();
     FaState current = start;
     FaState other;
     char ch;
@@ -351,21 +354,17 @@ public class Nfa  {
 //   }
   /**********************************************************************/
   // to be able to test different Set implementations
-//   private static Set newSet() { return new LeanSet(); }
-//   private static Set newSet(int s) { return new LeanSet(s); }
-//   private static Set newSet(Collection c) { return new LeanSet(c); }
+  private static <E> Set<E> newSet() { return new PlainSet<>(); }
+  private static <E> Set<E> newSet(int s) { return new PlainSet<>(s); }
+  private static <E> Set<E> newSet(Collection<E> c) { return new PlainSet<>(c); }
 
-//  private static Set newSet() { return new PlainSet(); }
-//  private static Set newSet(int s) { return new PlainSet(s); }
-//  private static Set newSet(Collection c) { return new PlainSet(c); }
-
-   private static <E> Set<E> newSet() { return new HashSet<E>(16, 1.0F); }
-   private static <E> Set<E> newSet(int s) { return new HashSet<E>(s, 1.0F); }
-   private static <E> Set<E> newSet(Collection<E> c) {
-     Set<E> h = new HashSet<E>(c.size()+1, 1.0F);
-     h.addAll(c);
-     return h;
-   }
+//   private static <E> Set<E> newSet() { return new HashSet<E>(16, 1.0F); }
+//   private static <E> Set<E> newSet(int s) { return new HashSet<E>(s, 1.0F); }
+//   private static <E> Set<E> newSet(Collection<E> c) {
+//     Set<E> h = new HashSet<E>(c.size()+1, 1.0F);
+//     h.addAll(c);
+//     return h;
+//   }
 
   //-*******************************************************************/
   /**
@@ -492,7 +491,7 @@ public class Nfa  {
     if( trans!=null ) {
       int N = trans.size();
       for(int i=0; i<N; i++) {
-	FaState child = (FaState)(trans.getAt(i));
+	FaState child = (trans.getAt(i));
 	child.addUnassignedSub(innerInfo);
 	if( known.contains(child) ) continue;
 	_markAsSub(child, innerInfo, true, known);
@@ -613,7 +612,7 @@ public class Nfa  {
       return;
     }
 
-    Intervals worker = new Intervals();
+    IntervalsFaState worker = new IntervalsFaState();
     for (int i=0; i<states.size(); i++) {
       FaState state = states.get(i);
       Boolean b = stateUseful.get(state);
@@ -628,7 +627,7 @@ public class Nfa  {
   /*+******************************************************************/
   private void removeUselessCharTrans(FaState state,
                                       Map<FaState,Boolean> useful,
-                                      Intervals ivalsWorker) {
+                                      IntervalsFaState ivalsWorker) {
     CharTrans t = state.getTrans();
     if( t==null ) return;
 
@@ -640,7 +639,7 @@ public class Nfa  {
     ivalsWorker.setFrom(t);
     int L = ivalsWorker.size();
     for(int i=0; i<L; i++) {
-      FaState child = (FaState)ivalsWorker.getAt(i);
+      FaState child = ivalsWorker.getAt(i);
       if (child==null) {
         continue;
       }
@@ -684,7 +683,7 @@ public class Nfa  {
    */
   private void invertState(FaState start,
 			   final FaState sink, final FaState last,
-			   final Intervals worker) {
+			   final IntervalsFaState worker) {
     FaStateTraverser<Void> fasTrav = new FaStateTraverser<>(IterType.CHAR, null);
 
     fasTrav.traverse(start, new FaStateTraverser.StateVisitor<Void>() {
@@ -730,7 +729,7 @@ public class Nfa  {
     }
 
     // need to manufacture some CharTrans, so we need this.
-    Intervals worker = new Intervals();
+    IntervalsFaState worker = new IntervalsFaState();
 
     // This automaton needs to be compiled; we lose the lastState by
     // this, but will add a new one later on
@@ -738,8 +737,8 @@ public class Nfa  {
 
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
     FaState sinkState = AbstractFaState.createDfaState(null, true);
-    sinkState.setTrans(worker.complete(sinkState)
-                       .toCharTrans(memoryForSpeedTradeFactor));
+    worker.complete(sinkState);
+    sinkState.setTrans(worker.toCharTrans(memoryForSpeedTradeFactor));
 
     sinkState.addEps(newLast);
 
@@ -1098,8 +1097,9 @@ public class Nfa  {
 	// closest to symmetric operation I can think of. Is there a
 	// good way to enforce real symmetry?
 	FaAction tmp = a.mergeWith(oldAction);
-	if( tmp==null ) tmp = oldAction.mergeWith(a);
-
+	if( tmp==null ) {
+	  tmp = oldAction.mergeWith(a);
+	}
 	if( tmp!=null ) {
 	  a = tmp;
 	  ia.remove();
@@ -1154,19 +1154,18 @@ public class Nfa  {
     return action;
   }
   /********************************************************************/
-  void addTransition(Intervals v, char first, char last, FaState dst) {
+  void addTransition(Intervals<Set<FaState>> v, char first, char last, FaState dst) {
     //System.out.println("adding: "+Misc.printable(first)+
     //		       ","+Misc.printable(last)+" to "+v);
     int from = v.split(first);
     if( from<0 ) {
-      // first fell just on an interval border
+      // first falls just on an interval border
       from = -(from+1);
     } else {
       // Need a fresh Set for the new interval pos, which starts with
       // ch
-      @SuppressWarnings("unchecked")
-      Set<FaState> s = (Set<FaState>)v.getAt(from);
-      if( s!=null ) v.setAt(from, newSet(s));
+      Set<FaState> states = v.getAt(from);
+      if( states!=null ) v.setAt(from, newSet(states));
     }
 
     int to = v.size();
@@ -1175,17 +1174,15 @@ public class Nfa  {
       if( to<0 ) {
 	to = -(to+1);
       } else {
-        @SuppressWarnings("unchecked")
-	Set<FaState> s = (Set<FaState>)v.getAt(to);
-	if( s!=null ) v.setAt(to, newSet(s));
+	Set<FaState> states = v.getAt(to);
+	if( states!=null ) v.setAt(to, newSet(states));
       }
     }
 
     // now we are sure that interval borders nicely fit with first and
     // last
     for(int i=from; i<to; i++) {
-      @SuppressWarnings("unchecked")
-      Set<FaState> s = (Set<FaState>)v.getAt(i);
+      Set<FaState> s = v.getAt(i);
       if( s==null ) s = newSet();
       s.add(dst);
       v.setAt(i, s);
@@ -1237,22 +1234,12 @@ public class Nfa  {
     return compile(fmb, null);
   }
 
-//   /**
-//    * @deprecated Use {@link #compile(DfaRun.FailedMatchBehaviour)}
-//    * instead. This method calls it with <code>UNMATCHED_COPY</code>.
-//    */
-//   public Dfa compile() throws CompileDfaException {
-//     return compile(DfaRun.UNMATCHED_COPY, null);
-//   }
-
   // Parameter needEps only decides for inner states if they shall be
   // able to store eps moves later. Currently this is only needed for
   // the invert() method. The start state will allow storage of eps
   // moves anyway so that the result of this compilation can be used
   // in automaton operations like or() again.
-  FaState compile_p(boolean needEps)
-    throws CompileDfaException
-  {
+  FaState compile_p(boolean needEps) throws CompileDfaException {
     // If we find multiple actions on some stop states, these are
     // registered as clashes here and will finally result in an
     // exception.
@@ -1317,8 +1304,13 @@ public class Nfa  {
     // that it can grow to a typical required size internally. The
     // transition tables used in generated states are then copied from
     // it.
-    Intervals currentTrans = new Intervals();
+    Intervals<Set<FaState>> currentTrans = new Intervals<>();
+    IntervalsFaState dfaTrans = new IntervalsFaState();
+
     while( stack.size()>0 ) {
+      currentTrans.reset();
+      dfaTrans.reset();
+      
       // The stack has always a dfa-state and its defining set of nfa
       // states
       FaState currentState = (FaState)stack.pop();
@@ -1350,16 +1342,21 @@ public class Nfa  {
       // Convert the generated sets of NFA states which are stored in
       // currentTrans to unique ones and replace the transition
       // destination by the respective DFA state. The latter either
-      // exists already or will be created right here.
+      // exists already or will be created right heree.
+
       int L = currentTrans.size();
       //System.out.println(">>> "+currentTrans);
       for(int i=0; i<L; i++) {
-        @SuppressWarnings("unchecked")
-        Set<FaState> stateSet = (Set<FaState>)currentTrans.getAt(i);
-	if( stateSet==null ) continue;
+        Set<FaState> stateSet = currentTrans.getAt(i);
+	if( stateSet==null ) {
+	  continue;
+	}
+	
 	eclosure(stateSet);
 	FaState dst = known.get(stateSet);
-	//System.out.println(""+i+"-->"+dst);
+
+	char first = currentTrans.getFirstAt(i);
+	char last = currentTrans.getLastAt(i);
 	if( dst!=null ) {
 	  // A set containing exactly the same states as the one just
 	  // built for rm is already known. Consequently we don't have
@@ -1368,8 +1365,6 @@ public class Nfa  {
 	} else {
 	  // The set stored at rm.o is new. We create a DFA state for
 	  // it, store the pair in known and push both on the stack
-	  char first = currentTrans.getFirstAt(i);
-	  char last = currentTrans.getLastAt(i);
 	  FaAction a = findAction(dfaPath, first, last,
 				  clashes, actions, stateSet);
 	  haveStopState |= a!=null;
@@ -1384,13 +1379,12 @@ public class Nfa  {
 	  stack.push(stateSet);
 	  stack.push(dst);
 	}
-	currentTrans.setAt(i, dst);
+	dfaTrans.overwrite(first, last, dst);
       }
 
-      // make a (space minimal) copy of currentTrans and stick it into
+      // make a (space minimal) copy of dfaTrans and stick it into
       // the current state finally.
-      CharTrans ct = currentTrans.toCharTrans(memoryForSpeedTradeFactor);
-      //System.out.println("resulting transition:"+ct);
+      CharTrans ct = dfaTrans.toCharTrans(memoryForSpeedTradeFactor);
       currentState.setTrans(ct);
     }
     if( clashes.size()>0 ) {

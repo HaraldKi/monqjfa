@@ -187,7 +187,37 @@ public class NfaTest extends TestCase {
     assertEquals(8, sb.length());
     assertEquals(s, sb.toString());
   }
+  @Test
+  public void testCompile2Actions() throws Exception {
+    Nfa nfa = new Nfa("a", Drop.DROP);
+    nfa.or("b", Copy.COPY);
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
+    CharSource source = new CharSequenceCharSource("ab");
+    DfaRun r = new DfaRun(dfa);
+    r.setIn(source);
+    StringBuilder sb = new StringBuilder(3);
+    assertEquals(Drop.DROP, r.next(sb));
+    assertEquals("a", sb.toString());
+    assertEquals(Copy.COPY, r.next(sb));
+    assertEquals("ab", sb.toString());
+  }
+  
+  @Test
+  public void testBugInvertRange() throws Exception {
+    Nfa nfa = new Nfa("a", Drop.DROP);
+    nfa.or("[^a]", Copy.COPY);
 
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
+    CharSource source = new CharSequenceCharSource("ab");
+    DfaRun r = new DfaRun(dfa);
+    r.setIn(source);
+    StringBuilder sb = new StringBuilder(3);
+    assertEquals(Drop.DROP, r.next(sb));
+    assertEquals("a", sb.toString());
+    assertEquals(Copy.COPY, r.next(sb));
+    assertEquals("ab", sb.toString());
+  }
+  
   public void testSameActionTwice()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException

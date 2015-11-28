@@ -159,6 +159,7 @@ public class PrintfFormatter implements Formatter {
 	f.addtoFormat(new SimpleFormatters.FixedString(out));
 	out.setLength(0);
       }
+      public String toString() {return "createOpSpecial";}
     };
 
   private static FaAction createOpString = new AbstractFaAction() {
@@ -168,6 +169,7 @@ public class PrintfFormatter implements Formatter {
 	f.addtoFormat(new SimpleFormatters.FixedString(out));
 	out.setLength(0);
       }
+      public String toString() {return "createOpString";}
     };
 
   private static FaAction createOpNumParts = new AbstractFaAction() {
@@ -205,6 +207,7 @@ public class PrintfFormatter implements Formatter {
 	f.addtoFormat(new SimpleFormatters.Part(partNo, from, to));
 	out.setLength(0);
       }
+      public String toString() {return "createOpPart";}
     };
 
   private static FaAction createOpPartSeq = new AbstractFaAction() {
@@ -278,7 +281,7 @@ public class PrintfFormatter implements Formatter {
 	.or("%l-?[0-9]+", createOpPartLen) // length of specified part
 	.or("%%", createOpSpecial) // a simple %
 	.or("%[(][A-Za-z_<>][A-Za-z0-9_<>]*[)]", createOpGetVar)
-	.or("[^%\\\\]+",createOpString)	// copy as is
+	.or("[^%\\\\]+", createOpString)	// copy as is
 	.or("\\\\.", createOpSpecial) // an escaped character
 	.compile(DfaRun.UNMATCHED_THROW)
 	;
@@ -286,6 +289,7 @@ public class PrintfFormatter implements Formatter {
       ///CLOVER:OFF
       throw new Error("this cannot happen", e);
     } catch( CompileDfaException e) {
+      System.out.println(e);
       throw new Error("this cannot happen", e);
       ///CLOVER:ON
     }

@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -27,7 +27,7 @@ import monq.stuff.Sizeof;
 class TableCharTrans implements java.io.Serializable, CharTrans {
   private char first;
   private char last;
-  private Object[] targets;
+  private FaState[] targets;
 
   // Note: the size is *not* equal to targets.length because targets
   // may contain null entries.
@@ -51,7 +51,7 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
    * We do not support emtpy transitions here. Consequently there
    * should be at least one range in <code>sb</code>
    */
-  public TableCharTrans(StringBuilder ranges, List<Object> values) {
+  public TableCharTrans(StringBuilder ranges, List<FaState> values) {
     int L = ranges.length();
     first = ranges.charAt(0);
     last = ranges.charAt(L-1);
@@ -61,12 +61,12 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
     // size() is exactly this:
     size = values.size();
 
-    targets = new Object[last-first+1];
+    targets = new FaState[last-first+1];
     L = values.size();
     for(int pos=0, i=0; pos<L; pos++) {
       char from = ranges.charAt(2*pos);
       char to = ranges.charAt(2*pos+1);
-      Object o = values.get(pos);
+      FaState o = values.get(pos);
       //System.out.println("from="+from+", to="+to+", pos="+pos);
       for(int ch=from; ch<=to; ch++) targets[i++] = o;
       if( pos+1<L ) {
@@ -76,22 +76,31 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
     }
   }
   /**********************************************************************/
-  public Object get(char ch) {
+  @Override
+  public FaState get(char ch) {
     stats += 1;
-    if( ch>=first && ch<=last ) return targets[ch-first];
+    if( ch>=first && ch<=last ) {
+      FaState result = targets[ch-first];
+      return result;
+    }
     return null;
   }
   /**********************************************************************/
+  @Override
   public int size() { return size; }
   /**********************************************************************/
-  
-  public Object getAt(int i) {
-    return targets[getPos(i)];
+
+  @Override
+  public FaState getAt(int i) {
+    FaState result = targets[getPos(i)];
+    return result;
   }
+  @Override
   public char getFirstAt(int i) {
     int pos = getPos(i);
     return (char)(first+pos);
   }
+  @Override
   public char getLastAt(int i) {
     int pos = getPos(i);
     Object here = targets[pos];
@@ -120,6 +129,7 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
   }
   /**********************************************************************/
   ///CLOVER:OFF
+  @Override
   public String toString() {
     StringBuilder s = new StringBuilder(100);
     s.append('[').append(first).append(',').append(last).append(' ');

@@ -24,7 +24,7 @@ import java.util.*;
  *
  * @author &copy; 2004 Harald Kirsch
  */
-public class PlainSet extends AbstractSet {
+public class PlainSet<E> extends AbstractSet<E> {
   // As soon as size/elems.length>=loadFactorMax, we reallocate elems
   // such that we end up with loadFactor. Some experiments showed that
   // for my application the following combination was the best
@@ -33,7 +33,7 @@ public class PlainSet extends AbstractSet {
   private static final float loadFactor = 1.5F;
   private static final float ilF = 1.0F/loadFactor;
       
-  private Elem[] elems;
+  private Elem<E>[] elems;
   private int size = 0;
   private int upperThreshold;
   /**********************************************************************/
@@ -41,7 +41,7 @@ public class PlainSet extends AbstractSet {
     this(8);
   }
   /**********************************************************************/
-  public PlainSet(Collection col) {
+  public PlainSet(Collection<E> col) {
     this(col.size());
     addAll(col);
   }
@@ -54,10 +54,11 @@ public class PlainSet extends AbstractSet {
   /**********************************************************************/
   public int size() { return size; }
   /**********************************************************************/
-  public boolean add(Object o) {
+  @Override
+  public boolean add(E o) {
     int idx = indexFor(o);
     if( oflowFind(elems[idx], o) ) return false;
-    elems[idx] = new Elem(o, elems[idx]);
+    elems[idx] = new Elem<E>(o, elems[idx]);
     size += 1;
     if( size>=upperThreshold ) rearrange();
     return true;
@@ -67,17 +68,19 @@ public class PlainSet extends AbstractSet {
     return oflowFind(elems[indexFor(o)], o);
   }
   /**********************************************************************/
-  public boolean addAll(Collection col) {
+  @Override
+  public boolean addAll(Collection<? extends E> col) {
     if( !(col instanceof PlainSet) ) {
       return super.addAll(col);
     }
-    PlainSet other = (PlainSet)col;
+    @SuppressWarnings("unchecked")
+    PlainSet<E> other = (PlainSet<E>)col;
     return addStraight(other.elems);
   }
   /**********************************************************************/
   public boolean remove(Object o) {
     int idx = indexFor(o);
-    Elem e = elems[idx];
+    Elem<E> e = elems[idx];
     if( e==null ) return false;
     if( o.equals(e.value) ) {
       elems[idx] = e.next;
@@ -97,13 +100,13 @@ public class PlainSet extends AbstractSet {
     return false;
   }
   /**********************************************************************/
-  public Iterator iterator() { return new PSiter(); }
+  public Iterator<E> iterator() { return new PSiter(); }
   /**********************************************************************/
   private int indexFor(Object o) { 
     return (Integer.MAX_VALUE&o.hashCode())%elems.length; 
   }
   /**********************************************************************/
-  private boolean oflowFind(Elem list, Object o) {
+  private boolean oflowFind(Elem<E> list, Object o) {
     while( list!=null ) {
       if( o.equals(list.value) ) return true;;
       list = list.next;
@@ -111,13 +114,13 @@ public class PlainSet extends AbstractSet {
     return false;
   }
   /**********************************************************************/
-  private boolean addStraight(Elem[] ary) {
+  private boolean addStraight(Elem<E>[] ary) {
     int oldSize = size;
     for(int i=0; i<ary.length; i++) {
-      for(Elem e=ary[i]; e!=null; e=e.next) {
+      for(Elem<E> e=ary[i]; e!=null; e=e.next) {
 	int idx = indexFor(e.value);
 	if( oflowFind(elems[idx], e.value) ) continue;
-	elems[idx] = new Elem(e.value, elems[idx]);
+	elems[idx] = new Elem<>(e.value, elems[idx]);
 	size += 1;
 	if( size>upperThreshold ) rearrange();
       }
@@ -126,7 +129,9 @@ public class PlainSet extends AbstractSet {
   }
   /**********************************************************************/
   private void allocate(int s) {
-    elems = new Elem[s];
+    @SuppressWarnings("unchecked")
+    Elem<E>[] tmp = new Elem[s];
+    elems = tmp;
     size = 0;
     upperThreshold = (int)(loadFactorMax*s);
   }
@@ -137,15 +142,15 @@ public class PlainSet extends AbstractSet {
     if( s<4 ) s = 4;
     //System.out.println(", newLength="+s);
 
-    Elem[] oldElems = elems;
+    Elem<E>[] oldElems = elems;
     allocate(s);
     addStraight(oldElems);
   }
   /**********************************************************************/
-  private class PSiter implements Iterator {
+  private class PSiter implements Iterator<E> {
     private int i = 0;
-    private Elem e = null;
-    private Object current = null;
+    private Elem<E> e = null;
+    private E current = null;
     public PSiter() {
       for(i=0; i<elems.length; i++) {
 	if( elems[i]!=null ) {
@@ -155,7 +160,7 @@ public class PlainSet extends AbstractSet {
       }
     }
     public boolean hasNext() { return e!=null; }
-    public Object next() {
+    public E next() {
       if( e==null ) throw new NoSuchElementException();
       current = e.value;
       //System.out.println("it.next: "+current);
@@ -170,10 +175,10 @@ public class PlainSet extends AbstractSet {
     }
   }
   /**********************************************************************/
-  private static class Elem {
-    public Object value;
-    public Elem next = null;
-    public Elem(Object v, Elem n) {
+  private static class Elem<D> {
+    public D value;
+    public Elem<D> next = null;
+    public Elem(D v, Elem<D> n) {
       this.value = v;
       this.next = n;
     }

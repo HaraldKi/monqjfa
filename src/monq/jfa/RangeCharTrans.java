@@ -27,32 +27,38 @@ package monq.jfa;
 class RangeCharTrans implements java.io.Serializable, CharTrans {
   private char first;
   private char last;
-  private Object o;
+  private FaState o;
 
   public static long stats = 0;
 
-  public RangeCharTrans(char first, char last, Object o) {
+  public RangeCharTrans(char first, char last, FaState o) {
     this.first = first;
     this.last = last;
     this.o = o;
-//     System.out.println("Range("+Misc.printable(first)+".."
-// 		       +Misc.printable(last)+", "+o+")");
   }
 
-  public Object get(char ch) {
+  @Override
+  public FaState get(char ch) {
     stats += 1;
     if( ch>=first && ch<=last ) return o;
     return null;
   }
+
+  @Override
   public int size() {return 1;}
-  public Object getAt(int pos) {
+  
+  @Override
+  public FaState getAt(int pos) {
     if( pos!=0 ) throw new ArrayIndexOutOfBoundsException();
     return o;
   }
+  
   public char getFirstAt(int pos) {
     if( pos!=0 ) throw new ArrayIndexOutOfBoundsException();
     return first;
   }
+  
+  @Override
   public char getLastAt(int pos) {
     if( pos!=0 ) throw new ArrayIndexOutOfBoundsException();
     return last;
