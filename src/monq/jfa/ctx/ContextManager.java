@@ -239,7 +239,7 @@ public class ContextManager {
    * alias for 
    * {@link java.util.List#add List.add()}.</p>
    */
-  public static Object pop(List stack) {
+  public static Object pop(List<Object> stack) {
     int l = stack.size();
     if( l==0 ) throw new java.util.EmptyStackException();
     return stack.remove(l-1);

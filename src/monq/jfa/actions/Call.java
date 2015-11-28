@@ -89,7 +89,7 @@ public class Call extends AbstractFaAction {
   private final String methodName;
 
   // describes a typical FaAction.invoke() method
-  private static final Class[] invokeArgs;
+  private static final Class<?>[] invokeArgs;
   static {
     try {
       invokeArgs = new Class[3];

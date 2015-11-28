@@ -78,8 +78,10 @@ public class Hold extends AbstractFaAction {
   public void invoke(StringBuilder yytext, int start, DfaRun r) {
     Map<Object,Object> m = ((MapProvider)(r.clientData)).getMap();
     @SuppressWarnings("unchecked")
-    List<StackElem> stack = (List)m.get(this);
-    if( stack==null ) m.put(this, stack=new ArrayList<StackElem>());
+    List<StackElem> stack = (List<StackElem>)m.get(this);
+    if( stack==null ) {
+      m.put(this, stack=new ArrayList<StackElem>());
+    }
     stack.add(new StackElem(r.collect, start));
     r.collect = true;
   }
@@ -94,8 +96,9 @@ public class Hold extends AbstractFaAction {
   }
   /**********************************************************************/
   private StackElem peek(DfaRun r, boolean pop) {
-    Map m = ((MapProvider)(r.clientData)).getMap();
-    ArrayList stack = (ArrayList)m.get(this);
+    Map<Object,Object> m = ((MapProvider)(r.clientData)).getMap();
+    @SuppressWarnings("unchecked")
+    List<StackElem> stack = (List<StackElem>)m.get(this);
     int l = -1;
     if( stack==null || (l=stack.size())==0 ) {
       throw new 

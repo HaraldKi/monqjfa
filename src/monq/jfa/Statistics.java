@@ -39,7 +39,7 @@ public class Statistics {
   public int longestPathlen = -1;
 
   /** type and number of CharTrans implementations used */
-  public Map<Class,Int> charTransTypes = new HashMap<Class,Int>();
+  public Map<Class<?>,Int> charTransTypes = new HashMap<Class<?>,Int>();
 
   private int currentDepth = 0;
   private StringBuilder sb = new StringBuilder();
@@ -66,7 +66,7 @@ public class Statistics {
     pw.println("         shortest path to stop state: "+shortestPathlen);
     pw.println("longest loop free path to stop state: "+longestPathlen);
     pw.println("the following transition table types are used:");
-    for(Class c: charTransTypes.keySet()) {
+    for(Class<?> c: charTransTypes.keySet()) {
       long stats = 0;
       try {
         stats = c.getField("stats").getLong(c);
@@ -139,7 +139,7 @@ public class Statistics {
     
     CharTrans t = s.getTrans();
     if( t!=null ) {
-      Class c = t.getClass();
+      Class<?> c = t.getClass();
       Int count = (Int)charTransTypes.get(c);
       if( count==null ) charTransTypes.put(c, count=new Int());
       count.i += 1;
@@ -160,7 +160,7 @@ public class Statistics {
     currentDepth += 1;
 
     int sblen = sb.length();
-    Iterator it = m.keySet().iterator();
+    Iterator<FaState> it = m.keySet().iterator();
     while( it.hasNext() ) {
       Object child = it.next();
       TrivTupel tt = (TrivTupel)m.get(child);

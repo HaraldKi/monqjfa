@@ -40,6 +40,7 @@ public interface Formatter extends java.io.Serializable {
    * <p><b>Postcondition</b>: This method may not change the content of
    * <code>dest</code> other than by appending to it.</p>
    */
-  void format(StringBuilder out, TextStore st, Map m) throws CallbackException;
+  void format(StringBuilder out, TextStore st, Map<Object,Object> m)
+      throws CallbackException;
 }
  

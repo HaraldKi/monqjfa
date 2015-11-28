@@ -29,17 +29,13 @@ public class SetTest extends TestCase {
 //   abstract Set newSet(int initialCapacity);
 //   abstract Set newSet(Collection col);
 
-//     Set newSet() { return new LeanSet(); }
-//     Set newSet(int s) { return new LeanSet(s); }
-//     Set newSet(Collection c) { return new LeanSet(c); }
-
-    Set newSet() { return new PlainSet(); }
-    Set newSet(int s) { return new PlainSet(s); }
-    Set newSet(Collection c) { return new PlainSet(c); }
+    <E> Set<E> newSet() { return new PlainSet<>(); }
+    <E> Set<E> newSet(int s) { return new PlainSet<>(s); }
+    <E> Set<E> newSet(Collection<E> c) { return new PlainSet<>(c); }
 
   /**********************************************************************/
   public void test0() throws Exception {
-    Set s = newSet();
+    Set<Long> s = newSet();
     for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
     for(long i=1; i!=0; i=i<<1) {
       assertTrue(s.contains(new Long(i)));

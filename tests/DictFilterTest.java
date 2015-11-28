@@ -22,6 +22,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -38,7 +39,8 @@ public class DictFilterTest extends TestCase {
 
   public static void test_1() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
-    DictFilter df = new DictFilter(in, "raw", null, false);
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
+    DictFilter df = new DictFilter(rin, "raw", null, false);
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
@@ -54,7 +56,8 @@ public class DictFilterTest extends TestCase {
 
   public static void test_2() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
-    DictFilter df = new DictFilter(in, "xml", null, false);
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
+    DictFilter df = new DictFilter(rin, "xml", null, false);
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
@@ -70,7 +73,8 @@ public class DictFilterTest extends TestCase {
 
   public static void test_3() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
-    DictFilter df = new DictFilter(in, "elem", "x", false);
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
+    DictFilter df = new DictFilter(rin, "elem", "x", false);
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
@@ -158,9 +162,10 @@ public class DictFilterTest extends TestCase {
 
   public static void test_IllegArgToConstructor() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
     Exception e = null;
     try {
-      new DictFilter(in, "yuck", "x", false);
+      new DictFilter(rin, "yuck", "x", false);
     } catch(IllegalArgumentException _e ) {
       e = _e;
     }

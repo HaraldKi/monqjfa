@@ -52,7 +52,7 @@ public class Context extends AbstractFaAction {
     public void invoke(StringBuilder yytext, int start, DfaRun r)
       throws CallbackException 
     {
-      List stack = ((ContextStackProvider)r.clientData).getStack();      
+      List<Object> stack = ((ContextStackProvider)r.clientData).getStack();      
       Context c;
       DfaRun.FailedMatchBehaviour fmb;
       try {
@@ -150,7 +150,7 @@ public class Context extends AbstractFaAction {
    *
    * @throws UnsupportedOperationException whenever called.
    */
-  public Context setPopPriority(int p) {
+  public Context setPopPriority(@SuppressWarnings("unused") int p) {
     // Why this does not work anyway: ContextManager.add() creates a
     // Context object, say ctx, and passes ctx.getPop() as the action
     // to an IfContext. Only then add() returns the

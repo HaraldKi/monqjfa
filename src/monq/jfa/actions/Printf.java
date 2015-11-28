@@ -78,15 +78,7 @@ public class Printf extends AbstractFaAction {
     }
     this.f = new PrintfFormatter(format);
   }
-  /**
-   * @deprecated use the two parameter constructor and {@link
-   * AbstractFaAction#setPriority}. 
-   */
-  public Printf(boolean useSubmatches, 
-		String format, int prio) throws ReSyntaxException {
-    this(useSubmatches, format);
-    setPriority(prio);
-  }
+
   /**
    * <p>creates an <code>FaAction</code> to format a match according to
    * the given format string. This is a shortcut for<pre>
@@ -94,7 +86,8 @@ public class Printf extends AbstractFaAction {
    *</p>
    */
   public Printf(String format) throws ReSyntaxException {
-    this(false, format, 0);
+    this(false, format);
+    setPriority(0);
   }
   /**********************************************************************/
   public void invoke(StringBuilder out, int start, DfaRun runner) 
@@ -108,7 +101,7 @@ public class Printf extends AbstractFaAction {
       ts = runner.submatches(out, start);
     }
 
-    Map m = null;
+    Map<Object,Object> m = null;
     MapProvider mp = null;
     try {
       mp = (MapProvider)runner.clientData;

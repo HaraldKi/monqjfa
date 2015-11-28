@@ -242,8 +242,8 @@ public class NfaTest extends TestCase {
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
   {
-    FaAction a = new Printf(false, "xx", 1);
-    FaAction b = new Printf(false, "yy", 2);
+    FaAction a = new Printf(false, "xx").setPriority(1);
+    FaAction b = new Printf(false, "yy").setPriority(2);
     Dfa dfa =
       new Nfa("a|b", a)
       .or("b|a", b)
@@ -266,8 +266,8 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     //System.out.println("testTwoActionsPrio2");
-    FaAction a = new Printf(false, "xx", 2);
-    FaAction b = new Printf(false, "yy", 1);
+    FaAction a = new Printf(false, "xx").setPriority(2);
+    FaAction b = new Printf(false, "yy").setPriority(1);
     Dfa dfa =
       new Nfa("a|b", a)
       .or("b|a", b)
@@ -286,8 +286,8 @@ public class NfaTest extends TestCase {
   public void testTwoActionsClash()
     throws ReSyntaxException
   {
-    FaAction a = new Printf(false, "xx", 2);
-    FaAction b = new Printf(false, "yy", 2);
+    FaAction a = new Printf(false, "xx").setPriority(2);
+    FaAction b = new Printf(false, "yy").setPriority(2);
     Exception e = null;
     try {
       Dfa dfa =
@@ -513,8 +513,8 @@ public class NfaTest extends TestCase {
     java.io.IOException
   {
     Dfa dfa =
-      new Nfa("[a-z]+(0000)?", new Printf(false, "FULL", 0))
-      .or("[a-z]+", new Printf(false, "PART", 1))
+      new Nfa("[a-z]+(0000)?", new Printf(false, "FULL"))
+      .or("[a-z]+", new Printf(false, "PART").setPriority(1))
       .compile(DfaRun.UNMATCHED_DROP);
     String s = "abc000def0000xyz0r0000";
     DfaRun r = new DfaRun(dfa, new CharSequenceCharSource(s));

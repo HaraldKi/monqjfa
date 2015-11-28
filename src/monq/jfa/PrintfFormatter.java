@@ -375,13 +375,11 @@ public class PrintfFormatter implements Formatter {
   }
   /********************************************************************/
   @Override
-  public void format(StringBuilder yytext, TextStore ts, Map m)
+  public void format(StringBuilder yytext, TextStore ts, Map<Object,Object> m)
     throws CallbackException
   {
     for(int i=0; i<numOps; i++) {
       ops[i].format(yytext, ts, m);
-      //if( numOps>2 ) System.out.println(":::"+ops[i]+"  "+i+"  >"+yytext+"<");
-      //System.out.println("now >"+yytext+"<");
     }
   }
   /********************************************************************/

@@ -151,30 +151,9 @@ public class DictFilter implements ServiceFactory {
     // order to not having to deal with ambiguities.
     private int nextPrio = 1;
     
-    // a little helper to be reused while reading in the mwt file
-    monq.jfa.xml.StdCharEntities helper 
-      = new monq.jfa.xml.StdCharEntities();
-    
     public List<Object> getStack() { return stack; }
 
     public ReadHelper(boolean verbose) { this.verbose = verbose; }
-  }
-  /********************************************************************/
-  /**
-   * <p>after calling {@link monq.stuff.EncodingDetector#detect}, the
-   * other constructor is called with a reader prepared with the
-   * detected encoding from <code>mwtFile</code>.</p>
-   *
-   * @deprecated Use a proper {@link java.io.Reader} with the other
-   * constructor, please.
-   */
-  public DictFilter(java.io.InputStream mwtFile, String inputType, 
-		    String elemName, boolean verbose) 
-    throws java.io.IOException, ReSyntaxException, CompileDfaException
-  {
-    String enc = monq.stuff.EncodingDetector.detect(mwtFile);
-    Reader in = new InputStreamReader(mwtFile, enc);
-    init(in, inputType, elemName, verbose, false, true);
   }
   /********************************************************************/
   public DictFilter(Reader mwtFile, String inputType, 
@@ -277,7 +256,7 @@ public class DictFilter implements ServiceFactory {
 	      throws CallbackException
 	    {
 	      ReadHelper rh = (ReadHelper)r.clientData;
-	      List stack = rh.getStack();
+	      List<Object> stack = rh.getStack();
 	      Context ctx = (Context)stack.get(stack.size()-1);
 	      throw new CallbackException
 		("open context `"+ctx.getName()+"'");
