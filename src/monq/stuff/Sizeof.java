@@ -66,9 +66,9 @@ public class Sizeof {
       u = (Unsafe)singleoneInstanceField.get(null);
       Class<?> c = new Object() {
         @SuppressWarnings("unused")
-        public int c;
-        }.getClass();
-        f = c.getField("c");
+        public int testInt;
+      }.getClass();
+      f = c.getField("testInt");
     } catch (NoSuchFieldException | IllegalAccessException e) {
       // TODO: would like to log, but with log4j, if any, but don't want
       // to have the dependency
@@ -122,7 +122,7 @@ public class Sizeof {
 	size += 8;
 	int alen = Array.getLength(o);
 	Class<?> ec = oc.getComponentType();
-	Integer l = (Integer)pSizes.get(ec);
+	Integer l = pSizes.get(ec);
 	if( l!=null ) {
 	  // array of primitive types
 	  size = size + alen*l.intValue();
@@ -154,7 +154,7 @@ public class Sizeof {
 	    
 	    // take care of primitive types
 	    // FIX ME: this disregards alignment issues
-	    Integer l = (Integer)pSizes.get(fc);
+	    Integer l = pSizes.get(fc);
 	    if( l!=null ) {
 	      size+=l.longValue();
 	      continue;
@@ -181,7 +181,7 @@ public class Sizeof {
      
       Map<Class<?>,Pair> parents = types.get(oc);
       if( parents==null ) types.put(oc, parents=new HashMap<Class<?>,Pair>());
-      Pair p = (Pair)parents.get(parentClass);
+      Pair p = parents.get(parentClass);
       if( p==null ) {
 	p = new Pair();
 	parents.put(parentClass, p);
@@ -220,8 +220,8 @@ public class Sizeof {
 
       Iterator<Class<?>> pit = parents.keySet().iterator();
       while( pit.hasNext() ) {
-	Class<?> parenClass = (Class<?>)pit.next();
-	Pair p = (Pair)parents.get(parenClass);
+	Class<?> parenClass = pit.next();
+	Pair p = parents.get(parenClass);
 	String pname = parenClass.getName();
 	out.println(""+p.count+" "+p.size+" "+c.getName()+" "+pname);
 	count += p.count;
@@ -244,13 +244,4 @@ public class Sizeof {
      */
     public long size;
   }
-//   public static void main(String[] argv) 
-//     throws ReSyntaxException
-//   {
-//     Nfa nfa = new Nfa("bla", monq.jfa.actions.Copy.COPY);
-//     Object[] o = new Object[2];
-//     o[1] = new Integer(1);
-//     Hashtable types = sizeof(nfa);
-//     printTypes(System.out, types);
-//   }
 }

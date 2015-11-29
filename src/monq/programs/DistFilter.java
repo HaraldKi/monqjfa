@@ -117,7 +117,7 @@ public class DistFilter {
       if( pipere.matches(tmp[i]) ) {
 	ts = pipere.submatches();
 	
-	FilterPipeInfo pipe = (FilterPipeInfo)pipeConfig.get(ts.getPart(1));
+	FilterPipeInfo pipe = pipeConfig.get(ts.getPart(1));
 	if( pipe==null ) {
 	  System.err.println("pipe `"+ts.getPart(1)+"' unknown");
 	  System.exit(1);
@@ -148,7 +148,7 @@ public class DistFilter {
 
       if( svrre.matches(tmp[i]) ) {
 	ts = svrre.submatches();
-	FilterSvrInfo svr = (FilterSvrInfo)serverConfig.get(ts.getPart(1));
+	FilterSvrInfo svr = serverConfig.get(ts.getPart(1));
 	if( svr==null ) {
 	  System.err.println("server `"+ts.getPart(1)+"' unknown");
 	  System.exit(1);

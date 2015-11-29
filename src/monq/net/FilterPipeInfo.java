@@ -46,7 +46,7 @@ public class FilterPipeInfo {
    * is called dfas and not servers, as 
    * it should be.
    */
-  public ArrayList dfas; 
+  public ArrayList<String> dfaServerNames; 
 
   /** 
    * Style sheet to apply to get readable HTML out of the pipeline.
@@ -63,7 +63,7 @@ public class FilterPipeInfo {
   /**
    * <p>the request to be used by a DistPipeFilter to access this
    * pipeline. It is set from the host and port entries of servers
-   * referenced by the elements of {@link #dfas} and is constructed
+   * referenced by the elements of {@link #dfaServerNames} and is constructed
    * when the configurationfile is read.</p>
    */
   private PipelineRequest[] request = null; 
@@ -80,7 +80,7 @@ public class FilterPipeInfo {
   /**
    * <p>returns the request to be used by a DistPipeFilter to access this
    * pipeline. It is set from the host and port entries of servers
-   * referenced by the elements of {@link #dfas} and is constructed
+   * referenced by the elements of {@link #dfaServerNames} and is constructed
    * when the configuration file is read.</p>
    *
    * <p>This method returns copies of the internally stored requests
@@ -119,21 +119,23 @@ public class FilterPipeInfo {
    * @throws Exception if anything goes wrong while reading the
    * configuration file.
    */
-  public static FilterPipeInfo read(String fName, Map servers) 
-    throws Exception {
+  public static FilterPipeInfo 
+  read(String fName, Map<String, FilterSvrInfo> servers) 
+      throws Exception 
+  {
 
     Reader r = new FileReader(fName);
     FilterPipeInfo pipe = (FilterPipeInfo)(xs.fromXML(r));
 
     pipe.name = getName(fName);
-    int l = pipe.dfas.size();
+    int l = pipe.dfaServerNames.size();
     pipe.request = new PipelineRequest[l];
     for(int i=0; i<l; i++) {
       //System.out.println("looking up `"+ pipe.dfas.get(i)+"'");
-      FilterSvrInfo svr = (FilterSvrInfo)servers.get(pipe.dfas.get(i));
+      FilterSvrInfo svr = servers.get(pipe.dfaServerNames.get(i));
       if( svr==null ) {
 	pipe.e = new IOException("no information for server `"+
-				 pipe.dfas.get(i)+
+				 pipe.dfaServerNames.get(i)+
 				 "' available");
 	return pipe;
       }
@@ -156,7 +158,9 @@ public class FilterPipeInfo {
    * the object returned. This allows to keep inoperable objects for
    * later reference and explanation.</p>
    */
-  public static FilterPipeInfo fromFile(String fName, Map servers) {
+  public static FilterPipeInfo
+  fromFile(String fName, Map<String, FilterSvrInfo> servers)
+  {
     try {
       return read(fName, servers);
     } catch( Exception e ) {
@@ -195,7 +199,8 @@ public class FilterPipeInfo {
    * @throws FileNotFoundException if the given name does not denote a
    * directory or cannot be accessed.
    */
-  public static Map<String,FilterPipeInfo> readAll(String directory, Map servers)
+  public static Map<String,FilterPipeInfo>
+  readAll(String directory, Map<String, FilterSvrInfo> servers)
     throws FileNotFoundException 
   {
     Map<String,FilterPipeInfo> m = new HashMap<String,FilterPipeInfo>();
@@ -221,14 +226,14 @@ public class FilterPipeInfo {
    * testing only.
    */
   public static void main(String[] argv) throws Exception {
-    Map servers = FilterSvrInfo.readAll(argv[0]);
+    Map<String, FilterSvrInfo> servers = FilterSvrInfo.readAll(argv[0]);
     //System.out.println(servers);
-    Map pipes = readAll(argv[0], servers);
+    Map<String, FilterPipeInfo> pipes = readAll(argv[0], servers);
 
-    Iterator ii = pipes.keySet().iterator();
+    Iterator<String> ii = pipes.keySet().iterator();
     while( ii.hasNext() ) {
       Object key = ii.next();
-      FilterPipeInfo value = (FilterPipeInfo)pipes.get(key);
+      FilterPipeInfo value = pipes.get(key);
       value.write(new OutputStreamWriter(System.out));
       System.out.println();
     }

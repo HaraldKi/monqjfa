@@ -114,7 +114,7 @@ public class Coder {
       if( cr.isError() ) cr.throwException();
       if( cr.isOverflow() ) {
 	int rest = chars.position() + (L-pos);
-	rest = (int)((float)rest * enc.averageBytesPerChar());
+	rest = (int)(rest * enc.averageBytesPerChar());
 	byte[] aout = out.array();
 	aout = monq.stuff.ArrayUtil.resize(aout, aout.length+rest+1);
 	ByteBuffer newOut = ByteBuffer.wrap(aout);

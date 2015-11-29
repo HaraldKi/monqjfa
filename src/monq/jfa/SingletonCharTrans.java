@@ -37,9 +37,9 @@ class SingletonCharTrans implements java.io.Serializable, CharTrans {
   }
 
   @Override
-  public FaState get(char ch) {
+  public FaState get(char queryChar) {
     stats += 1;
-    if( this.ch==ch ) return o;
+    if( this.ch==queryChar ) return o;
     return null;
   }
   public int size() {return 1;}

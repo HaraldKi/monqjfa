@@ -71,7 +71,7 @@ public class Statistics {
       try {
         stats = c.getField("stats").getLong(c);
       } catch( Exception e) { e.printStackTrace(); }
-      Int count = (Int)charTransTypes.get(c);
+      Int count = charTransTypes.get(c);
       pw.printf("%33s: %4d, used: %8d\n", c.getName(), count.i, stats);
     }
   }
@@ -130,7 +130,7 @@ public class Statistics {
       for(int i=0; i<l; i++) {
 	FaState child = epsChildren[i];
 	if( known.contains(child) ) continue;
-	TrivTupel step = (TrivTupel)(m.get(child));
+	TrivTupel step = m.get(child);
 	if( step==null ) m.put(child, step=new TrivTupel());
 	step.sb.append("<eps>");
 	step.elems += 1;
@@ -140,15 +140,15 @@ public class Statistics {
     CharTrans t = s.getTrans();
     if( t!=null ) {
       Class<?> c = t.getClass();
-      Int count = (Int)charTransTypes.get(c);
+      Int count = charTransTypes.get(c);
       if( count==null ) charTransTypes.put(c, count=new Int());
       count.i += 1;
 
       int l = t.size();
       for(int i=0; i<l; i++) {
-	FaState child = (FaState)t.getAt(i);
+	FaState child = t.getAt(i);
 	if( known.contains(child) ) continue;
-	TrivTupel step = (TrivTupel)(m.get(child));
+	TrivTupel step = m.get(child);
 	if( step==null ) m.put(child, step=new TrivTupel());
 	appendStep(step.sb, t.getFirstAt(i), t.getLastAt(i));
 	step.elems += 1;
@@ -163,7 +163,7 @@ public class Statistics {
     Iterator<FaState> it = m.keySet().iterator();
     while( it.hasNext() ) {
       Object child = it.next();
-      TrivTupel tt = (TrivTupel)m.get(child);
+      TrivTupel tt = m.get(child);
       if( tt.elems>1 ) {
 	sb.append('(').append(tt.sb).append(')');
       } else {
@@ -176,21 +176,21 @@ public class Statistics {
     currentDepth -= 1;
   }
   /********************************************************************/
-  private void appendStep(StringBuilder sb, char a, char b) {
-    if( sb.length()>0 ) sb.append('|');
+  private static void appendStep(StringBuilder sbuf, char a, char b) {
+    if( sbuf.length()>0 ) sbuf.append('|');
     if( a==b ) {
-      nc(sb, a);
+      nc(sbuf, a);
       return;
     }
   
-    sb.append('[');
-    nc(sb, a);
-    sb.append('-');
-    nc(sb, b);
-    sb.append(']');
+    sbuf.append('[');
+    nc(sbuf, a);
+    sbuf.append('-');
+    nc(sbuf, b);
+    sbuf.append(']');
   }
   /********************************************************************/
-  private void nc(StringBuilder b, char ch) {
+  private static void nc(StringBuilder b, char ch) {
     if( ch=='\n' ) b.append("\\n");
     else if( ch=='\t' ) b.append("\\t");
     else if( ch=='\r' ) b.append("\\r");

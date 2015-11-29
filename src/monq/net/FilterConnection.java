@@ -66,7 +66,7 @@ class FilterConnection {
 				 int start, DfaRun r) {
 		//System.out.println(">>>"+ts);
 		@SuppressWarnings("unchecked")
-		  Map<String,String> h = (Map)r.clientData;
+		  Map<String,String> h = (Map<String,String>)r.clientData;
 
 		if( h.size()>=MAXPARAMS ) {
 		  r.setIn(new CharSequenceCharSource
@@ -115,7 +115,7 @@ class FilterConnection {
   /**
    * <p>return the full <code>Map</code> of parameters.</p>
    */
-  public Map getParameters() { return m; }
+  public Map<String,String> getParameters() { return m; }
   /**********************************************************************/
   public FilterConnection(InputStream ctrlIn) throws IOException {
     CharSource source = new ReaderCharSource(ctrlIn, "UTF-8");
@@ -125,8 +125,8 @@ class FilterConnection {
     // far too long, the next line throws IOException.
     r.filter(this.tail);
 
-    host = (String)m.remove(".host");
-    String portString = (String)m.remove(".port");
+    host = m.remove(".host");
+    String portString = m.remove(".port");
 //     System.err.println("FilterConnection just got [[[host="+host
 // 		       +", port="+portString+", map="+m+"]]]");
     if( host==null ) return;

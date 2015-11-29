@@ -162,8 +162,8 @@ public class DistPipeFilter {
     public void run() {
       try {
 	client.run();
-      } catch( Exception e ) {
-	this.e = e;
+      } catch( Exception ex ) {
+	this.e = ex;
       }
     }
   }
@@ -190,7 +190,7 @@ public class DistPipeFilter {
       } catch( java.io.IOException e ) {
 	throw new ServiceUnavailException("cannot read or parse request", e);
       }
-      String slotString = (String)conn.getParameters().get("slot");
+      String slotString = conn.getParameters().get("slot");
 
       // FIX ME: (SECURITY) The slot info should be
       // encrypted. Otherwise any bugger may interfere and fetch data

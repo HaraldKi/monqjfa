@@ -51,14 +51,14 @@ public class CommandlineTest extends TestCase {
   }
   /*+********************************************************************/
   public void test_minmaxWrong() {
-    Exception ex = null;
     try {
-      new Commandline("TestProg", "do the test", "all", "the rest", 22, 2);
+      Commandline cmd =
+          new Commandline("TestProg", "do the test", "all", "the rest", 22, 2);
+      fail("expected IllegalArgumentException when creating "+cmd);
     } catch( Exception e) {
-      ex = e;
+      assertTrue(e instanceof IllegalArgumentException);
     }
-    assertNotNull(ex);
-    assertTrue(ex instanceof IllegalArgumentException);
+
   }
   /*+********************************************************************/
   public void test_BasicFullException() {
@@ -195,7 +195,7 @@ public class CommandlineTest extends TestCase {
     assertEquals(new Long(12), cmd.getValue("-l"));
     assertEquals(12L, cmd.getLongValue("-l"));
 
-    Vector<Object> values = cmd.getValues("-l");
+    List<Object> values = cmd.getValues("-l");
     assertEquals(3, values.size());
     for(int i=0; i<3; i++) {
       Object o = values.get(i);

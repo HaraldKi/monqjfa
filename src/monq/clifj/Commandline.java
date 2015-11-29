@@ -121,16 +121,16 @@ public class Commandline {
     Vector<String> lines = new Vector<String>();
 
     for(int i=0; i<optOrder.size(); i++) {
-      String opt = (String)optOrder.get(i);
-      s.append(' ').append(((Option)options.get(opt)).shortUsage());
-      lines.add(((Option)options.get(opt)).usage());
+      String opt = optOrder.get(i);
+      s.append(' ').append((options.get(opt)).shortUsage());
+      lines.add((options.get(opt)).usage());
     }
     s.append("\n  ").append(usage).append('\n');
 
     // figure out indentation
     int maxPos = 0;
     for(int i=0; i<lines.size(); i++) {
-      int p = ((String)lines.get(i)).indexOf(':');
+      int p = lines.get(i).indexOf(':');
       if( p>maxPos ) maxPos = p;
     }
     if( maxPos>20 ) maxPos=20;
@@ -139,9 +139,9 @@ public class Commandline {
 
     for(int i=0; i<lines.size(); i++) {
       int startLine = s.length();
-      int p = ((String)lines.get(i)).indexOf(':');
+      int p = lines.get(i).indexOf(':');
       for(int j=0; j<maxPos-p+2; j++) s.append(' ');
-      s.append((String)lines.get(i));
+      s.append(lines.get(i));
       breakLine(s, startLine, maxPos+4);
       s.append('\n');
       //s = s + blank.substring(0, maxPos-p+2) + (String)lines.get(i) + '\n';
@@ -171,18 +171,18 @@ public class Commandline {
    * <code>"--"</code>.</p>
    * 
    */
-  public Vector<Object> getValues(String opt) {
+  public List<Object> getValues(String opt) {
     return options.get(opt).getValues();
   }
   /**********************************************************************/
   public String[] getStringValues(String opt) {
-    Vector<Object> v = getValues(opt);
+    List<Object> v = getValues(opt);
     String[] res = new String[v.size()];
-    return (String[])v.toArray(res);
+    return v.toArray(res);
   }
   /**********************************************************************/
   public long[] getLongValues(String opt) {
-    Vector v = getValues(opt);
+    List<Object> v = getValues(opt);
     long[] res = new long[v.size()];
     for(int i=0; i<v.size(); i++) {
       res[i] = ((Long)v.get(i)).longValue();
@@ -198,7 +198,7 @@ public class Commandline {
    * available()} should preceed this call.
    */
   public Object getValue(String opt) {
-    return ((Option)options.get(opt)).getValue();
+    return options.get(opt).getValue();
   }
   /**********************************************************************/
   /**
@@ -230,26 +230,6 @@ public class Commandline {
   }
   /**********************************************************************/
   /**
-   * @deprecated defaults can be provided in the declaration of an option. If a
-   *             dynamic default is needed, test first with
-   *             {@link #available(String)}.
-   */ 
-  public String getStringValue(String opt, String defalt) {
-    if( !available(opt) ) return defalt;
-    return (String)getValue(opt);
-  }
-  /**********************************************************************/
-  /**
-   * @deprecated defaults can be provided in the declaration of an option. If a
-   *             dynamic default is needed, test first with
-   *             {@link #available(String)}.
-   */ 
-  public long getLongValue(String opt, long defalt) {
-    if( !available(opt) ) return defalt;
-    return ((Long)getValue(opt)).longValue();
-  }
-  /**********************************************************************/
-  /**
    * <p>
    * returns true if the option was found on the command line or has default
    * values.
@@ -259,7 +239,7 @@ public class Commandline {
    *           if <code>opt</code> does not denote a defined option
    */
   public boolean available(String opt) {
-    return ((Option)options.get(opt)).available();
+    return options.get(opt).available();
   }
   /**********************************************************************/
   /**
@@ -320,7 +300,7 @@ public class Commandline {
     int L = optOrder.size();
     StringBuilder err = new StringBuilder();
     for(int i=0; i<L; i++) {
-      Option o = (Option)(options.get(optOrder.get(i)));
+      Option o = options.get(optOrder.get(i));
       if( o.isRequired() && !o.available() ) {
 	if( err.length()>0 ) err.append(", ");
 	err.append("`").append(optOrder.get(i)).append("'");
@@ -334,12 +314,12 @@ public class Commandline {
   }
   /**********************************************************************/
   public void showParsed() {
-    Iterator it = options.keySet().iterator();
+    Iterator<String> it = options.keySet().iterator();
     while( it.hasNext() ) {
       Object key = it.next();
       System.out.print(key+":");
-      Option opt = (Option)(options.get(key));
-      Vector v = opt.getValues();
+      Option opt = options.get(key);
+      List<Object> v = opt.getValues();
       if( v==null ) {
 	System.out.println(" (null)");
       } else {

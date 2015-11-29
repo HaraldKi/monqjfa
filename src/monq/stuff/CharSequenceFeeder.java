@@ -26,7 +26,7 @@ import java.nio.charset.*;
  * @author &copy; 2005 Harald Kirsch
  */
 public class CharSequenceFeeder extends AbstractPipe {
-  private CharSequence in;
+  private CharSequence csin;
   private Charset cs;
   /**
    * <p>creates the <code>Feeder</code> to feed <code>in</code> to an
@@ -36,14 +36,14 @@ public class CharSequenceFeeder extends AbstractPipe {
   public CharSequenceFeeder(CharSequence in, String csname) 
     throws UnsupportedCharsetException
   { 
-    this.in = in; 
+    this.csin = in; 
     this.cs = Charset.forName(csname);
   }
 
   protected void pipe() {
     OutputStreamWriter o = new OutputStreamWriter(out, cs);
     PrintWriter pw = new PrintWriter(o);
-    pw.print(in);
+    pw.print(csin);
     pw.flush();
   }
 }

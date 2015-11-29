@@ -103,7 +103,7 @@ public class PipelineRequest {
     m.put(key, value);
   }
   /**********************************************************************/
-  private void encodeValue(StringBuilder out, String value) {
+  private static void encodeValue(StringBuilder out, String value) {
     int l = value.length();
     for(int i=0; i<l; i++) {
       char ch = value.charAt(i);
@@ -127,12 +127,12 @@ public class PipelineRequest {
 	.append('\n');
       
     }
-    Iterator it = m.keySet().iterator();
+    Iterator<String> it = m.keySet().iterator();
     String sep = "";
     while( it.hasNext() ) {
-      String key = (String)it.next();
+      String key = it.next();
       out.append(sep).append(key).append('=');
-      encodeValue(out, (String)m.get(key));
+      encodeValue(out, m.get(key));
       sep = ";";
     }
   }

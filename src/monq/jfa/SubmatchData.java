@@ -117,7 +117,7 @@ class SubmatchData {
 
       Map<FaAction,FaSubinfo[]> sub = subInfos[i];
       if( sub!=null ) {
-	ary = (FaSubinfo[])sub.get(a);
+	ary = sub.get(a);
 	if( ary!=null ) hereLen = ary.length;
       }
 

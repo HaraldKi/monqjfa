@@ -121,15 +121,11 @@ public class DictFilter implements ServiceFactory {
    * <p>force {@link #createService createService()} to set up the
    * filter with the given input encoding.</p>
    */
-  public void setInputEncoding(String enc) 
-    throws UnsupportedEncodingException
-  {
+  public void setInputEncoding(String enc) {
     this.inputEncoding = enc;
   }
   /**********************************************************************/
-  public void setOutputEncoding(String enc) 
-    throws UnsupportedEncodingException
-  {
+  public void setOutputEncoding(String enc) {
     this.outputEncoding = enc;
   }
   /**********************************************************************/
@@ -252,11 +248,11 @@ public class DictFilter implements ServiceFactory {
       FaAction eofAction = 
 	new IfContext(null, Drop.DROP)
 	.elsedo(new AbstractFaAction() {
-	    public void invoke(StringBuilder b, int start, DfaRun r) 
+	    public void invoke(StringBuilder b, int start, DfaRun run) 
 	      throws CallbackException
 	    {
-	      ReadHelper rh = (ReadHelper)r.clientData;
-	      List<Object> stack = rh.getStack();
+	      ReadHelper rhelp = (ReadHelper)run.clientData;
+	      List<Object> stack = rhelp.getStack();
 	      Context ctx = (Context)stack.get(stack.size()-1);
 	      throw new CallbackException
 		("open context `"+ctx.getName()+"'");
@@ -422,10 +418,10 @@ public class DictFilter implements ServiceFactory {
     public Do_t_r(ReParser rep) {
       try {
 	convert = 
-	  Term2Re.createConverter(Term2Re.wordSplitRe,
+	  Term2Re.createConverter(Term2Re.RE_SPLIT_WORD,
 				  //"[ \\-_]?",
-				  Term2Re.wordSepRe,
-				  Term2Re.trailContextRe,
+				  Term2Re.RE_SEP_WORD,
+				  Term2Re.RE_TRAIL_CONTEXT,
 				  rep);
       } catch( ReSyntaxException e ) {
 	throw new Error("impossible", e);
@@ -490,14 +486,14 @@ public class DictFilter implements ServiceFactory {
       yytext.setLength(l);
       
       
-      String re = StdCharEntities.toChar((String)m.remove(Xml.CONTENT));
+      String re = StdCharEntities.toChar(m.remove(Xml.CONTENT));
       
       int tc = 0;		// length of trailing context
       if( isTerm ) {
 	re = convert(re);
 	tc = 1;
       } else {
-	String tmp = (String)m.remove("tc");
+	String tmp = m.remove("tc");
 	if( tmp==null ) tmp="0";
 	try {
 	  tc = Integer.parseInt(tmp);	      

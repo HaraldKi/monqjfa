@@ -16,6 +16,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.clifj;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -29,8 +31,8 @@ public class Option {
   protected int cmax;
   private int cmin;
   private String usage;
-  private Vector<Object> values = null;
-  private Vector<Object> defalt = null;
+  private List<Object> values = null;
+  private List<Object> defalt = null;
   private boolean required = false;
 
   protected Option() {}
@@ -105,7 +107,7 @@ public class Option {
    */
   protected final Option setDefalt(Object[] defalt) throws CommandlineException {
     // save whatever is already available in values
-    Vector<Object> keep = values;
+    List<Object> keep = values;
     values = null;
     
     for(Object o: defalt) addValue(o);
@@ -129,7 +131,7 @@ public class Option {
    */
   private void addValue(Object v) throws CommandlineException {
     if( values==null ) {
-      values= new Vector<Object>();
+      values= new ArrayList<Object>();
     } else if( values.size()>=cmax ) {
       throw new IllegalArgumentException("to many arguments for option `"+opt+
                                          ", only "+cmax+" are allowed");
@@ -187,7 +189,7 @@ public class Option {
    * the constructor. For subclasses of <code>Option</code>, different
    * types may be returned.
    */
-  public Vector<Object> getValues() {
+  public List<Object> getValues() {
     return values==null ? defalt : values;
   }
   /**
@@ -198,7 +200,7 @@ public class Option {
    * available()} should preceed this call.
    */
   public Object getValue() {
-    Vector v = getValues();
+    List<Object> v = getValues();
     return v.get(0);
   }
   /**********************************************************************/
@@ -208,7 +210,7 @@ public class Option {
       throw new CommandlineException
 	("option `"+opt+"' used more than once");
     }
-    values = new Vector<Object>();
+    values = new ArrayList<Object>();
     while( i<argv.length && values.size()<cmax 
 	   && (!argv[i].startsWith("-") || values.size()<cmin) ) {
       //System.err.println(opt+i);
