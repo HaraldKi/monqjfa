@@ -1,3 +1,9 @@
+VERSION 1.6.1
+
+Improved on the number of warnings due to still Java 1.4 code without
+generics and got rid of a C/FORTRAN style "optimization".
+
+
 VERSION 1.6
 
 Replaced a three internal algorithms to not use recursion, since this

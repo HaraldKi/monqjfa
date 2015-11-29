@@ -24,12 +24,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
-import java.util.Vector;
-
 import monq.jfa.FaState.IterType;
 
 /**
@@ -967,7 +965,7 @@ public class Nfa  {
   /**********************************************************************/
   // is a convenience wrapper around findAction for use in findPath
   private static boolean hasAction(Set<FaState> nfaStates) {
-    Vector<Object[]> clashes = new Vector<Object[]>(3);
+    List<Clash> clashes = new LinkedList<>();
     Set<FaAction> actions = new HashSet<FaAction>(3);
     StringBuilder sb = new StringBuilder();
     return null!=findAction(sb, 'a', 'a', clashes, actions, nfaStates);
@@ -1007,19 +1005,20 @@ public class Nfa  {
   /**********************************************************************/
   // generate a human readable exception from the clash information
   // collected during compilation.
-  private static String clashToString(Vector<Object[]> clashes) {
+  private static String clashToString(List<Clash> clashes) {
 
     StringBuilder s = new StringBuilder(200);
     s.append(CompileDfaException.EAMBIGUOUS)
       .append(".\nThe following set(s) of clashes exist:\n");
-    for(int i=0; i<clashes.size(); i++) {
-      Object[] actions = clashes.get(i);
-      s.append(i+1)
+
+    int i = 1;
+    for(Clash clash: clashes) {
+      s.append(i++)
 	.append(") path `")
-	.append(actions[actions.length-1])
+	.append(clash.message)
 	.append("':\n");
-      for(int k=0; k<actions.length-1; k++) {
-	s.append("    ").append(actions[k]).append('\n');
+      for(FaAction action : clash.actions) {
+	s.append("    ").append(action).append('\n');
       }
     }
     return s.toString();
@@ -1032,34 +1031,34 @@ public class Nfa  {
     and have no outgoing non-epsilons.
   *****/
   private static void eclosure(Set<FaState> states) {
-    List<FaState> stack = new ArrayList<FaState>(states.size()+20);
-    stack.addAll(states);
-    Set<FaState> tmpResult = Nfa.<FaState>newSet(states.size()+20);
-    states.clear();
+    LinkedList<FaState> stack = new LinkedList<FaState>();
+    Set<FaState> closure = Nfa.<FaState>newSet(states.size()+20);
 
+    stack.addAll(states);
+    states.clear();
     while( stack.size()>0 ) {
-      FaState ns = stack.remove(stack.size()-1);
-      tmpResult.add(ns);
+      FaState ns = stack.removeLast();
+      closure.add(ns);
       FaState[] eps = ns.getEps();
       if( eps==null ) continue;
       for(int i=0; i<eps.length; i++) {
-	if( tmpResult.contains(eps[i]) ) continue;
+	if( closure.contains(eps[i]) ) continue;
 	stack.add(eps[i]);
       }
-   }
+    }
 
-    // Delete unimportant states from tmpResult while copying back into
-    // states.
-    for(Iterator<FaState> i=tmpResult.iterator(); i.hasNext(); /**/) {
-      FaState ns = i.next();
-      if( ns.isImportant() ) states.add(ns);
+    // Delete unimportant states from tmpResult while copying back into states.
+    for(FaState s : closure) {
+      if (s.isImportant()) {
+        states.add(s);
+      }
     }
   }
   /********************************************************************/
   // finds the action to be associated with a set of nfaStates. This
-  // function is a mess, mainly because it collects all relevant
-  // information about the clash in 'classes' in order to allow a
-  // complete and helpful error report later.
+  // function is a mess, because it collects error information in clashes to
+  // allow a complete and helpful error report later.
+
   // dfaPath -- character ranges denoting a shortest path through the
   // Dfa to the parent state of the state we want to find an action
   // for
@@ -1069,58 +1068,36 @@ public class Nfa  {
   // is only needed in case of error. The order of first, last may be
   // inverted to show that it is not really a step
 
-  // clashes -- will receive an additional FaAction[] if a clash
-  // happens
+  // clashes -- will receive an additional Clash if a clash happens
+
   // actions -- is preallocated reusable space to keep track of the
   // actions found (reminds me a bit about old FORTRAN:-)
+
   // nfaStates -- is the set of NFA states within which we look for
-  // the highest priority action. A clash is defined by having too or
-  // more non-identical highest priority actions.
-  private static FaAction findAction(StringBuilder dfaPath,
-				     char first, char last,
-				     Vector<Object[]> clashes,
-				     Set<FaAction> actions,
-				     Set<FaState> nfaStates)
-    //throws CompileDfaException
+  // the highest priority action. A clash is defined by having two or
+  // more non mergable actions.
+  private static FaAction findAction(StringBuilder dfaPath, char first,
+                                     char last, List<Clash> clashes,
+                                     Set<FaAction> actions,
+                                     Set<FaState> nfaStates)
   {
-    FaAction action = null;
+    FaAction actionFound = null;
     actions.clear();
 
-    for(Iterator<FaState> i=nfaStates.iterator(); i.hasNext(); /**/) {
-      FaState ns = i.next();
+    for(FaState ns : nfaStates) {
       FaAction a = ns.getAction();
-      if( a==null ) continue;
-      for(Iterator<FaAction> ia=actions.iterator(); ia.hasNext(); /**/) {
-	FaAction oldAction = ia.next();
-
-	// XXX: try to merge the two actions either way. This is the
-	// closest to symmetric operation I can think of. Is there a
-	// good way to enforce real symmetry?
-	FaAction tmp = a.mergeWith(oldAction);
-	if( tmp==null ) {
-	  tmp = oldAction.mergeWith(a);
-	}
-	if( tmp!=null ) {
-	  a = tmp;
-	  ia.remove();
-	}
+      if( a!=null ) {
+        actionFound = mergeInto(actions, ns.getAction());
       }
-      actions.add(a);
-      action = a;
     }
 
-    if( actions.size()==1 ) return action;
     if( actions.size()==0 ) return null;
+    if( actions.size()==1 ) return actionFound;
 
     // --- REST IS ERROR HANDLING ---
-    // arriving here, we have a clash, i.e. more than one highes
-    // priority actions. We store all helpful information in an
-    // Object[]. The last element will be a string assembled from
-    // dfaPath and rm. All other elements are the clashing actions.
-    Object[] clash = new Object[actions.size()+1];
-    clash = actions.toArray(clash);
-    //clash[clash.length-2] = action; // was not yet in actions
-
+    // arriving here, we have a clash, i.e. more than one highest
+    // priority action. We store all helpful information in an Clash
+    // object.
 
     // add the very last step to dfaPath
     if( first<=last ) dfaPath.append(first).append(last);
@@ -1129,41 +1106,59 @@ public class Nfa  {
     // ranges with first==last into one character
     StringBuilder sb = new StringBuilder();
     int L = dfaPath.length();
-    for(int i=0; i<L; i+=2) {
+    for(int i = 0; i<L; i += 2) {
       char from, to;
       from = dfaPath.charAt(i);
       to = dfaPath.charAt(i+1);
       if( from==to ) {
-	Misc.printable(sb, from);
+        Misc.printable(sb, from);
       } else {
-	sb.append('[');
-	Misc.printable(sb, from);
-	sb.append('-');
-	Misc.printable(sb, to);
-	sb.append(']');
+        sb.append('[');
+        Misc.printable(sb, from);
+        sb.append('-');
+        Misc.printable(sb, to);
+        sb.append(']');
       }
     }
-    clash[clash.length-1] = sb.toString();
-    clashes.add(clash);
+    Clash c = new Clash(sb.toString(), actions);
+    clashes.add(c);
 
     // correct dfaPath again, otherwise clashing siblings will show
     // the wrong path
     if( first<=last ) dfaPath.setLength(dfaPath.length()-2);
 
-    // return an arbitarily choosen action
-    return action;
+    // return an arbitrarily chosen action
+    return actionFound;
   }
   /********************************************************************/
-  void addTransition(Intervals<Set<FaState>> v, char first, char last, FaState dst) {
-    //System.out.println("adding: "+Misc.printable(first)+
-    //		       ","+Misc.printable(last)+" to "+v);
+  static FaAction mergeInto(Set<FaAction> actions, FaAction other) {
+    for(Iterator<FaAction> ia=actions.iterator(); ia.hasNext(); /**/) {
+      FaAction oldAction = ia.next();
+
+      // Try to merge the two actions either way. This is the
+      // closest to symmetric operation I can think of. Is there a
+      // good way to enforce real symmetry?
+      FaAction merged = other.mergeWith(oldAction);
+      if( merged==null ) {
+        merged = oldAction.mergeWith(other);
+      }
+      if( merged!=null ) {
+        other = merged;
+        ia.remove();
+      }
+    }
+    actions.add(other);
+    return other;
+  }
+  /********************************************************************/
+  void addTransition(Intervals<Set<FaState>> v, 
+                     char first, char last, FaState dst) {
     int from = v.split(first);
     if( from<0 ) {
       // first falls just on an interval border
       from = -(from+1);
     } else {
-      // Need a fresh Set for the new interval pos, which starts with
-      // ch
+      // Need a fresh Set for the new interval pos, which starts with ch
       Set<FaState> states = v.getAt(from);
       if( states!=null ) v.setAt(from, newSet(states));
     }
@@ -1187,8 +1182,6 @@ public class Nfa  {
       s.add(dst);
       v.setAt(i, s);
     }
-
-    //System.out.println("result:"+v);
   }
   /**********************************************************************/
   /**
@@ -1243,7 +1236,7 @@ public class Nfa  {
     // If we find multiple actions on some stop states, these are
     // registered as clashes here and will finally result in an
     // exception.
-    Vector<Object[]>clashes = new Vector<Object[]>(3);
+    List<Clash>clashes = new LinkedList<Clash>();
 
     // reusable container for findAction()
     Set<FaAction> actions = newSet(3);
@@ -1261,16 +1254,16 @@ public class Nfa  {
     eclosure(starters);
 
     // in order to generate a meaningful error message, we keep a
-    // stack of character ranges stored as character here. The
-    // sequence of ranges denotes a shortes path through the Dfa going
-    // to the state the children are currently being constructed.
+    // stack of character ranges stored as characters here. The
+    // sequence of ranges denotes a shortest path through the Dfa going
+    // to the state the children of which are currently being constructed.
     StringBuilder dfaPath = new StringBuilder();
 
     // Even the start state can have an action associated and thereby
     // be a stop state. This is important for subsequent applications
     // of Nfa-operations like shortest().
     // The start state will always have the possibility of epsilon
-    // transtions going out in case the automaton will be subject to
+    // transitions going out in case the automaton will be subject to
     // later operations like 'or'.
     FaAction startAction = findAction(dfaPath, '1', '0',
 				      clashes, actions, starters);
@@ -1286,19 +1279,12 @@ public class Nfa  {
 
 
     // The stack keeps track of states the children of which still
-    // need to be constructed. On the stack are triples with the
-    // following elements:
-    // 1) an int[3], (first, last, no) tells us that the state can be
-    // reached in no steps from the start state of the Dfa where the
-    // last step is by a character range [first,last]
-    // 2) a Set of nfa states representing the dfa state
-    // 3) a dfa state which does not have its transition table
-    // constructed.
-    Stack<Object> stack = new Stack<Object>();
-    int[] step0 = {0, 0, 0};	// a dummy
-    stack.push(step0);
-    stack.push(starters);
-    stack.push(dfaStart);
+    // need to be constructed. The CompileTask stores the number of steps
+    // that lead to a the stored dfaState, the character interval of the last
+    // transition as well as the set of Nfa states that represent the dfa state.
+
+    LinkedList<CompileTask> stack = new LinkedList<>();
+    stack.add(new CompileTask(dfaStart, 0, (char)0, (char)0, starters));
 
     // this is the transition table we will use over and over again so
     // that it can grow to a typical required size internally. The
@@ -1308,18 +1294,11 @@ public class Nfa  {
     IntervalsFaState dfaTrans = new IntervalsFaState();
 
     while( stack.size()>0 ) {
-      currentTrans.reset();
-      dfaTrans.reset();
-      
-      // The stack has always a dfa-state and its defining set of nfa
-      // states
-      FaState currentState = (FaState)stack.pop();
-      Set<FaState> currentNfaSet = (Set<FaState>)stack.pop();
-      int[] howWeCameHere = (int[])stack.pop();
-      if( howWeCameHere[2]>0 ) {
-	dfaPath.setLength(howWeCameHere[2]*2-2);
-	dfaPath.append((char)howWeCameHere[0])
-	  .append((char)howWeCameHere[1]);
+      CompileTask currentTask = stack.removeLast();
+      if( currentTask.steps>0 ) {
+	dfaPath.setLength(2*currentTask.steps-2);
+	dfaPath.append(currentTask.chLeft);
+	dfaPath.append(currentTask.chRight);
       }
 
       // loop over nfa-states which define current and over all of
@@ -1327,8 +1306,9 @@ public class Nfa  {
       // currentTrans. Note that during this operation, the objects
       // stored in currentTrans are not destination states but
       // Sets of destination states.
-      for(Iterator<FaState> i=currentNfaSet.iterator(); i.hasNext(); /**/) {
-	CharTrans trans = i.next().getTrans();
+      currentTrans.reset();
+      for(FaState nfaState : currentTask.nfaStates) {
+        CharTrans trans = nfaState.getTrans();
 	if( trans==null ) continue;
 	int L = trans.size();
 	for(int j=0; j<L; j++) {
@@ -1338,46 +1318,35 @@ public class Nfa  {
 	  addTransition(currentTrans, first, last, st);
 	}
       }
-      // System.err.println("+++ "+currentTrans);
+
       // Convert the generated sets of NFA states which are stored in
       // currentTrans to unique ones and replace the transition
       // destination by the respective DFA state. The latter either
       // exists already or will be created right heree.
-
       int L = currentTrans.size();
-      //System.out.println(">>> "+currentTrans);
+      dfaTrans.reset();
       for(int i=0; i<L; i++) {
         Set<FaState> stateSet = currentTrans.getAt(i);
 	if( stateSet==null ) {
 	  continue;
 	}
-	
+
 	eclosure(stateSet);
 	FaState dst = known.get(stateSet);
 
 	char first = currentTrans.getFirstAt(i);
 	char last = currentTrans.getLastAt(i);
-	if( dst!=null ) {
-	  // A set containing exactly the same states as the one just
-	  // built for rm is already known. Consequently we don't have
-	  // to handle that again, but just use the value stored for
-	  // it.
-	} else {
-	  // The set stored at rm.o is new. We create a DFA state for
-	  // it, store the pair in known and push both on the stack
+	if( dst==null ) {
 	  FaAction a = findAction(dfaPath, first, last,
 				  clashes, actions, stateSet);
 	  haveStopState |= a!=null;
 	  dst = AbstractFaState.createDfaState(a, needEps);
 	  dst.mergeSubinfos(stateSet);
-	  int[] step = new int[3];
-	  step[0] = first;
-	  step[1] = last;
-	  step[2] = howWeCameHere[2]+1;
+
+	  CompileTask t =
+	      new CompileTask(dst, currentTask.steps+1, first, last, stateSet);
+	  stack.add(t);
 	  known.put(stateSet, dst);
-	  stack.push(step);
-	  stack.push(stateSet);
-	  stack.push(dst);
 	}
 	dfaTrans.overwrite(first, last, dst);
       }
@@ -1385,7 +1354,7 @@ public class Nfa  {
       // make a (space minimal) copy of dfaTrans and stick it into
       // the current state finally.
       CharTrans ct = dfaTrans.toCharTrans(memoryForSpeedTradeFactor);
-      currentState.setTrans(ct);
+      currentTask.dfaState.setTrans(ct);
     }
     if( clashes.size()>0 ) {
       throw new CompileDfaException(clashToString(clashes));
@@ -1400,6 +1369,32 @@ public class Nfa  {
     }
 
     return dfaStart;
+  }
+  /*+******************************************************************/
+  private static class CompileTask {
+    final char chLeft;
+    final int steps;
+    final char chRight;
+    final Set<FaState> nfaStates;
+    final FaState dfaState;
+
+    CompileTask(FaState dfaState, int steps, char chLeft, char chRight,
+                Set<FaState> nfaStates) {
+      this.chLeft = chLeft;
+      this.chRight = chRight;
+      this.steps = steps;
+      this.nfaStates = nfaStates;
+      this.dfaState = dfaState;
+    }
+  }
+  //-*****************************************************************
+  private static final class Clash {
+    final String message;
+    final List<FaAction> actions;
+    public Clash(String message, Set<FaAction> actions) {
+      this.message = message;
+      this.actions = new LinkedList<>(actions);
+    }
   }
   //-*****************************************************************
   private class ParserView implements NfaParserView {

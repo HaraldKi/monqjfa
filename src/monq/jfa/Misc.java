@@ -98,7 +98,7 @@ public class Misc {
   }
 
   public static void printable(StringBuilder out, char ch) {
-    int v = (int)ch;
+    int v = ch;
     if( v<32 || v>=128 ) {
       if( v==9 )   { out.append("\\t"); return; }
       if( v==10 )  { out.append("\\n"); return; }
