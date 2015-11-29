@@ -35,15 +35,15 @@ public class SetTest extends TestCase {
   /**********************************************************************/
   public void test0() throws Exception {
     Set<Long> s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
     for(long i=1; i!=0; i=i<<1) {
-      assertTrue(s.contains(new Long(i)));
+      assertTrue(s.contains(Long.valueOf(i)));
     }
   }
   /**********************************************************************/
   public void testEqualsHashSet() throws Exception {
     Set<Long> s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
     HashSet<Long> h = new HashSet<>(s);
     assertTrue(s.equals(h));
 
@@ -51,14 +51,14 @@ public class SetTest extends TestCase {
     assertTrue(s.equals(other));
     assertTrue(s.equals(s));
 
-    other.add(new Long(11));
+    other.add(Long.valueOf(11));
     assertTrue(!s.equals(other));
 
   }
   /**********************************************************************/
   public void test2() throws Exception {
     Set<Long> s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
     Set<Long> other = newSet(s);
     assertTrue(s.equals(other));
 
@@ -67,15 +67,18 @@ public class SetTest extends TestCase {
   /**********************************************************************/
   public void test3() throws Exception {
     Set<Long> s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
+    
+    Set<Long> copy = newSet();
+    copy.addAll(s);
     Set<Long> other = newSet(1000);
-    assertTrue(s.containsAll(s));
+    assertTrue(s.containsAll(copy));
     assertTrue(s.containsAll(other));
   }
   /**********************************************************************/
   public void test4() throws Exception {
     Set<Long> s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
     Set<Long> other = newSet(1000);
 
     Iterator<Long> it = s.iterator();
@@ -202,17 +205,17 @@ public class SetTest extends TestCase {
     Set<Integer> s = newSet();
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
     }
 
     // do we have just the right elements in ?
     for(int i=0; i<1000; i++) {
-      assertEquals(i%7!=0, s.contains(new Integer(i)));
+      assertEquals(i%7!=0, s.contains(Integer.valueOf(i)));
     }
 
     // add elements which are already in
     for(int i=0; i<1000; i++) {
-      assertEquals(i%7==0, s.add(new Integer(i)));
+      assertEquals(i%7==0, s.add(Integer.valueOf(i)));
     }
   }
   /**********************************************************************/
@@ -221,7 +224,7 @@ public class SetTest extends TestCase {
     int size = 0;
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
       size += 1;
     }
     Iterator<Integer> it = s.iterator();
@@ -239,7 +242,7 @@ public class SetTest extends TestCase {
     int size = 0;
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
       size += 1;
     }
     assertEquals(size, s.size());
@@ -255,7 +258,7 @@ public class SetTest extends TestCase {
     Set<Integer> s = newSet();
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
     }
     Integer[] a = s.toArray(new Integer[0]);
     HashSet<Integer> h = new HashSet<>();
