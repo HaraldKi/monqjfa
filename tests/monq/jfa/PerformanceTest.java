@@ -16,10 +16,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import monq.jfa.actions.MapProvider;
 
 /**
  * contains one test to verify that {@link Nfa#setMemoryForSpeedTradeFactor}
@@ -40,7 +44,7 @@ public class PerformanceTest {
     }
 
     @Test
-    public void basicTest() throws Exception {
+    public void performanceTest() throws Exception {
       StringBuilder text = createText(20_000_000);
       CountWords cw = new CountWords();
       Nfa nfa = createNfa(cw);
@@ -62,6 +66,63 @@ public class PerformanceTest {
       }
     }
 
+    @Test
+    public void compareToRegexTest() throws Exception {
+      // we have this test here, because everything is there to create random
+      // text.
+      final Map<Object,Object> counts = new HashMap<>();
+      MapProvider mp = new MapProvider() {
+        @Override
+        public Map<Object,Object> getMap() {
+          return counts;
+        }        
+      };
+      String[] rexes = {"<[^>]*>", "[a-zA-Z]+", "[0-9]+", "[ \r\n\t]+"};
+      String[] names = {"xml", "alpha", "num", "space"};
+        
+      Nfa nfa = new Nfa(Nfa.NOTHING);
+      for (int i=0; i<rexes.length; i++) {
+        nfa.or(rexes[i], new CountAction(names[i]));
+      }
+          
+      StringBuilder text = createText(200_000);
+      DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP));
+      r.setIn(new CharSequenceCharSource(text));
+      r.clientData = mp;
+      r.filter();
+      System.out.println(counts);
+      Map<String,Count> javaResult = countMatches(rexes, names, text);
+      System.out.println(javaResult);
+      assertEquals(javaResult, counts);
+    }
+    
+    private static Map<String,Count>
+    countMatches(String[] rexes, String[] names, StringBuilder text) {
+      Map<String,Count> result = new HashMap<>();
+      for (String name : names) {
+        result.put(name, new Count());
+      }
+      StringBuilder re = new StringBuilder();
+      re.append('(');
+      for (String s : rexes) {
+        re.append(s).append(")|(");
+      }
+      re.setLength(re.length()-2);
+      Pattern p = Pattern.compile(re.toString()); 
+      Matcher m = p.matcher(text);
+
+      int start = 0;
+      while (m.find(start)) {
+        for(int i=0; i<rexes.length; i++) {
+          if (m.group(i+1)!=null) {
+            result.get(names[i]).count+=1;
+          }
+        }
+        start = m.end();
+      }
+      return result;
+    }
+    
     private static Timing runFilter(Nfa nfa, CharSequence text, float tradeOff)
         throws CompileDfaException, IOException
     {
@@ -162,6 +223,25 @@ public class PerformanceTest {
       @Override
       public String toString() {
         return String.format(Locale.ROOT, "%.2fs", dtSeconds());
+      }      
+    }
+    /*+******************************************************************/
+    private static final class CountAction extends AbstractFaAction {
+      private final String name;
+      public CountAction(String name) {
+        this.name = name;
+      }
+      @Override
+      public void invoke(StringBuilder yytext, int start, DfaRun runner)
+        throws CallbackException
+      {
+        MapProvider mp = (MapProvider)runner.clientData;
+        Map<Object,Object> m = mp.getMap();
+        Count c = (Count)(m.get(name));
+        if (c==null) {
+          m.put(name, c=new Count());
+        }
+        c.count += 1;        
       }      
     }
     /*+******************************************************************/
