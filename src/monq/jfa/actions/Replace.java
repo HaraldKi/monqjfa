@@ -53,7 +53,10 @@ public class Replace extends AbstractFaAction {
   public boolean equals(Object _o) {
     if( !(_o instanceof Replace) ) return false;
     Replace o = (Replace)_o;
-    return s.equals(o.s) && priority==o.priority;
-    
+    return s.equals(o.s) && priority==o.priority;    
+  }
+  @Override
+  public int hashCode() {
+    return s.hashCode() ^ priority;
   }
 }

@@ -104,8 +104,10 @@ public class Hold extends AbstractFaAction {
       throw new 
 	IllegalStateException("no current start position available");
     }
-    if( pop ) return (StackElem)stack.remove(l-1);
-    else return (StackElem)stack.get(l-1);
+    if( pop ) {
+      return stack.remove(l-1);
+    }
+    return stack.get(l-1);
   }
   /**********************************************************************/
   /**

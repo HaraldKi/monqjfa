@@ -231,7 +231,7 @@ public class SetTest extends TestCase {
     int i = 0;
     while( it.hasNext() ) {
       i += 1;
-      Integer I = (Integer)it.next();
+      Integer I = it.next();
       assertFalse(I.intValue()%7==0);
     }
     assertEquals(size, i);

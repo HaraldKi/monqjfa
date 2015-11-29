@@ -79,19 +79,17 @@ public class ReClassicParser implements ReParser {
    * @see #escape(String)
    */
   /**********************************************************************/
-  public void escape(StringBuilder out, CharSequence in, int startAt) {
-    int l = in.length();
+  public void escape(StringBuilder out, CharSequence cin, int startAt) {
+    int l = cin.length();
     for(int i=startAt; i<l; i++) {
-      char ch = in.charAt(i);
+      char ch = cin.charAt(i);
       int pos = java.util.Arrays.binarySearch(specialChars, ch);
       if( pos>=0 ) out.append('\\');
       out.append(ch);
     }
   }
   /**********************************************************************/
-  private ReSyntaxException error(String msg) 
-    throws ReSyntaxException {
-
+  private ReSyntaxException error(String msg) {
     tmp.setLength(0);
     getRecent(tmp);
     int column = tmp.length();

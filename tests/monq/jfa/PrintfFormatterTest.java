@@ -150,12 +150,11 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("---%-%-abcd()-abcd(0,1)---", s);
   }
 
-  public void test_formatError1()
-    throws ReSyntaxException
-  {
+  public void test_formatError1() {
     ReSyntaxException e = null;
     try {
-      new Printf("%axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+      FaAction a = new Printf("%axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+      fail("expected ReSyntaxException when creating "+a);
     } catch( ReSyntaxException _e) {
       e = _e;
     }
@@ -169,17 +168,16 @@ public class PrintfFormatterTest extends TestCase {
 
   // in contrast to the above, the format is very short resulting in
   // another preparation of the error string.
-  public void test_formatError2()
-    throws ReSyntaxException
-  {
-    ReSyntaxException e = null;
+  public void test_formatError2() {
+
     try {
-      new Printf("%abc");
-    } catch( ReSyntaxException _e) {
-      e = _e;
+      FaAction a = new Printf("%abc");
+      fail("expected ReSyntaxException when creating "+a);
+    } catch( Throwable e) {
+      assertTrue(e instanceof ReSyntaxException);
+      String s = "%abc";
+      assertEquals(s, ((ReSyntaxException)e).text);
     }
-    String s = "%abc";
-    assertEquals(s, e.text);
   }
 
   // for completeness of the coverage, do call the constructor with

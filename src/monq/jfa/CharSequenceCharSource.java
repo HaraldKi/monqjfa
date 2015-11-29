@@ -32,7 +32,7 @@ import java.io.Serializable;
  * @author &copy; 2005 Harald Kirsch
  */
 public class CharSequenceCharSource 
-  extends EmptyCharSource implements CharSource, Serializable {
+  extends EmptyCharSource implements Serializable {
 
   private int next;
   private int end;

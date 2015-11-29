@@ -654,7 +654,8 @@ public class Nfa  {
     }
   }
   /*+******************************************************************/
-  private void removeUselessEps(FaState state, Map<FaState,Boolean> useful) {
+  private static void
+  removeUselessEps(FaState state, Map<FaState,Boolean> useful) {
     FaState[] eps = state.getEps();
     if (eps==null) {
       return;
@@ -681,12 +682,12 @@ public class Nfa  {
    * epsilon transitions, are traversed because the automaton was compiled
    * just before.
    */
-  private void invertState(FaState start,
+  private void invertState(FaState initialState,
 			   final FaState sink, final FaState last,
 			   final IntervalsFaState worker) {
     FaStateTraverser<Void> fasTrav = new FaStateTraverser<>(IterType.CHAR, null);
 
-    fasTrav.traverse(start, new FaStateTraverser.StateVisitor<Void>() {
+    fasTrav.traverse(initialState, new FaStateTraverser.StateVisitor<Void>() {
       @Override public void visit(FaState state, Void xd) {
         if (state.getAction()==null) {
           state.addEps(last);
@@ -965,7 +966,7 @@ public class Nfa  {
   }
   /**********************************************************************/
   // is a convenience wrapper around findAction for use in findPath
-  private boolean hasAction(Set<FaState> nfaStates) {
+  private static boolean hasAction(Set<FaState> nfaStates) {
     Vector<Object[]> clashes = new Vector<Object[]>(3);
     Set<FaAction> actions = new HashSet<FaAction>(3);
     StringBuilder sb = new StringBuilder();
@@ -1006,8 +1007,7 @@ public class Nfa  {
   /**********************************************************************/
   // generate a human readable exception from the clash information
   // collected during compilation.
-  private String clashToString(Vector<Object[]> clashes)
-    throws CompileDfaException {
+  private static String clashToString(Vector<Object[]> clashes) {
 
     StringBuilder s = new StringBuilder(200);
     s.append(CompileDfaException.EAMBIGUOUS)
@@ -1334,7 +1334,7 @@ public class Nfa  {
 	for(int j=0; j<L; j++) {
 	  char first = trans.getFirstAt(j);
 	  char last = trans.getLastAt(j);
-	  FaState st = (FaState)trans.getAt(j);
+	  FaState st = trans.getAt(j);
 	  addTransition(currentTrans, first, last, st);
 	}
       }

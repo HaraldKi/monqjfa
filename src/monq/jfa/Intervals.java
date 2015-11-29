@@ -95,8 +95,10 @@ public class Intervals<D> {
   }
   public final char getFirstAt(int i) {return ivals.charAt(i);}
   public final char getLastAt(int i) {
-    if( i==ivals.length()-1 ) return Character.MAX_VALUE;
-    else return (char)(ivals.charAt(i+1)-1);
+    if( i==ivals.length()-1 ) {
+      return Character.MAX_VALUE;
+    }
+    return (char)(ivals.charAt(i+1)-1);
   }
   /**********************************************************************/
   /**

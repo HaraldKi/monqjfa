@@ -130,15 +130,15 @@ abstract class AbstractFaState
     // loop over all given states
     Iterator<FaState> states = nfaStates.iterator();
     while( states.hasNext() ) {
-      FaState other = (FaState)(states.next());
+      FaState other = states.next();
       Map<FaAction,FaSubinfo[]> otherSubs = other.getSubinfos();
       if( otherSubs==null ) continue;
 
       // loop over all actions in the other's subinfo
       Iterator<FaAction> otherActions = otherSubs.keySet().iterator();
       while( otherActions.hasNext() ) {
-	FaAction a = (FaAction)(otherActions.next());
-	FaSubinfo[] ary = (FaSubinfo[])otherSubs.get(a);
+	FaAction a = otherActions.next();
+	FaSubinfo[] ary = otherSubs.get(a);
 
 	// loop over all subgraph markers and merge them in
 	for(int i=0; i<ary.length; i++) mergeSub(a, ary[i]);
@@ -212,7 +212,7 @@ abstract class AbstractFaState
 
     public FaState next() {
       if( trans_i<trans_L ) {
-        return (FaState)getTrans().getAt(trans_i++);
+        return getTrans().getAt(trans_i++);
       }
       if( eps_i<eps_L ) return getEps()[eps_i++];
       throw  new java.util.NoSuchElementException();
@@ -227,16 +227,15 @@ abstract class AbstractFaState
     return new ChildIterator(iType);
   }
   /********************************************************************/
-  public static FaState 
-    createDfaState(FaAction a, boolean needEps) 
-  {
+  public static FaState createDfaState(FaAction a, boolean needEps) {
     if( a!=null ) {
       // for stop states, there is anyway an epsilon
       return new DfaStopState(a);
-    } else {
-      if( needEps ) return new NfaState();
-      else return new DfaState();
+    } 
+    if( needEps ) {
+      return new NfaState();
     }
+    return new DfaState();
   }
   /********************************************************************/
   /**

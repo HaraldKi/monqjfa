@@ -39,8 +39,9 @@ class FaSubinfo implements Comparable<FaSubinfo>, Serializable {
   private byte id;
 
   /**********************************************************************/
+  @Override
   public int compareTo(FaSubinfo other) {
-    FaSubinfo o = (FaSubinfo)other;
+    FaSubinfo o = other;
     if( id<o.id ) return -1;
     if( id>o.id ) return 1;
     return 0;
@@ -62,7 +63,7 @@ class FaSubinfo implements Comparable<FaSubinfo>, Serializable {
     return new FaSubinfo(id, SUBSTART); 
   }
   public static FaSubinfo stop(byte id)  { 
-    return new FaSubinfo(id, (byte)(SUBSTOP));  
+    return new FaSubinfo(id, SUBSTOP);  
   }
   public static FaSubinfo inner(byte id) { 
     return new FaSubinfo(id, SUBINNER); 

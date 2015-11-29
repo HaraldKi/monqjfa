@@ -68,7 +68,7 @@ public class Regexp {
     }
   }
   /**********************************************************************/
-  private IllegalArgumentException makeEx(String msg, Throwable cause) {
+  private static IllegalArgumentException makeEx(String msg, Throwable cause) {
     IllegalArgumentException e = new IllegalArgumentException(msg);
     e.initCause(cause);
     return e;

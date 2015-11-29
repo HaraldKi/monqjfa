@@ -62,7 +62,7 @@ public class PerformanceTest {
       }
     }
 
-    private Timing runFilter(Nfa nfa, CharSequence text, float tradeOff)
+    private static Timing runFilter(Nfa nfa, CharSequence text, float tradeOff)
         throws CompileDfaException, IOException
     {
       nfa.setMemoryForSpeedTradeFactor(tradeOff);
@@ -122,7 +122,7 @@ public class PerformanceTest {
    *         the statistics for the character following the index character.
    * @throws IOException
    */
-    private CharStatistics[] readBiStats(String fname) throws IOException {
+    private static CharStatistics[] readBiStats(String fname) throws IOException {
       CharStatistics[] result = new CharStatistics[Character.MAX_VALUE+1];
 
       try (InputStream in = new BufferedInputStream(new FileInputStream(fname));

@@ -112,9 +112,7 @@ public class NfaTest extends TestCase {
     assertEquals(2, nfa.findPath("rx"));
     assertEquals(5, nfa.findPath("hallo"));
   }
-   public void testDoubleOr()
-     throws ReSyntaxException, CompileDfaException
-  {
+   public void testDoubleOr() throws ReSyntaxException {
     // try to enforce the first branch in Nfa.or()
     Nfa nfa = new Nfa("a|b*", Drop.DROP);
     assertEquals(1, nfa.findPath("a"));
@@ -394,10 +392,7 @@ public class NfaTest extends TestCase {
    * automaton with two distinct stop states. The reason was that
    * <code>isImportant</code> was not implemented correctly.
    */
-  public void testIsImportant()
-    throws ReSyntaxException, CompileDfaException,
-    java.io.IOException
-  {
+  public void testIsImportant() throws ReSyntaxException, CompileDfaException  {
     new Nfa("a|b", Drop.DROP)
     .compile(DfaRun.UNMATCHED_COPY);
 
@@ -632,10 +627,7 @@ public class NfaTest extends TestCase {
    * because compilation of course creates states for a Dfa, which
    * cannot have epsilon transitions.
    */
-  public void testShortestAllowEpsilonInStartState()
-    throws ReSyntaxException, CompileDfaException,
-    java.io.IOException
-  {
+  public void testShortestAllowEpsilonInStartState() throws ReSyntaxException {
     // basically the following should not throw an exception
     Nfa nfa = new Nfa("(a+)!|b", Drop.DROP);
 
@@ -789,7 +781,7 @@ public class NfaTest extends TestCase {
         return 'a';
       }
       @Override
-      public void pushBack(StringBuilder s, int i) {}
+      public void pushBack(StringBuilder unused, int i) {}
     };
     DfaRun r =
         new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), s);
@@ -1296,7 +1288,10 @@ public class NfaTest extends TestCase {
   // point. It was due to an error in Intervals.setFrom() which now
   // has its own test, but we leave the test here anyway
   public static void test_Bug2() throws Exception {
-    new Nfa("((ee)+.*)~", new Embed("[", "]"));
+    Nfa nfa = new Nfa("((ee)+.*)~", new Embed("[", "]"));
+
+    nfa.addAction(null); // prevent compiler warning about unused allocation
+    
     // just count this test as done if we arrive here
     assertTrue(true);
   }
@@ -1321,7 +1316,7 @@ public class NfaTest extends TestCase {
         return 'e';
       }
       @Override
-      public void pushBack(StringBuilder s, int i) {}
+      public void pushBack(StringBuilder unused, int i) {}
     };
     DfaRun r =
         new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP), s);
@@ -1373,13 +1368,13 @@ public class NfaTest extends TestCase {
   /********************************************************************/
   public static void test_SaneDfa() throws Exception {
     Dfa dfa = new Nfa(".*", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
-    Exception e = null;
+
     try {
-      new DfaRun(dfa);
-    } catch( IllegalArgumentException _e ) {
-      e = _e;
+      DfaRun r = new DfaRun(dfa);
+      fail("expected IllegalArgumentException when creating "+r);
+    } catch( Throwable e ) {
+      assertTrue(e instanceof IllegalArgumentException);
     }
-    assertTrue(e instanceof IllegalArgumentException);
   }
   /********************************************************************/
   // after some tiny but important changes to DfaRun,

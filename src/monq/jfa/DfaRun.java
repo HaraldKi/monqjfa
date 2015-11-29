@@ -95,7 +95,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     }
     int i;
     FailedMatchBehaviour(int i) {this.i = i;}
-    private Object readResolve() throws java.io.ObjectStreamException {
+    private Object readResolve() {
       return all[i];
     }
   }
@@ -753,8 +753,10 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     // 'true' merely signals that some input was processed, not that
     // output was produced
     read(readBuf, 1);
-    if( readBuf.length()>0 ) return readBuf.charAt(0);
-    else return -1;
+    if( readBuf.length()>0 ) {
+      return readBuf.charAt(0);
+    }
+    return -1;
   }  
   /**********************************************************************/
   /**
@@ -789,11 +791,11 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * <p>reads and filters the given input and returns the filtered
    * result.</p>
    */
-  public synchronized String filter(String in) 
+  public synchronized String filter(String sin) 
     throws java.io.IOException
   {
     readBuf.setLength(0);
-    setIn(new CharSequenceCharSource(in));
+    setIn(new CharSequenceCharSource(sin));
     while( crunch(readBuf) ) /**/;
     return readBuf.toString();
   }    
