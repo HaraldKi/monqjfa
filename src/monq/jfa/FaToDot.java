@@ -162,7 +162,7 @@ public class FaToDot {
   }
   /**********************************************************************/
   private static void usage() {
-      System.err.println("usage: FaToDot -nfa|-dfa re [re ...]");
+      System.err.println("usage: FaToDot -nfa|-dfa|-dfanfa re [re ...]");
       System.exit(1);    
   }
   /*+******************************************************************/
@@ -176,7 +176,7 @@ public class FaToDot {
   public static void main(String[] argv)
       throws ReSyntaxException, CompileDfaException
   {
-    List<String> types = Arrays.asList(new String[]{"-nfa", "-dfa"});
+    List<String> types = Arrays.asList(new String[]{"-nfa", "-dfa", "-dfanfa"});
     if (argv.length<2 || !types.contains(argv[0])) {
       usage();
     }
@@ -187,9 +187,14 @@ public class FaToDot {
     }
     if ("-nfa".equals(argv[0])) {
       nfa.toDot(System.out);
-    } else if ("-dfa".equals(argv[0])) {
+    } else if (argv[0].startsWith("-dfa")) {
       Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
-      dfa.toDot(System.out);
+      if ("-dfanfa".equals(argv[0])) {
+        nfa = dfa.toNfa();
+        nfa.toDot(System.out);
+      } else {
+        dfa.toDot(System.out);
+      }
     }
   }
 }

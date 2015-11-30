@@ -284,48 +284,6 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    */
   public CharSource getIn() { return in; }
 
-//   /** changes the input source. 
-//    * @deprecated Create a suitable <code>CharSource</code> object and
-//    * call {@link #setIn(CharSource)}.
-//    */
-//   public void setIn(CharSequence in) {
-//     setIn(new CharSequenceCharSource(in));
-//   }
-//   /** changes the input source. 
-//    * @deprecated Create a suitable <code>CharSource</code> object and
-//    * call {@link #setIn(CharSource)}.
-//    * @see #setIn(CharSource)
-//    */
-//   public void setIn(CharSequence in, int startAt) {
-//     setIn(new CharSequenceCharSource(in, startAt));
-//   }
-//   /** changes the input source.
-//    * @deprecated Create a suitable <code>CharSource</code> object and
-//    * call {@link #setIn(CharSource)}.
-//    * @see #setIn(CharSource)
-//    */
-//   public void setIn(InputStream in) {
-//     setIn(new ReaderCharSource(in));
-//   }
-
-//   /**
-//    * <p>changes the {@link Dfa} this machinery operates on. Changing
-//    * the DFA in a callback action is permissable. In particular, this
-//    * allows to filter different parts of the input with different
-//    * automata.</p>
-//    *
-//    * @throws java.lang.IllegalArgumentException if
-//    * <code>dfa.matchesEmpty()</code> returns <code>true</code>.
-//    * @deprecated This method does not initialize the behaviour of the
-//    * DfaRun in case no match is found from the given Dfa. Use {@link
-//    * #setDfa} instead.
-//    */
-//   public void setSaneDfa(Dfa dfa) {
-//     if( dfa.matchesEmpty() ) {
-//       throw new java.lang.IllegalArgumentException(EEPSMATCHER);
-//     }
-//     setAnyDfa(dfa);
-//   }
   /**
    * <p>changes the {@link Dfa} to run. In addition the way to handle
    * unmatched input is (re)initialized from the given {@link
@@ -342,13 +300,6 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     this.dfa = dfa; 
     this.onFailedMatch = dfa.fmb;
   }
-
-//   /**
-//    * @deprecated This method does not initialize the behaviour of the
-//    * DfaRun in case no match is found from the given Dfa. Use {@link
-//    * #setDfa} instead.
-//    */
-//   public void setAnyDfa(Dfa dfa) { this.dfa = dfa; }
 
   /**
    * returns the {@link Dfa} operated by <code>this</code>.

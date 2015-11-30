@@ -136,19 +136,19 @@ public class Nfa  {
    * monq.jfa.Nfa#Nfa(Nfa.EmptyNfaType)}. The possible values of this
    * class are defined as static fields of <code>Nfa</code>.</p>
    */
-  private static final class EmptyNfaType {
-    private EmptyNfaType() {}
+  private static enum EmptyNfaType {
+    T_NOTHING, T_EPSILON;
   }
   /**
    * value of an enumeration type to be passed to {@link
    * monq.jfa.Nfa#Nfa(Nfa.EmptyNfaType)}.
    */
-  public static final EmptyNfaType NOTHING = new EmptyNfaType();
+  public static final EmptyNfaType NOTHING = EmptyNfaType.T_NOTHING;
   /**
    * value of an enumeration type to be passed to {@link
    * monq.jfa.Nfa#Nfa(Nfa.EmptyNfaType)}.
    */
-  public static final EmptyNfaType EPSILON = new EmptyNfaType();
+  public static final EmptyNfaType EPSILON = EmptyNfaType.T_EPSILON;
 
   /**
    * <p>

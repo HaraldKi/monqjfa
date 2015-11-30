@@ -135,8 +135,9 @@ public class Dfa implements Serializable {
       }
     });
 
-    // addLastState(startState, newLast, new IdentityHashMap<FaState, Object>());
-    Nfa nfa = new Nfa(startState, newLast);
+    AbstractFaState.EpsState newStart = new AbstractFaState.EpsState();
+    newStart.addEps(startState);
+    Nfa nfa = new Nfa(newStart, newLast);
     startState = null;
     return nfa;
   }

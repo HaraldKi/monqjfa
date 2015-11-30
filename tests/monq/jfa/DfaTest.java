@@ -18,6 +18,7 @@ package monq.jfa;
 
 import static org.junit.Assert.*;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -101,7 +102,31 @@ public class DfaTest  {
     dfa.match(new CharSequenceCharSource("bbb"), out, new SubmatchData());
     assertEquals("bbb", out.toString());
   }
+  
+  /**
+   * Dfa.toNfa() did not preserve the condition that the start state of an
+   * Nfa may not have incoming transitions. In the example, this lead to "c*"
+   * matching "xxxccc".
+   */
+  @Test
+  public void toNfaMissingStartBug() throws Exception {
+    Nfa nfa = new Nfa();
+    nfa.or(".*b", Copy.COPY);
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    nfa = dfa.toNfa();
+    nfa.or("c+", Drop.DROP);
 
+    //PrintStream p = new PrintStream("/home/harald/tmp/bla.dot");
+    //nfa.toDot(p);
+    //p.close();
+
+    dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
+    CharSource cs = new CharSequenceCharSource("xxxxccc");
+    StringBuilder out = new StringBuilder();
+    FaAction a = dfa.match(cs, out, (TextStore)null);
+    assertNull(a);
+  }
+  
   @Test
   public void bug_r1024_stackOverflowOnDeepToNfa() throws Exception {
     final int SIZE = 200_000;
