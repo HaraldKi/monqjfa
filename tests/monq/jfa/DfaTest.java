@@ -18,7 +18,6 @@ package monq.jfa;
 
 import static org.junit.Assert.*;
 
-import java.io.PrintStream;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -88,13 +87,13 @@ public class DfaTest  {
     Nfa nfa = new Nfa();
     nfa.or("a*", Copy.COPY);
     nfa.or("b+", Drop.DROP);
-    
+
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
     nfa = dfa.toNfa();
-    
+
     dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
     nfa = dfa.toNfa();
-    
+
     dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
     StringBuilder out = new StringBuilder(10);
     dfa.match(new CharSequenceCharSource("c"), out, new SubmatchData());
@@ -102,7 +101,7 @@ public class DfaTest  {
     dfa.match(new CharSequenceCharSource("bbb"), out, new SubmatchData());
     assertEquals("bbb", out.toString());
   }
-  
+
   /**
    * Dfa.toNfa() did not preserve the condition that the start state of an
    * Nfa may not have incoming transitions. In the example, this lead to "c*"
@@ -120,13 +119,28 @@ public class DfaTest  {
     //nfa.toDot(p);
     //p.close();
 
+    // this was matched by the buggy code
     dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
     CharSource cs = new CharSequenceCharSource("xxxxccc");
     StringBuilder out = new StringBuilder();
     FaAction a = dfa.match(cs, out, (TextStore)null);
     assertNull(a);
-  }
-  
+    
+    // verify the two branches of the Nfa, first ".*b"
+    cs = new CharSequenceCharSource("ccccbbxb012");
+    out.setLength(0);
+    a = dfa.match(cs, out, (TextStore)null);
+    assertEquals(Copy.COPY, a);
+    assertEquals("ccccbbxb", out.toString());
+    
+    // now "c+"
+    cs = new CharSequenceCharSource("cc");
+    out.setLength(0);
+    a = dfa.match(cs, out, (TextStore)null);
+    assertEquals(Drop.DROP, a);
+    assertEquals("cc", out.toString());
+}
+
   @Test
   public void bug_r1024_stackOverflowOnDeepToNfa() throws Exception {
     final int SIZE = 200_000;
@@ -137,7 +151,7 @@ public class DfaTest  {
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
     nfa = dfa.toNfa();
     dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
-    
+
     StringBuilder out = new StringBuilder(SIZE);
     dfa.match(new CharSequenceCharSource(longWord), out, new SubmatchData());
     assertEquals(SIZE, out.length());

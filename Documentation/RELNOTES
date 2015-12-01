@@ -1,3 +1,11 @@
+VERSION 1.6.2
+
+Fixed a seemingly long standing bug in Dfa.toNfa(), which did not make
+sure that the start state used for the generated Nfa satisfies the
+condition that it has no incoming transitions, which is needed for
+subsequent Thompson construction steps.
+
+
 VERSION 1.6.1
 
 Improved on the number of warnings due to still Java 1.4 code without
