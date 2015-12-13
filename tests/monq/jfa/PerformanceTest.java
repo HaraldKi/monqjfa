@@ -23,6 +23,7 @@ import java.util.zip.GZIPInputStream;
 import org.junit.Before;
 import org.junit.Test;
 
+import monq.jfa.actions.Drop;
 import monq.jfa.actions.MapProvider;
 
 /**

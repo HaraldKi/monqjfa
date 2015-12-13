@@ -42,5 +42,5 @@ public class Copy extends AbstractFaAction {
   public void invoke(StringBuilder out, int start, DfaRun runner) {
     // nothing to do here
   }
-  public String toString() {return "Copy";}
+  public String toString() {return "Copy(p="+priority+')';}
 }

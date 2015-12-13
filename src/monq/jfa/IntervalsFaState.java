@@ -26,9 +26,9 @@ import java.util.List;
  *
  * @author &copy; 2004, 2005, 2015 Harald Kirsch
  * 
- * @TODO: Either make it generic or store FaState only
+ * TODO: Either make it generic or store FaState only
  * 
- * @TODO: replace with an implementation which has a complete Char.MAX_VALUE
+ * TODO: replace with an implementation which has a complete Char.MAX_VALUE
  *        pair of arrays that is plainly set and overwritten, instead of
  *        mainting the intervals. The meaesure performance.
  */

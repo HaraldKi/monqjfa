@@ -16,6 +16,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import monq.jfa.FaState.IterType;
+import monq.jfa.actions.DefaultAction;
 
 /**
  * <p>models a non-deterministic finite automaton.</p>
@@ -420,11 +423,21 @@ public class Nfa  {
     subgraphID = 0;
     return this;
   }
+  
   /*+******************************************************************/
   public void toDot(PrintStream out) {
     FaToDot.print(out, start, lastState);
   }
-
+  /*+******************************************************************/
+  public void toDot(String filename) {
+    try {
+      PrintStream out = new PrintStream(filename, "UTF-8");
+      toDot(out);
+      out.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
   /**********************************************************************/
   /**
    * for internal use by {@link Dfa#toNfa()} only.
@@ -558,8 +571,77 @@ public class Nfa  {
     embed();
     return this;
   }
+  /*+******************************************************************/
+  /**
+   * <p>extends the automaton with an additonal automaton which matches
+   * everything but all non-empty prefixes of this automaton.</p>
+   * 
+   * <p>For example, if this automaton matches "abc", the addional automaton
+   * matches every string that does not contain "a", "ab" or "abc". The
+   * additional automaton will have the given action attached.</p>
+   * 
+   * <p>The resulting, combined automaton will nearly never hit a no-match
+   * situation when used as a filter. The only exception is when the input
+   * ends in a true prefix of the original automaton.
+   * 
+   * Informally, the operation performed is as follows:</p>
+   * 
+   * <pre>this.or(this.copy().allPrefixes().not())</pre>
+   * 
+   * @param noMatchAction the action to call when the additional automaton
+   *        runs into a match, i.e. when the {@code this} does not match.
+   *        
+   * @throws CompileDfaException if {@code this} automaton does not compile.
+   */
+  public Nfa completeToSkip(FaAction noMatchAction) throws CompileDfaException {
+    Dfa dfa = compile(DfaRun.UNMATCHED_THROW);
+    allPrefixes(DefaultAction.nullInstance());
+    not();
 
-  /**********************************************************************/
+    addAction(noMatchAction);
+    or(dfa.toNfa());
+    return this;
+  }
+  /*+******************************************************************/
+  /**
+   * attaches the action to all states of the nfa except the start state. The
+   * resulting automaton recognizes the orginal language as well as all
+   * non-empty prefixes of the original language.
+   * 
+   * Any actions already specified will be overwritten.
+   * 
+   * @param action
+   * @throws CompileDfaException if the internally called compile operation
+   *         throws this exception
+   */
+  public void allPrefixes(final FaAction action) throws CompileDfaException {
+    if (null==lastState.getAction()) {
+      addAction(action);
+    }
+    // need an automaton were all states can carry eps-transitions
+    FaState dfaStart = compile_p(true);
+
+    lastState = new AbstractFaState.EpsStopState(action);
+    start = new AbstractFaState.EpsState();
+    start.addEps(dfaStart);
+    
+    // everything shall become a stop state, but not useless states
+    removeUseless();
+    
+    FaStateTraverser<FaState> ft = 
+        new FaStateTraverser<>(IterType.ALL, dfaStart);
+    ft.traverse(dfaStart, new FaStateTraverser.StateVisitor<FaState>() {
+      @Override
+      public void visit(FaState state, FaState exclude) {
+        if (state==exclude) {
+          return;
+        }
+        state.clearAction();
+        state.addEps(lastState);
+      }
+    });
+  }
+  /*+******************************************************************/
   private void removeUseless() {
     // TODO: refactor, at least by extracting the loops into methods
     Map<FaState,Boolean> stateUseful = new IdentityHashMap<>();
@@ -723,10 +805,9 @@ public class Nfa  {
     // treated like a stop state afterwards. Consequently we
     // temporarily make it into a stop state, if necessary.
     if( lastState.getAction()==null ) {
-      FaAction mark = new monq.jfa.actions.Copy(Integer.MIN_VALUE);
-      addAction(mark);
+      addAction(DefaultAction.nullInstance());
     }
-
+    
     // need to manufacture some CharTrans, so we need this.
     IntervalsFaState worker = new IntervalsFaState();
 
@@ -746,10 +827,10 @@ public class Nfa  {
     start = new AbstractFaState.EpsState();
     start.addEps(dfaStart);
     lastState = newLast;
-
-    // this may have produced useless state. We don't want to keep them.
-
+    
+    // This may have produced useless states. We don't want to keep them.
     removeUseless();
+    
     return this;
   }
   /*+******************************************************************/
@@ -812,8 +893,10 @@ public class Nfa  {
   }
   /**********************************************************************/
   /**
-   * used below by <code>shortest</code> to recursively prune outgoing
+   * used by <code>shortest</code> to recursively prune outgoing
    * transitions of stop states.
+   * 
+   * TODO: get rid of recursion, use FaStateTraverser instead.
    */
   private void trimStopState(FaState s, Set<FaState> known,
 			     FaState newLast, FaAction mark) {
@@ -823,7 +906,7 @@ public class Nfa  {
     if( a!=null ) {
       // character transitions are cleared before we go recursive
       // because any children becoming disconnected are not interesting
-      // anyway. The 'if' is necessary because a some states don't
+      // anyway. The 'if' is necessary because some states don't
       // have a CharTrans
       if( s.getTrans()!=null ) s.setTrans(null);
       if( a==mark ) s.clearAction();

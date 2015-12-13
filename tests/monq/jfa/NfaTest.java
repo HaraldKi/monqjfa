@@ -16,23 +16,35 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import monq.jfa.AbstractFaState.EpsState;
-//import jfa.*;
-import monq.jfa.actions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.StringReader;
 import java.lang.reflect.Method;
+
 import org.junit.Test;
 
-import java.io.PrintStream;
-import java.io.ByteArrayOutputStream;
+import monq.jfa.AbstractFaState.EpsState;
+import monq.jfa.actions.Copy;
+import monq.jfa.actions.Drop;
+import monq.jfa.actions.Embed;
+import monq.jfa.actions.Printf;
+import monq.jfa.actions.Replace;
 
 /**
  *
  * @author &copy; 2005 Harald Kirsch
  */
-public class NfaTest extends TestCase {
+public class NfaTest {
+  
+  @Test
   public void testSeqToNFA() throws ReSyntaxException {
     String s = "abcdedcba";
     Nfa fa = new Nfa(s, Copy.COPY);
@@ -48,7 +60,9 @@ public class NfaTest extends TestCase {
     }
     //assertTrue(other.isStop());
   }
+  
 
+  @Test
   public void testDotToNFA() throws ReSyntaxException {
     String s = ".";
     Nfa fa = new Nfa(s, Copy.COPY);
@@ -65,6 +79,7 @@ public class NfaTest extends TestCase {
     //assertTrue(other.isStop());
   }
 
+  @Test
   public void testRangeToNFA() throws ReSyntaxException {
     //System.out.println("testRangeToNFA");
     String[] re = {"[abc]", "[0-9]", "[]\\-]", "[a0b1c2d3e]"};
@@ -82,36 +97,45 @@ public class NfaTest extends TestCase {
       //assertTrue(stop.isStop());
     }
   }
+  @Test
   public void testInvertRange() throws ReSyntaxException {
     Nfa nfa = new Nfa("[^acf]+", Drop.DROP);
     assertEquals(2, nfa.findPath("  a"));
     assertEquals(3, nfa.findPath("   c"));
     assertEquals(5, nfa.findPath("     f"));
   }
+
+  @Test
   public void testOptional() throws ReSyntaxException {
     Nfa nfa = new Nfa("[a-bx0]?", Drop.DROP);
     assertEquals(1, nfa.findPath("a"));
     assertEquals(0, nfa.findPath(""));
     assertEquals(0, nfa.findPath("X"));
   }
+
+  @Test
   public void testStar() throws ReSyntaxException {
     Nfa nfa = new Nfa("[ab]*", Drop.DROP);
     assertEquals(0, nfa.findPath("X"));
     assertEquals(1, nfa.findPath("a"));
     assertEquals(8, nfa.findPath("abababab"));
   }
+  
+  @Test
   public void testPlus() throws ReSyntaxException {
     Nfa nfa = new Nfa("[ab]+", Drop.DROP);
     assertEquals(-1, nfa.findPath("X"));
     assertEquals(1, nfa.findPath("a"));
     assertEquals(7, nfa.findPath("abababa"));
   }
+  @Test
   public void testOr() throws ReSyntaxException {
     Nfa nfa = new Nfa("ab|rx|hallo", Drop.DROP);
     assertEquals(2, nfa.findPath("ab"));
     assertEquals(2, nfa.findPath("rx"));
     assertEquals(5, nfa.findPath("hallo"));
   }
+  @Test  
    public void testDoubleOr() throws ReSyntaxException {
     // try to enforce the first branch in Nfa.or()
     Nfa nfa = new Nfa("a|b*", Drop.DROP);
@@ -122,6 +146,7 @@ public class NfaTest extends TestCase {
   }
 
 
+  @Test
   public void testSeq() throws ReSyntaxException {
     Nfa nfa = new Nfa("a[0-9](xx|yy)", Drop.DROP);
     assertEquals(4, nfa.findPath("a0xx"));
@@ -135,6 +160,7 @@ public class NfaTest extends TestCase {
 
   // Test a certain bug I had when the arg of Nfa.seq() had a start
   // state with only epsilon-states going out.
+  @Test
   public void testSeqToStartWithEps() throws ReSyntaxException {
     // the parsing went wrong already
     Nfa nfa = new Nfa("b[a]*", Drop.DROP);
@@ -145,6 +171,7 @@ public class NfaTest extends TestCase {
     assertEquals(4, nfa.findPath("baaa"));
   }
 
+  @Test
   public void testCompileBasic()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -162,6 +189,7 @@ public class NfaTest extends TestCase {
     assertEquals(DfaRun.EOF, r.next(sb));
     assertEquals(s, sb.toString());
   }
+  @Test
   public void testCompileOr()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -216,6 +244,7 @@ public class NfaTest extends TestCase {
     assertEquals("ab", sb.toString());
   }
   
+  @Test
   public void testSameActionTwice()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -236,6 +265,7 @@ public class NfaTest extends TestCase {
     assertEquals("xxxxxxxx", sb.toString());
   }
 
+  @Test
   public void testTwoActionsPrio1()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -259,6 +289,7 @@ public class NfaTest extends TestCase {
 
   // same test as before, but the priority should select the other
   // action this time.
+  @Test
   public void testTwoActionsPrio2()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -281,6 +312,7 @@ public class NfaTest extends TestCase {
     assertEquals("xxxxxxxx", sb.toString());
   }
 
+  @Test
   public void testTwoActionsClash()
     throws ReSyntaxException
   {
@@ -292,7 +324,7 @@ public class NfaTest extends TestCase {
 	new Nfa("a|b", a)
 	.or("b|a", b)
 	.compile(DfaRun.UNMATCHED_COPY);
-      dfa.toDot(System.out);
+      assertNotNull(dfa);
     } catch( CompileDfaException _e ) {
       e = _e;
     }
@@ -304,6 +336,7 @@ public class NfaTest extends TestCase {
   /**
    * an Nfa with no actions should compile to the empty automaton
    */
+  @Test
   public void testCompileToEmpty() throws Exception {
     Dfa dfa = new Nfa("abc").compile(DfaRun.UNMATCHED_COPY);
     Nfa nfa = dfa.toNfa();
@@ -313,14 +346,15 @@ public class NfaTest extends TestCase {
     assertEquals("xyz", s);
   }
 
+  @Test
   public void testDfaRunWithEpsRecognizer()
-    throws ReSyntaxException, CompileDfaException,
-    java.io.IOException
+      throws ReSyntaxException, CompileDfaException,
+      java.io.IOException
   {
     //System.out.println("testDfaRunWithEpsRecognizer");
     FaAction a = new AbstractFaAction() {
-	@Override
-  public void invoke(StringBuilder out, int start, DfaRun r) {
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun r) {
 	  if( out.length()==start ) {
 	    // we matched epsilon, so we make something up
 	    try {
@@ -342,6 +376,7 @@ public class NfaTest extends TestCase {
     assertEquals("bbaabb", s);
   }
 
+  @Test
   public void testNfaAddTransitions1()
     throws ReSyntaxException,  CompileDfaException,
     java.io.IOException
@@ -365,6 +400,7 @@ public class NfaTest extends TestCase {
 
   // similar test as before, except that the intervals overlap in the
   // other direction
+  @Test
   public void testNfaAddTransitions2()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -392,15 +428,13 @@ public class NfaTest extends TestCase {
    * automaton with two distinct stop states. The reason was that
    * <code>isImportant</code> was not implemented correctly.
    */
+  @Test
   public void testIsImportant() throws ReSyntaxException, CompileDfaException  {
-    new Nfa("a|b", Drop.DROP)
-    .compile(DfaRun.UNMATCHED_COPY);
-
-    //dfa.getFaToDot(System.out).go();
-    // FIX ME: how can I write this test with the current interfaces?
-    //assertTrue(false);
-
-  }
+    // it suffices if this does not throw
+    new Nfa("a|b", Drop.DROP).compile(DfaRun.UNMATCHED_COPY);
+  } 
+  
+  @Test
   public void testOrWithAction()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -420,6 +454,7 @@ public class NfaTest extends TestCase {
     assertEquals("aaaaaa", sb.toString());
   }
 
+  @Test
   public void testUNMATCHED_COPY()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -435,6 +470,7 @@ public class NfaTest extends TestCase {
     assertFalse(r.read(sb));
     assertEquals(".H.A.R.A.L.D.", sb.toString());
   }
+  @Test
   public void testUNMATCHED_DROP()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -450,6 +486,7 @@ public class NfaTest extends TestCase {
     assertFalse(r.read(sb));
     assertEquals("KIRSCH", sb.toString());
   }
+  @Test
   public void testUNMATCHED_THROW()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -471,6 +508,7 @@ public class NfaTest extends TestCase {
     }
     assertEquals("KIRSCH", sb.toString());
   }
+  @Test
   public void testDfaRunPiped()
     throws ReSyntaxException,  CompileDfaException,
     java.io.IOException
@@ -483,7 +521,8 @@ public class NfaTest extends TestCase {
     // character
     FaAction upCase = new AbstractFaAction() {
 	@Override
-  public void invoke(StringBuilder out, int start, DfaRun runner) {
+
+	public void invoke(StringBuilder out, int start, DfaRun runner) {
 	  char ch = out.charAt(start+2);
 	  out.setLength(start);
 	  out.append(' ').append(Character.toUpperCase(ch));
@@ -503,6 +542,7 @@ public class NfaTest extends TestCase {
     assertEquals(" Alle Meine Entchen Schwimmen Auf Dem See",
 		 sb.toString());
   }
+  @Test
   public void testReaderPushBack()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -520,6 +560,7 @@ public class NfaTest extends TestCase {
     assertFalse(r.read(sb));
     assertEquals("PARTFULLPARTFULL", sb.toString());
   }
+  @Test
   public void testSeqString()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -536,6 +577,7 @@ public class NfaTest extends TestCase {
     assertFalse(r.read(sb));
     assertEquals("11", sb.toString());
   }
+  @Test
   public void testOrString()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -564,6 +606,7 @@ public class NfaTest extends TestCase {
    * indeed in the DfaRun, not in Nfa. Otherwise many operations on
    * Nfas are simply either wrong or would be hard to fix.
    */
+  @Test
   public void testStartCanBeStop()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -593,6 +636,7 @@ public class NfaTest extends TestCase {
    * tries to enforce a huuuuge pushback such that the CharSource we
    * are reading from has to reallocate its buffer at least once.
    */
+  @Test
   public void testCharSourcePushBack()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -627,6 +671,7 @@ public class NfaTest extends TestCase {
    * because compilation of course creates states for a Dfa, which
    * cannot have epsilon transitions.
    */
+  @Test
   public void testShortestAllowEpsilonInStartState() throws ReSyntaxException {
     // basically the following should not throw an exception
     Nfa nfa = new Nfa("(a+)!|b", Drop.DROP);
@@ -639,6 +684,7 @@ public class NfaTest extends TestCase {
   }
 
   // try shortest *after* an action was assigned
+  @Test
   public void testShortestAfterActionAssigned()
     throws ReSyntaxException, CompileDfaException
   {
@@ -650,6 +696,7 @@ public class NfaTest extends TestCase {
   }
 
   // force some coverage in Nfa.hasAction(Set)
+  @Test
   public void test_hasAction()
     throws ReSyntaxException
   {
@@ -661,6 +708,7 @@ public class NfaTest extends TestCase {
    * for completeness we also call the constructor which takes an
    * ation too.
    */
+  @Test
   public void testNfaConstructorTwoArgs()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -674,6 +722,7 @@ public class NfaTest extends TestCase {
     while(r.read(sb)) /**/;
     assertEquals("xxxx", sb.toString());
   }
+  @Test
   public void testNfaSeqWithoutAction()
     throws ReSyntaxException, CompileDfaException,
     java.io.IOException
@@ -693,6 +742,7 @@ public class NfaTest extends TestCase {
    * <code>new Nfa("a", Drop.DROP).or("r")</code>
    * allows to reach the stop state via 'r'
    */
+  @Test
   public void testSymmetricOr() throws ReSyntaxException {
     Nfa nfa = new Nfa("a", Drop.DROP).or("r");
     assertEquals(1, nfa.findPath("a"));
@@ -703,6 +753,7 @@ public class NfaTest extends TestCase {
     assertEquals(1, nfa.findPath("r"));
   }
 
+  @Test
   public void testInvert1() throws ReSyntaxException {
     Nfa nfa = new Nfa("a~", Drop.DROP);
     assertEquals(0, nfa.findPath(""));
@@ -710,6 +761,7 @@ public class NfaTest extends TestCase {
     assertEquals(0, nfa.findPath("a"));
     assertEquals(2, nfa.findPath("ab"));
   }
+  @Test
   public void testInvert2() throws ReSyntaxException {
     Nfa nfa = new Nfa("x(...)~", Drop.DROP);
     assertEquals(-1, nfa.findPath("r"));
@@ -719,6 +771,7 @@ public class NfaTest extends TestCase {
     assertEquals(3, nfa.findPath("xabc"));
     assertEquals(5, nfa.findPath("xabcd"));
   }
+  @Test
   public void testInvert3() throws ReSyntaxException {
     Nfa nfa = new Nfa("(a*)~", Drop.DROP);
     assertEquals(-1, nfa.findPath("a"));
@@ -736,6 +789,7 @@ public class NfaTest extends TestCase {
    * "((a.*)?)~". This automaton in particular generates a dead state,
    * if dead states are not remove explicitly.
    */
+  @Test
   public void testInvert4() throws ReSyntaxException {
     Nfa nfa = new Nfa("((a.*)?)~", Drop.DROP);
     assertEquals(-1, nfa.findPath("a"));
@@ -744,6 +798,7 @@ public class NfaTest extends TestCase {
     assertEquals(2, nfa.findPath("ba"));
   }
   // try inverting an automaton AFTER adding an action.
+  @Test
   public void testInvert5() throws ReSyntaxException, CompileDfaException {
     Nfa nfa = new Nfa("[abc]", Drop.DROP)
       .invert()
@@ -760,6 +815,7 @@ public class NfaTest extends TestCase {
    * disastrous. Consequently, here we check that dead (useless) state
    * removal works.
    */
+  @Test
   public void testDeadStateRemoval1()
     throws ReSyntaxException, java.io.IOException,
 	   CompileDfaException
@@ -793,6 +849,7 @@ public class NfaTest extends TestCase {
    * the ChildIterator of a state is a bit tricky because it has to
    * iterate over two other iterators.
    */
+  @Test
   public void testChildIterator() {
     // this needs rethinking as soon as I know if CharTrans will keep
     // its iterator or not
@@ -815,6 +872,7 @@ public class NfaTest extends TestCase {
   /**
    * try out the default actions COPY and DROP in a pipe.
    */
+  @Test
   public void testDROPandCOPY()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
@@ -836,6 +894,7 @@ public class NfaTest extends TestCase {
    * char read did not expect that a call to read() may result in
    * nothing.
    */
+  @Test
   public void test_readCharWithDroppingAction()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
@@ -845,6 +904,7 @@ public class NfaTest extends TestCase {
     assertEquals('b', r.read());
   }
 
+  @Test
   public void test_unskip()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
@@ -863,6 +923,7 @@ public class NfaTest extends TestCase {
     assertEquals("bbbb", s);
   }
 
+  @Test
   public void testPriorityWithDrop()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
@@ -878,6 +939,7 @@ public class NfaTest extends TestCase {
   }
 
   // for completeness, do a dummy test of toDot
+  @Test
   public void test_toDot()
     throws ReSyntaxException
   {
@@ -891,24 +953,25 @@ public class NfaTest extends TestCase {
 
 
   // test unskip and changing behaviour on failed match of DfaRun
-  public static void testDfaRun1()
+  @Test
+  public void testDfaRun1()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
     FaAction switchToDrop = new AbstractFaAction() {
-	@Override
-  public void invoke(StringBuilder out, int start, DfaRun r) {
-	  r.setOnFailedMatch(DfaRun.UNMATCHED_DROP);
-	}
-      };
-
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun r) {
+        r.setOnFailedMatch(DfaRun.UNMATCHED_DROP);
+      }
+    };
+    
     FaAction unskipXX = new AbstractFaAction() {
-	@Override
-  public void invoke(StringBuilder out, int start, DfaRun r) {
-	  out.setLength(start);
-	  r.unskip("XX");
-	}
-      };
-
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun r) {
+        out.setLength(start);
+        r.unskip("XX");
+      }
+    };
+    
     // use the filter version which copies to StringBuilder to have
     // this tested as well somewhere
     StringBuilder sb = new StringBuilder();
@@ -922,7 +985,8 @@ public class NfaTest extends TestCase {
 
 
   // test the collect-behaviour of a DfaRun
-  public static void testDfaRun2()
+  @Test
+  public void testDfaRun2()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
     FaAction switchToCollect = new AbstractFaAction() {
@@ -973,7 +1037,8 @@ public class NfaTest extends TestCase {
   }
 
   // check that an EOF in collect throws
-  public static void testDfaRun3()
+  @Test
+  public void testDfaRun3()
     throws ReSyntaxException, CompileDfaException
   {
     FaAction switchToCollect = new AbstractFaAction() {
@@ -1000,7 +1065,8 @@ public class NfaTest extends TestCase {
 
   // trivially test that getDfa does the right thing (the curse of
   // test coverage hits here since the test is too trivial.
-  public static void testDfaRun4()
+  @Test
+  public void testDfaRun4()
     throws ReSyntaxException, CompileDfaException
   {
     Dfa dfa = new Nfa("a", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
@@ -1009,7 +1075,8 @@ public class NfaTest extends TestCase {
   }
 
   // check that overreading with DfaRun.read(buf,count) works
-  public static void testDfaRun5()
+  @Test
+  public void testDfaRun5()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     Nfa nfa = new Nfa("a+", Copy.COPY);
@@ -1025,7 +1092,8 @@ public class NfaTest extends TestCase {
   }
 
   // check that overreading with DfaRun.read() works
-  public static void testDfaRun6()
+  @Test
+  public void testDfaRun6()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     Nfa nfa = new Nfa("a+", Copy.COPY);
@@ -1036,7 +1104,8 @@ public class NfaTest extends TestCase {
     while( -1!=(ch=r.read()) ) {sb.append((char)ch);}
     assertEquals("aaa", sb.toString());
   }
-  public static void testDfaRun_Eofaction() throws Exception {
+  @Test
+  public void testDfaRun_Eofaction() throws Exception {
     DfaRun r = new
       Nfa("[0-9]+", new Replace("x"))
       .compile(DfaRun.UNMATCHED_COPY, new Replace("</EOF>"))
@@ -1045,7 +1114,9 @@ public class NfaTest extends TestCase {
     String s = r.filter("bla99bla");
     assertEquals("blaxbla</EOF>", s);
   }
-  public static void testDfaRun_filter1() throws Exception {
+  
+  @Test
+  public void testDfaRun_filter1() throws Exception {
     DfaRun r = new
       Nfa("[0-9]+", new Replace("x"))
       .compile(DfaRun.UNMATCHED_COPY)
@@ -1059,7 +1130,9 @@ public class NfaTest extends TestCase {
     String s = bao.toString("UTF-8");
     assertEquals("blaxblaxdong", s);
   }
-  public static void testDfaRun_filter2() throws Exception {
+
+  @Test
+  public void testDfaRun_filter2() throws Exception {
     DfaRun r = new
       Nfa("[0-9]+", new Replace("x"))
       .compile(DfaRun.UNMATCHED_COPY)
@@ -1074,7 +1147,8 @@ public class NfaTest extends TestCase {
     assertEquals("blaxblaxdong", s);
   }
 
-  public static void testDfaRun_Clash1() throws Exception {
+  @Test
+  public void testDfaRun_Clash1() throws Exception {
     Nfa nfa = new
       Nfa("<[a-z]+>", new Drop(0))
       .or("<[rst]>", new Copy(0))
@@ -1091,7 +1165,8 @@ public class NfaTest extends TestCase {
 
   // A certain branch in Nfa.findAction is only executed if the clash
   // happens on the empty string. This tries to exercise it.
-  public static void testDfaRun_Clash2() throws Exception {
+  @Test
+  public void testDfaRun_Clash2() throws Exception {
     Nfa nfa = new
       Nfa("[a-z]*", new Drop(0))
       .or("[rst]*", new Copy(0))
@@ -1106,8 +1181,9 @@ public class NfaTest extends TestCase {
     //System.out.println(e.getMessage());
     assertTrue(e.getMessage().indexOf("path `':")>0);
   }
-
-  public static void test_or_withOther()
+  
+  @Test
+  public void test_or_withOther()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     Nfa other = new Nfa(Nfa.NOTHING).or("a");
@@ -1127,7 +1203,9 @@ public class NfaTest extends TestCase {
       assertNull(state.follow(ch));
     }
   }
-  public static void test_seq_withOther()
+  
+  @Test
+  public void test_seq_withOther()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     Nfa other = new Nfa(Nfa.EPSILON).seq("a");
@@ -1148,7 +1226,8 @@ public class NfaTest extends TestCase {
   }
 
   // Exercise Dfa connected to InputStream
-  public static void test_Dfa_withInputStream()
+  @Test
+  public void test_Dfa_withInputStream()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     java.io.ByteArrayInputStream in
@@ -1161,7 +1240,8 @@ public class NfaTest extends TestCase {
     assertEquals("[a] [b] c", sb.toString());
   }
 
-  public static void test_not()
+  @Test
+  public void test_not()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     Nfa nfa = new Nfa("([ \t\n\r]+)^", new Printf("<%0>"));
@@ -1172,7 +1252,8 @@ public class NfaTest extends TestCase {
     assertEquals("<hallo> \n<x;y>\t<***>", s);
   }
   /**********************************************************************/
-  public static void test_SetPrio() throws Exception {
+  @Test
+  public void test_SetPrio() throws Exception {
     String s = new
       Nfa("[a-z]+", new Embed("[", "]"))
       .or("[rst]+[0-9]*", new Embed("<", ">").setPriority(-1))
@@ -1184,7 +1265,8 @@ public class NfaTest extends TestCase {
   /**********************************************************************/
   // make an effort to ensure that the escaped special characters
   // match only the string of special characters
-  public static void test_Escape1() {
+  @Test
+  public void test_Escape1() {
     ReParserFactory rpfs[] = {ReClassicParser.factory};
     for(ReParserFactory rpf : rpfs ) {
       Nfa.setDefaultParserFactory(rpf);
@@ -1202,6 +1284,7 @@ public class NfaTest extends TestCase {
     }
   }
   /**********************************************************************/
+//   @Test
 //   public static void test_Escape2() {
 //     StringBuilder in = new StringBuilder().append(Nfa.specialChars);
 //     StringBuilder out = new StringBuilder();
@@ -1214,7 +1297,8 @@ public class NfaTest extends TestCase {
 //     assertEquals(b.toString(), out.toString());
 //   }
   /**********************************************************************/
-  public static void test_InitWithEpsilon() throws Exception {
+  @Test
+  public void test_InitWithEpsilon() throws Exception {
     String s = new Nfa(Nfa.EPSILON).seq("[a-z]+", new Replace("+"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -1223,7 +1307,8 @@ public class NfaTest extends TestCase {
     assertEquals("+0+0+0+0+0", s);
   }
   /********************************************************************/
-  public static void test_CallbackException1() throws Exception {
+  @Test
+  public void test_CallbackException1() throws Exception {
     Exception e = null;
     try {
       new Nfa("a", new AbstractFaAction() {
@@ -1243,7 +1328,8 @@ public class NfaTest extends TestCase {
     assertTrue(e instanceof CallbackException);
   }
   /********************************************************************/
-  public static void test_CallbackException2() throws Exception {
+  @Test
+  public void test_CallbackException2() throws Exception {
     Exception e = null;
     try {
       new Nfa("a", new AbstractFaAction() {
@@ -1264,7 +1350,8 @@ public class NfaTest extends TestCase {
     assertTrue(e.getCause() instanceof Error);
   }
   /**********************************************************************/
-  public static void test_DfatoNfa() throws Exception {
+  @Test
+  public void test_DfatoNfa() throws Exception {
     Dfa dfa = new
       Nfa("a", new Replace("*"))
       .or("b", new Replace("+"))
@@ -1276,7 +1363,8 @@ public class NfaTest extends TestCase {
   }
   /********************************************************************/
   // at one point the regexp ".*(b+).*" was not correctly compiled
-  public static void test_Bug1() throws Exception {
+  @Test
+  public void test_Bug1() throws Exception {
     Dfa dfa = new Nfa(".*(b+).*", new Replace("x"))
       .compile(DfaRun.UNMATCHED_COPY);
     String s = dfa.createRun().filter("***bbd");
@@ -1287,7 +1375,8 @@ public class NfaTest extends TestCase {
   // The regexp used here threw an Exception in TableCharTrans at one
   // point. It was due to an error in Intervals.setFrom() which now
   // has its own test, but we leave the test here anyway
-  public static void test_Bug2() throws Exception {
+  @Test
+  public void test_Bug2() throws Exception {
     Nfa nfa = new Nfa("((ee)+.*)~", new Embed("[", "]"));
 
     nfa.addAction(null); // prevent compiler warning about unused allocation
@@ -1300,7 +1389,8 @@ public class NfaTest extends TestCase {
   // FaToDot showed obvious dead states in the graph. The regexp was
   // "(ee)+^". Looking at the graph easily reveals that "ee" leads to
   // a dead state.
-  public static void test_Bug3() throws Exception {
+  @Test
+  public void test_Bug3() throws Exception {
     Nfa nfa = new Nfa("(ee)^", new Embed("[", "]"));
 
 
@@ -1327,7 +1417,8 @@ public class NfaTest extends TestCase {
   // Try an UNMATCHED_THROW after a really long sequence of unmatched
   // characters. This exercises a certain branch in UNMATCHED_THROW
   // which contained a bug in the first implementation.
-  public static void test_Bug4() throws Exception {
+  @Test
+  public void test_Bug4() throws Exception {
     Dfa dfa = new Nfa("x", new Replace("oooooooooo"))
       .compile(DfaRun.UNMATCHED_THROW);
     DfaRun r = new DfaRun(dfa);
@@ -1342,7 +1433,8 @@ public class NfaTest extends TestCase {
   /**********************************************************************/
   // trying to route through some bits of code not yet covered by any
   // of the other tests
-  public static void test_TableCharTrans1() throws Exception {
+  @Test
+  public void test_TableCharTrans1() throws Exception {
     Dfa dfa = new
       Nfa("[ab]", new Replace("1"))
       .or("[de]", new Replace("2"))
@@ -1366,7 +1458,8 @@ public class NfaTest extends TestCase {
     assertEquals("11c22f33i4456789@#stuvwxyz", s);
   }
   /********************************************************************/
-  public static void test_SaneDfa() throws Exception {
+  @Test
+  public void test_SaneDfa() throws Exception {
     Dfa dfa = new Nfa(".*", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
 
     try {
@@ -1379,7 +1472,8 @@ public class NfaTest extends TestCase {
   /********************************************************************/
   // after some tiny but important changes to DfaRun,
   // DfaRun.read(StringBuilder) should be a useful tokenizer.
-  public static void test_Toknize() throws Exception {
+  @Test
+  public void test_Toknize() throws Exception {
     Nfa nfa = new
       Nfa("[a-zA-Z]+", Copy.COPY)
       .or("[0-9:]+", Copy.COPY)
@@ -1422,7 +1516,9 @@ public class NfaTest extends TestCase {
     public StringBuilder value = new StringBuilder();
     public int rlen;
   }
-  public static void test_filter_with_collect() throws Exception {
+  
+  @Test
+  public void test_filter_with_collect() throws Exception {
     final
     Dfa dfa = new
       Nfa("[(]", new AbstractFaAction() {
@@ -1458,7 +1554,8 @@ public class NfaTest extends TestCase {
     assertEquals(13, i.rlen);
   }
   /**********************************************************************/
-  public static void test_DfaRun_natural_read() throws Exception {
+  @Test
+  public void test_DfaRun_natural_read() throws Exception {
     DfaRun r = new Nfa("x", new Replace("0123456789"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun();
@@ -1478,7 +1575,8 @@ public class NfaTest extends TestCase {
     assertTrue(s.endsWith("0123456789done"));
   }
   /**********************************************************************/
-  public static void test_DfaRun_maxCopy() throws Exception {
+  @Test
+  public void test_DfaRun_maxCopy() throws Exception {
     DfaRun r = new Nfa("x", Copy.COPY)
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun();
@@ -1529,7 +1627,8 @@ public class NfaTest extends TestCase {
 
   }
   /**********************************************************************/
-  public static void test_DfaRun_maxCopy2() throws Exception {
+  @Test
+  public void test_DfaRun_maxCopy2() throws Exception {
     DfaRun r = new Nfa("x", new Embed("[", "]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun();
@@ -1541,10 +1640,11 @@ public class NfaTest extends TestCase {
   /**********************************************************************/
   // trigger a bug in report of an exception in case yytext was
   // completely screwed up in the callback
-  public static void test_CallbackException() throws Exception {
+  @Test
+  public void test_CallbackException() throws Exception {
     Dfa dfa = new Nfa("xxx", new AbstractFaAction() {
-	@Override
-  public void invoke(StringBuilder yytext, int start, DfaRun r)
+      @Override
+      public void invoke(StringBuilder yytext, int start, DfaRun r)
 	  throws CallbackException
 	{
 	  yytext.setLength(0);
@@ -1594,7 +1694,7 @@ public class NfaTest extends TestCase {
     sb.append(")~X");
     Nfa nfa = new Nfa(sb, new Copy(0));
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
-    //dfa.toDot(System.out);
+
     sb.delete(0, 1);
     sb.setLength(NCHARS);
     sb.append('X');
@@ -1627,14 +1727,78 @@ public class NfaTest extends TestCase {
     children[1] = loop;
     children[2] = stop;
     Nfa nfa = new Nfa(start, (EpsState)stop);
-    //nfa.toDot(System.out);
+
     Method deleteUseless = Nfa.class.getDeclaredMethod("removeUseless");
 
     deleteUseless.setAccessible(true);
     deleteUseless.invoke(nfa);
     assertEquals(2, start.getEps().length);
-    //nfa.toDot(System.out);
+
   }
+  
+  @Test
+  public void allPrefixes() throws Exception {
+    Nfa nfa = new Nfa("abc1+|abXY", Copy.COPY);
+    nfa.allPrefixes(Drop.DROP);
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+
+    StringBuilder out = new StringBuilder();
+    for (String text : new String[]{"a", "ab", "abc", "abc1", "abc11", "abX"}) {
+      FaAction a = 
+          dfa.match(new CharSequenceCharSource(text), out, (TextStore)null);
+      assertEquals(a, Drop.DROP);
+    }
+    
+    for (String text : new String[]{"x", "rst"}) {
+      FaAction a = 
+          dfa.match(new CharSequenceCharSource(text), out, (TextStore)null);
+      assertNull(a);
+    }
+  }
+  
+  @Test
+  public void bug_implementationNot() throws Exception {
+    // a bug in the implementation of not(). Internally it uses a specific
+    // action to mark stop states, but this clashed with normal use.
+    Nfa nfa = new Nfa("rst", Copy.COPY);
+    nfa.not();
+    nfa.addAction(Drop.DROP);
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
+    StringBuilder out = new StringBuilder();
+    TextStore t = null;
+    FaAction a = dfa.match(new CharSequenceCharSource("haselda"), out, t);
+    assertEquals(a, Drop.DROP);
+    assertEquals("haselda", out.toString());
+
+    out.setLength(0);
+    a = dfa.match(new CharSequenceCharSource("rst"), out, t);
+    assertEquals(Drop.DROP, a);
+    assertEquals("rs", out.toString());
+  }
+  /*+******************************************************************/
+  @Test
+  public void test_completeToSkip() throws Exception {
+    tryCompleter("b", "b b1234b...bb", "[b]_[b]_[b]_[b][b]");
+    tryCompleter("[a-z]+", "max123braz...", "[max]_[braz]_");
+    tryCompleter("de.*", ".....deZZZ", "_[deZZZ]");
+    tryCompleter(".*XX", "XdadaXX...X", "[XdadaXX]_X");
+  }
+
+  private static void
+  tryCompleter(String re, String in, String out) throws Exception
+  {
+    Replace repB = new Replace("_");
+    Nfa nfa = new Nfa(re, new Printf("[%0]"));
+    nfa.completeToSkip(repB);
+
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+
+    DfaRun r = new DfaRun(new Nfa("a").compile(DfaRun.UNMATCHED_COPY));
+    r.setDfa(dfa);
+    String result = r.filter(in);
+    assertEquals(out, result);
+
+  } 
 }
 
 
