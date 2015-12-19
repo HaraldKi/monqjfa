@@ -119,5 +119,10 @@ public class Printf extends AbstractFaAction {
     out.setLength(start);
     f.format(out, ts, m);
   }
+  
+  @Override
+  public String toString() {
+    return "Printf("+f+')';
+  }
 }
  
