@@ -35,7 +35,7 @@ public class ActionTest {
 
   @Test
   public void test_Copy() {
-    assertEquals("Copy", Copy.COPY.toString());
+    assertEquals("Copy(p=0)", Copy.COPY.toString());
   }
   // same for Drop
   public void test_Drop() {

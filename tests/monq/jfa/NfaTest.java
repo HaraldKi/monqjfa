@@ -1738,15 +1738,15 @@ public class NfaTest {
   
   @Test
   public void allPrefixes() throws Exception {
-    Nfa nfa = new Nfa("abc1+|abXY", Copy.COPY);
-    nfa.allPrefixes(Drop.DROP);
+    Nfa nfa = new Nfa("(abc1+|abXY)@", Drop.DROP);
+    
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
-
+    dfa.toDot("/home/harald/tmp/bla.dot");
     StringBuilder out = new StringBuilder();
     for (String text : new String[]{"a", "ab", "abc", "abc1", "abc11", "abX"}) {
       FaAction a = 
           dfa.match(new CharSequenceCharSource(text), out, (TextStore)null);
-      assertEquals(a, Drop.DROP);
+      assertEquals(Drop.DROP, a);
     }
     
     for (String text : new String[]{"x", "rst"}) {

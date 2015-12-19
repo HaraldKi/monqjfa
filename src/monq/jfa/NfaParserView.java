@@ -83,6 +83,13 @@ public interface NfaParserView {
    * <p>performs the equivalent of {@link Nfa#not} on the top
    * element of the expression stack.</p>
    */
+  /**
+   * <p>
+   * performs the equivalent of {@link Nfa#allPrefixes(null)} on the top
+   * element of the expression stack.</p>
+   */
+  void allPrefixes() throws CompileDfaException;
+  
   void not() throws CompileDfaException;
   /** 
    * <p>performs the equivalent of {@link Nfa#invert} on the top

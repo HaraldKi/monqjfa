@@ -1,3 +1,21 @@
+VERSION 1.7.0
+
+Added two new operations to the NFA:
+
+allPrefixes --- makes all useful states, except the start state, into
+stop states such that the resulting automaton accepts all non-empty
+prefixes of the original automaton. In a regular expression, this can
+be performed with the suffix operator '@'. Its age old and deprecated
+use to mark reporting subexpressions can now no longer be used.
+
+completeToSkip --- completes the automaton nearly with its own
+complement such that it nearly never fails to match. See the javadoc
+for more information. The goal was that during filtering the automaton
+nearly never hits a no-match and thereby is faster overall. My
+measurements indicate that this is not the case. The speed is the same
+is just handling non-matches specially, but it is also not slower. 
+
+
 VERSION 1.6.2
 
 Fixed a seemingly long standing bug in Dfa.toNfa(), which did not make

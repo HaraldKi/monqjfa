@@ -595,7 +595,7 @@ public class Nfa  {
    */
   public Nfa completeToSkip(FaAction noMatchAction) throws CompileDfaException {
     Dfa dfa = compile(DfaRun.UNMATCHED_THROW);
-    allPrefixes(DefaultAction.nullInstance());
+    allPrefixes();
     not();
 
     addAction(noMatchAction);
@@ -604,32 +604,32 @@ public class Nfa  {
   }
   /*+******************************************************************/
   /**
-   * attaches the action to all states of the nfa except the start state. The
-   * resulting automaton recognizes the orginal language as well as all
-   * non-empty prefixes of the original language.
+   * converts the automaton into one which matches all non-empty prefixes of
+   * the given automaton.
    * 
-   * Any actions already specified will be overwritten.
+   * Any actions already specified will be deleted.
    * 
    * @param action
    * @throws CompileDfaException if the internally called compile operation
    *         throws this exception
    */
-  public void allPrefixes(final FaAction action) throws CompileDfaException {
+  public void allPrefixes() throws CompileDfaException {
     if (null==lastState.getAction()) {
-      addAction(action);
+      addAction(DefaultAction.nullInstance());
     }
     // need an automaton were all states can carry eps-transitions
     FaState dfaStart = compile_p(true);
 
-    lastState = new AbstractFaState.EpsStopState(action);
     start = new AbstractFaState.EpsState();
     start.addEps(dfaStart);
+    lastState = new AbstractFaState.EpsState();
     
     // everything shall become a stop state, but not useless states
     removeUseless();
     
-    FaStateTraverser<FaState> ft = 
+    FaStateTraverser<FaState> ft =
         new FaStateTraverser<>(IterType.ALL, dfaStart);
+
     ft.traverse(dfaStart, new FaStateTraverser.StateVisitor<FaState>() {
       @Override
       public void visit(FaState state, FaState exclude) {
@@ -1538,6 +1538,11 @@ public class Nfa  {
     public void plus() { Nfa.this.plus(); }
     @Override
     public void optional() { Nfa.this.optional(); }
+    @Override
+    public void allPrefixes() throws CompileDfaException {
+      Nfa.this.allPrefixes(); 
+    }
+    
     @Override
     public void not() throws CompileDfaException { Nfa.this.not(); }
     @Override

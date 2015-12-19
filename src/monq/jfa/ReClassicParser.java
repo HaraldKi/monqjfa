@@ -22,11 +22,17 @@ public class ReClassicParser implements ReParser {
   private static final int TOK_TILDE    = Character.MAX_VALUE+'~';
   private static final int TOK_HAT      = Character.MAX_VALUE+'^';
   private static final int TOK_MINUS    = Character.MAX_VALUE+'-';
-  private static final int TOK_AT    = Character.MAX_VALUE+'@';
-  
-  private static final char[] specialChars 
+  private static final int TOK_AT       = Character.MAX_VALUE+'@';
+
+  private static final char[] specialChars
     = "[]()?*+|.!^-\\~@".toCharArray();
   static { java.util.Arrays.sort(specialChars); }
+
+  private static final String INTERNAL_ERROR_TMPL =
+      "internal error, this should not happen. A call to %s "+
+          "results in a compilation of the Nfa constructed "+
+          "so far. Because this Nfa should not yet have any Actions "+
+          "associated, there cannot be any ambiguous.";
 
   //private Reader in;
   private CharSequence in;
@@ -38,10 +44,10 @@ public class ReClassicParser implements ReParser {
   // into a sequential automaton. In an re like "abcd?" however, the
   // '?' applies only to the 'd', so 'd' and '?' must be seen to
   // decide that 'c' is the last character of teh sequential
-  // automaton. 
+  // automaton.
   private int lookaheadToken;
   private boolean lookaheadValid = false;
-  
+
   // recent input, kept for error messages
   private char[] recent = new char[60];
   private int recentNext = 0;                   // first free in recent
@@ -55,6 +61,7 @@ public class ReClassicParser implements ReParser {
    * @see Nfa#defaultParserFactory
    */
   public static final ReParserFactory factory = new ReParserFactory() {
+      @Override
       public ReParser newReParser() {
 	return new ReClassicParser();
       }
@@ -62,8 +69,9 @@ public class ReClassicParser implements ReParser {
   /********************************************************************/
   private ReClassicParser() {}
   /********************************************************************/
-  public synchronized void parse(NfaParserView nfa, CharSequence s) 
-    throws  ReSyntaxException 
+  @Override
+  public synchronized void parse(NfaParserView nfa, CharSequence s)
+    throws  ReSyntaxException
   {
     in = s;
     inNext = 0;
@@ -74,11 +82,13 @@ public class ReClassicParser implements ReParser {
     if( token!=TOK_EOF ) throw error(ReSyntaxException.EEXTRACHAR);
   }
   /**********************************************************************/
+  @Override
   public String specialChars() { return new String(specialChars); }
   /**
    * @see #escape(String)
    */
   /**********************************************************************/
+  @Override
   public void escape(StringBuilder out, CharSequence cin, int startAt) {
     int l = cin.length();
     for(int i=startAt; i<l; i++) {
@@ -129,7 +139,7 @@ public class ReClassicParser implements ReParser {
     lookaheadToken = token;
     token = valueForToken;
   }
-  private void nextToken(boolean withinBracket) 
+  private void nextToken(boolean withinBracket)
     throws  ReSyntaxException {
 
     if( lookaheadValid ) {
@@ -149,7 +159,7 @@ public class ReClassicParser implements ReParser {
     if( ch=='\\' ) {
       ch = nextChar();
       if( ch==-1 ) throw error(ReSyntaxException.EBSATEOF);
-      token = ch;      
+      token = ch;
       return;
     }
 
@@ -188,9 +198,9 @@ public class ReClassicParser implements ReParser {
 
     // At the start of a character range, the following characters are
     // recognized specially in this order "^]-"
-    if( token==TOK_HAT ) { 
-      invert = true; 
-      nextToken(true); 
+    if( token==TOK_HAT ) {
+      invert = true;
+      nextToken(true);
     }
     if( token==TOK_CBRACKET ) {
       tmp.append("]]");
@@ -250,7 +260,7 @@ public class ReClassicParser implements ReParser {
       }
       return;
     }
-     
+
     // a '[' starts a character class
     if( token==TOK_OBRACKET ) {
       nextToken(true);
@@ -296,7 +306,7 @@ public class ReClassicParser implements ReParser {
     throw error(ReSyntaxException.ECHARUNEX);
   }
   /********************************************************************/
-  private void parsePostfixedAtom(NfaParserView nfa) 
+  private void parsePostfixedAtom(NfaParserView nfa)
     throws  ReSyntaxException {
 
     parseAtom(nfa);
@@ -307,70 +317,41 @@ public class ReClassicParser implements ReParser {
       case TOK_QMARK: nfa.optional(); nextToken(false); break;
       case TOK_STAR: nfa.star(); nextToken(false); break;
       case TOK_PLUS: nfa.plus(); nextToken(false); break;
-      case TOK_AT: {
-        try {
-          throw new Exception("warning: use `(!...)' instead of `(...)@i@'");
-        } catch( Exception e) {
-          e.printStackTrace();
-        }
-        nextToken(false);
-        if( token<'0' || token>'9' ) throw error(ReSyntaxException.EATDIGIT);
-        int id = 0;
-        while( token>='0' && token<='9' ) {
-          id = 10*id+(token-'0');
-          if( id>Byte.MAX_VALUE ) throw error(ReSyntaxException.EATRANGE);
-          nextToken(false);
-        }
-        if( token!=TOK_AT ) throw error(ReSyntaxException.EATMISSAT);
-        nextToken(false);
-        nfa.markAsSub();
-        break;
-      }
       case TOK_EXCL: {
         try {
-          nfa.shortest(); 
+          nfa.shortest();
         } catch( CompileDfaException e) {
-          ///CLOVER:OFF
-          throw error
-            ("internal error, this should not happen. A call to "+
-             "shortest() results in a compilation of the Nfa constructed "+
-             "so far. Because this Nfa should not yet have any Actions "+
-             "associated, there cannot be any ambiguous.");
-          ///CLOVER:ON
+          throw error(String.format(INTERNAL_ERROR_TMPL, "shortest()"));
         }
-        nextToken(false); 
+        nextToken(false);
         break;
       }
       case TOK_TILDE: {
         try {
-          nfa.invert(); 
+          nfa.invert();
         } catch( CompileDfaException e) {
-          ///CLOVER:OFF
-          throw error
-            ("internal error, this should not happen. A call to "+
-             "invert() results in a compilation of the Nfa constructed "+
-             "so far. Because this Nfa should not yet have any Actions "+
-             "associated, there cannot be any ambiguous.");
-          ///CLOVER:ON
+          throw error(String.format(INTERNAL_ERROR_TMPL, "invert()"));
         }
-        nextToken(false); 
+        nextToken(false);
         break;
       }
       case TOK_HAT: {
         try {
-          nfa.not(); 
+          nfa.not();
         } catch( CompileDfaException e) {
-          ///CLOVER:OFF
-          throw error
-            ("internal error, this should not happen. A call to "+
-             "not() results in a compilation of the Nfa constructed "+
-             "so far. Because this Nfa should not yet have any Actions "+
-             "associated, there cannot be any ambiguous.");
-          ///CLOVER:ON
+          throw error(String.format(INTERNAL_ERROR_TMPL, "not()"));
         }
-        nextToken(false); 
+        nextToken(false);
         break;
       }
+      case TOK_AT:
+        try {
+          nfa.allPrefixes();
+        } catch( CompileDfaException e ) {
+          throw error(String.format(INTERNAL_ERROR_TMPL, "allPrefixes()"));
+        }
+        nextToken(false);
+        break;
       default:
         havePostfix = false;
         break;
