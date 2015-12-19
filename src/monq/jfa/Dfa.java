@@ -17,10 +17,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 
 import monq.jfa.FaState.IterType;
 
 import java.io.PrintStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -148,8 +150,21 @@ public class Dfa implements Serializable {
    */
   public void toDot(PrintStream out) {
     FaToDot.print(out, startState, null);
-    //new FaToDot(startState).print(out);
   }
+  
+  public void toDot(String filename) {
+    PrintStream out;
+    try {
+      out = new PrintStream(filename, "UTF-8");
+    } catch( FileNotFoundException|UnsupportedEncodingException e ) {
+      e.printStackTrace();
+      return;
+    }
+    toDot(out);
+    out.close();
+  }
+
+
   /**********************************************************************/
 
   /**
@@ -238,7 +253,6 @@ public class Dfa implements Serializable {
 
     return a;
   }
-  /**********************************************************************/
+  /**********************************************************************/}
 
-}
 
