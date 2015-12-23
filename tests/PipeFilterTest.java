@@ -20,14 +20,20 @@ import monq.stuff.*;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import static org.junit.Assert.*;
+
 import java.io.*;
 import java.util.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
  * @author &copy; 2005 Harald Kirsch
  */
-public class PipeFilterTest extends TestCase {
+public class PipeFilterTest {
 
   private TcpServer tcp;
   private int filterPort;
@@ -41,7 +47,7 @@ public class PipeFilterTest extends TestCase {
       this.in = in;
       this.out = out;
       @SuppressWarnings("unchecked")
-      Map<Object,Object> tmp = (Map<Object,Object>)o; 
+      Map<Object,Object> tmp = (Map<Object,Object>)o;
       this.m = tmp;
     }
     @Override
@@ -81,7 +87,7 @@ public class PipeFilterTest extends TestCase {
   }
 
   /**********************************************************************/
-  @Override
+  @Before
   public void setUp() throws Exception {
     FilterServiceFactory fac = new FilterServiceFactory(new SFac());
     java.net.ServerSocket s = new java.net.ServerSocket(0);
@@ -99,7 +105,8 @@ public class PipeFilterTest extends TestCase {
       throw new Error("cannot determine local port of filter server");
     }
   }
-  @Override
+
+  @After
   public void tearDown() {
     tcp.shutdown();
   }
@@ -117,6 +124,7 @@ public class PipeFilterTest extends TestCase {
     return out.toString();
   }
   /**********************************************************************/
+  @Test
   public void test0() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -129,6 +137,7 @@ public class PipeFilterTest extends TestCase {
     dp.shutdown();
   }
   /**********************************************************************/
+  @Test
   public void test1() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -146,6 +155,7 @@ public class PipeFilterTest extends TestCase {
     dp.shutdown();		// prove this does no harm
   }
   /**********************************************************************/
+  @Test
   public void test2() throws Exception {
     PipelineRequest req[] = new PipelineRequest[2];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -159,6 +169,7 @@ public class PipeFilterTest extends TestCase {
     dp.shutdown();
   }
   /**********************************************************************/
+  @Test
   public void test_FeederThrowsIAE() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -179,6 +190,7 @@ public class PipeFilterTest extends TestCase {
     assertEquals("x", e.getMessage());
   }
   /**********************************************************************/
+  @Test
   public void test_FeederThrowsIOE() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -187,7 +199,7 @@ public class PipeFilterTest extends TestCase {
 
     InputStream in = dp.open(req, new AbstractPipe() {
 	@Override
-  public void pipe() throws IOException {
+	public void pipe() throws IOException {
 	  throw new IOException("x");
 	}
       });
@@ -213,6 +225,7 @@ public class PipeFilterTest extends TestCase {
     assertTrue(e.getMessage().startsWith("connection bound to given"));
   }
   /**********************************************************************/
+  @Test
   public void test_BrokenPipe() throws Exception {
     PipelineRequest req[] = new PipelineRequest[2];
     req[0] = new PipelineRequest("localhost", 12345);
@@ -237,6 +250,7 @@ public class PipeFilterTest extends TestCase {
     assertTrue(e.getMessage().startsWith("The data was never asked for"));
   }
   /**********************************************************************/
+  @Test
   public void test_deadfilter() throws Exception {
     tcp.shutdown();
     PipelineRequest req[] = new PipelineRequest[1];
@@ -271,6 +285,7 @@ public class PipeFilterTest extends TestCase {
 //     dp.shutdown();
 //   }
   /**********************************************************************/
+  @Test
   public void test_DistPipeFilterNotRunning() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -285,6 +300,7 @@ public class PipeFilterTest extends TestCase {
     assertEquals("server not running", e.getMessage());
   }
   /**********************************************************************/
+  @Test
   public void test_WrongPortOnPipelineRequest() throws Exception {
     Exception e = null;
     int wrongPort = 4343333;
@@ -297,6 +313,7 @@ public class PipeFilterTest extends TestCase {
     assertTrue(e.getMessage().endsWith("is "+wrongPort));
   }
   /**********************************************************************/
+  @Test
   public void test_ForbiddenKeyOnPipelineRequest() throws Exception {
     Exception e = null;
     String wrongKey = ".blorb";

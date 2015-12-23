@@ -31,20 +31,11 @@
 	      excludes="monq/**/keep/** monq/**/doc-files/** monq/**/*.html"
 	      includes="monq/**/*.java"
 	      >
-    <exclude unless="xstream" name="monq/programs/DistFilter.java" />
-    <exclude unless="xstream" name="monq/net/Filter*Info.java" />
   </patternset>
 
   <!-- these are the test source files -->
   <patternset id="testsrc" includes="monq/**/*.java *.java">
   </patternset>
-
-  <!-- *************************************************************** -->
-  <!-- check existence of certain features -->
-  <target name="findfeatures">
-    <available property="xstream" 
-      classname="com.thoughtworks.xstream.XStream" />
-  </target>
 
   <!-- *************************************************************** -->
   <!-- read current version to build from RELNOTES -->
@@ -75,13 +66,9 @@
     </dependset>
   </target>
 
-  <target name="warnXstream" unless="xstream">
-    <echo>WARNING: com.thoughtworks.xstream.XStream not found, monq.programs.DistFilter will not be available. One easy way to provide this, is to add it to the CLASSPATH environment variable just before starting ant.</echo>
-  </target>
-
   <!-- Main target is to compile all source files of the packages. -->
   <target name="compile" 
-    depends="findfeatures,warnXstream,purgeClasses"
+    depends="purgeClasses"
     description="compile all Java source files to ./Classes">
     <mkdir dir="build/classes"/>
     <javac srcdir="src"
