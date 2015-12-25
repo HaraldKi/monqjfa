@@ -21,9 +21,6 @@
   <property environment="env" />
   <property name="stylefile" value="src/monq/jfa/docstyle.css" />
 
-  <property name="pubftp" value="/ebi/ftp/pub/software/textmining/monq" />
-  <property name="pubhtml" value="/homes/kirsch/public_html" />
-
   <!-- *************************************************************** -->
   <!-- these are our source files -->
   <patternset id="jsrc" 
@@ -41,9 +38,7 @@
 
   <target name="setVersion">
     <loadfile property="version" srcfile="Documentation/RELNOTES">
-      <!-- someone had a half decent idea with these filter chains,
-      but what is availabe is still bloody poor compared to a decent
-      grep/sed/awk combination -->
+      <!-- someone had a half decent idea with these filter chains -->
       <filterchain>
 	<linecontainsregexp>
 	  <regexp pattern="VERSION +[a-z]*[0-9.]+" />
@@ -166,10 +161,6 @@
   </target>
 
   <!-- *************************************************************** -->
-  <!-- ***************************************************************
-  --> <!-- check whether svn status -u produces no output (except one
-  line) and set property svnclean if this is so -->
-
   <target name="svnclean" description="check that svn status is clean">    
     <do-svnrevision/>
     <if>
