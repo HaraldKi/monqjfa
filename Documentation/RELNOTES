@@ -1,3 +1,10 @@
+VERSION 1.7.1
+
+Removed dependency on XStream to read in a single configuration
+file. The same can be done much easier with a standard Java properties
+file.
+
+
 VERSION 1.7.0
 
 Added two new operations to the NFA:
