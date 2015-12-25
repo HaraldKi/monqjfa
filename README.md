@@ -16,6 +16,10 @@ structure.
 
 Homepage: http://pifpafpuf.de/Monq.jfa/
 
-Release Notes: https://raw.githubusercontent.com/HaraldKi/monqjfa/master/Documentation/RELNOTES
+Release Notes:
+https://raw.githubusercontent.com/HaraldKi/monqjfa/master/Documentation/RELNOTES
+
+For some recent blog entry of how the speed improved recently, read
+http://pifpafpuf.de/2015-11/generated-index.html
 
 Design ©2007--2016 by [Harald Kirsch](mailto:Harald.Kirsch@pifpafpuf.de)
