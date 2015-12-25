@@ -83,7 +83,7 @@ public class StdCharEntities {
   private CharSequenceCharSource in = new CharSequenceCharSource();
   private DfaRun toChar = new DfaRun(toCharDfa, in);
   private DfaRun toEnt = new DfaRun(toEntDfa, in);
-  private StringBuffer sb = new StringBuffer();
+  private StringBuilder sb = new StringBuilder();
   /**********************************************************************/
   /**
    * <p>For high throughput non-synchronized use in one thread, get one
@@ -99,7 +99,7 @@ public class StdCharEntities {
   /**
    * <p>replaces the standard character entities in place.</p>
    */
-  private void convert(DfaRun r, StringBuffer text, int start) {
+  private void convert(DfaRun r, StringBuilder text, int start) {
     in.setSource(text, start);
     sb.setLength(0);
     try {
@@ -109,23 +109,23 @@ public class StdCharEntities {
       throw new Error("impossible", e);
     }
     text.setLength(start);
-    Misc.append(text, sb, 0, sb.length());
+    text.append(sb);
   }
   /**********************************************************************/
-  public void decode(StringBuffer text, int start) {
+  public void decode(StringBuilder text, int start) {
     convert(toChar, text, start);
   }
-  public void encode(StringBuffer text, int start) {
+  public void encode(StringBuilder text, int start) {
     convert(toEnt, text, start);
   }
   /**********************************************************************/
   /**
    * <p>replaces the standard character entities in place.</p>
    */
-  public static synchronized void toChar(StringBuffer text, int start) {
+  public static synchronized void toChar(StringBuilder text, int start) {
     instance.decode(text, start);
   }
-  public static synchronized void toEntities(StringBuffer text, int start) {
+  public static synchronized void toEntities(StringBuilder text, int start) {
     instance.encode(text, start);
   }
   /**********************************************************************/
@@ -134,13 +134,13 @@ public class StdCharEntities {
    * returns the result.</p>
    */
   public static synchronized String toChar(CharSequence s) {
-    StringBuffer tmp = new StringBuffer(s.length());
+    StringBuilder tmp = new StringBuilder(s.length());
     tmp.append(s);
     instance.decode(tmp, 0);
     return tmp.toString();
   }
   public static synchronized String toEntities(CharSequence s) {
-    StringBuffer tmp = new StringBuffer(s.length());
+    StringBuilder tmp = new StringBuilder(s.length());
     tmp.append(s);
     instance.encode(tmp, 0);
     return tmp.toString();

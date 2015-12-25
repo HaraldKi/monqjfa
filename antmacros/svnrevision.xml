@@ -1,0 +1,36 @@
+<project>
+  <!-- Get subversion revision and whether the working dir is dirty
+  with regard to the repository. (Since subversion tasks are still not
+  standard with ant, use exec) -->
+
+  <macrodef name="do-svnrevision">
+    <sequential>
+      <mkdir dir="build"/>
+      <exec executable="svn" output="build/svnstatus">
+        <arg value="status"/> 
+        <arg value="-u"/>
+        <arg value="-q"/>
+      </exec>
+      
+      <condition property="svn.clean" value="1" else="0">
+        <length file="build/svnstatus" when="equal" length="0"/>
+      </condition>
+      
+      <exec executable="svn" output="build/svninfo">
+        <arg value="info"/>
+        <arg value="--xml"/>
+      </exec>
+      
+      <loadfile property="svn.revid" srcFile="build/svninfo">
+        <filterchain>
+          <striplinebreaks/>           
+          <replaceregex pattern=".*&lt;entry " replace=""/>
+          <replaceregex pattern='.*revision="*([0-9]+)".*' replace="\1"/>
+        </filterchain>
+      </loadfile>
+      <condition property="svn.revision" value="${svn.revid}" else="dirty">
+        <equals arg1="${svn.clean}" arg2="1" />
+      </condition>
+    </sequential>
+  </macrodef>
+</project>

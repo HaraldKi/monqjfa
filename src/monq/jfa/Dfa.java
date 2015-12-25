@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -17,10 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+
+import monq.jfa.FaState.IterType;
+
 import java.io.PrintStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
 
 /**
  * implements a deterministic finite automaton. In contrast to class
@@ -61,7 +64,7 @@ public class Dfa implements Serializable {
    */
   public long matchMax = -1;
   /**********************************************************************/
-  
+
   private FaState startState;
 
   // The action to be used by DfaRun when eof is hit
@@ -76,6 +79,7 @@ public class Dfa implements Serializable {
    * which can be called but does nothing.
    */
   static SubmatchData dummySmd = new SubmatchData() {
+      @Override
       public void add(FaState s) {}
     };
 
@@ -108,46 +112,36 @@ public class Dfa implements Serializable {
     return new DfaRun(this);
   }
   /**********************************************************************/
-  /*  *
-   * <p>convenience function to get a <code>DfaRun</code> for this
-   * automaton.
-   *
-   * @deprecated The way how non-matching input shall be handled is
-   * now defined when the <code>Dfa</code> is created. Overriding it
-   * here is a bad idea.
-   */
-//   public DfaRun createRun(DfaRun.FailedMatchBehaviour fmb) {
-//     return new DfaRun(this, fmb);
-//   }
-  /**********************************************************************/
   /**
-   * <p>converts the <code>Dfa</code> back into an <code>Nfa</code> in
-   * a way that <code>this</code> is totally useless afterwards. Make
-   * sure it is not used somewhere else meanwhile. The approach was
-   * taken for efficiency reasons. A deep copy operation is not yet
-   * implemented.</p>
+   * <p>
+   * converts the <code>Dfa</code> back into an <code>Nfa</code> in a way
+   * that <code>this</code> is totally useless afterwards. Make sure it is
+   * not used somewhere else meanwhile. The approach was taken for efficiency
+   * reasons. A deep copy operation is not implemented.
+   * </p>
+   *
+   * @return an {@link Nfa} containing all <code>Dfa</code> nodes plus a
+   *         common stop state required by the <code>Nfa</code> data
+   *         structure.
    */
   public Nfa toNfa() {
     AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
-    addLastState(startState, newLast, new IdentityHashMap<FaState, Object>());
-    Nfa nfa = new Nfa(startState, newLast);
+
+    FaStateTraverser<FaState> fasTrav = 
+        new FaStateTraverser<FaState>(IterType.ALL, newLast);
+    fasTrav.traverse(startState, new FaStateTraverser.StateVisitor<FaState>() {
+      @Override public void visit(FaState state, FaState last) {
+        if (state.getAction()!=null) {
+          state.addEps(last);
+        }
+      }
+    });
+
+    AbstractFaState.EpsState newStart = new AbstractFaState.EpsState();
+    newStart.addEps(startState);
+    Nfa nfa = new Nfa(newStart, newLast);
     startState = null;
     return nfa;
-  }
-  private void addLastState(FaState state, 
-			    FaState newLast,
-			    IdentityHashMap<FaState,Object> known) {
-    // NOTE: We only need the key part of the map, too bad there is no
-    // IdentitySet.
-    known.put(state, null);
-
-    Iterator i = state.getChildIterator();
-    while( i.hasNext() ) {
-      FaState child = (FaState)i.next();
-      if( known.containsKey(child) ) continue;
-      if( child.getAction()!=null ) child.addEps(newLast);
-      addLastState(child, newLast, known);
-    }
   }
   /**********************************************************************/
   /**
@@ -156,8 +150,21 @@ public class Dfa implements Serializable {
    */
   public void toDot(PrintStream out) {
     FaToDot.print(out, startState, null);
-    //new FaToDot(startState).print(out);
   }
+  
+  public void toDot(String filename) {
+    PrintStream out;
+    try {
+      out = new PrintStream(filename, "UTF-8");
+    } catch( FileNotFoundException|UnsupportedEncodingException e ) {
+      e.printStackTrace();
+      return;
+    }
+    toDot(out);
+    out.close();
+  }
+
+
   /**********************************************************************/
 
   /**
@@ -168,10 +175,10 @@ public class Dfa implements Serializable {
    * no match can be found.
    *
    * @throws java.io.IOException only if <code>in.read()</code>
-   * throws. 
+   * throws.
    */
-  FaAction match(CharSource in, StringBuffer out, SubmatchData smd) 
-    throws java.io.IOException 
+  FaAction match(CharSource in, StringBuilder out, SubmatchData smd)
+    throws java.io.IOException
   {
     int startPos = out.length();
     int lastStopPos = startPos;
@@ -197,10 +204,10 @@ public class Dfa implements Serializable {
       out.append((char)ch);
       current = current.follow((char)ch);
     }
-   
+
     // we might have read a few characters after the last stop
     // state. Those characters must be pushed back into the input
-    // source. 
+    // source.
     //System.out.println("LLL("+out+")"+endPos+" "+out.length());
     in.pushBack(out, lastStopPos);
 
@@ -226,12 +233,12 @@ public class Dfa implements Serializable {
    * after first clearing it.</p>
    *
    * @param subMatches may be null, if no submatch analysis is
-   * requested. 
+   * requested.
    *
    * @return either the action associated with the match found or
    * <code>null</code> if no match was found.
    */
-  public FaAction match(CharSource in, StringBuffer out, 
+  public FaAction match(CharSource in, StringBuilder out,
 			TextStore subMatches) throws IOException {
     if( subMatches==null ) {
       return match(in, out, dummySmd);
@@ -246,7 +253,6 @@ public class Dfa implements Serializable {
 
     return a;
   }
-  /**********************************************************************/
+  /**********************************************************************/}
 
-}
- 
+

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <path id="emptycp"/>
+  
+  <macrodef name="do-javac">
+    <attribute name="classpathref" default="emptycp"/>
+    <sequential>
+      <do-javac-helper srcdir="src" 
+                       dstdir="build/classes"
+                       classpathref="@{classpathref}"/>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="do-javac-test">
+    <attribute name="classpathref" default="emptycp"/>
+    <sequential>
+      <path id="javac-tests-cp">
+        <path refid="@{classpathref}"/>
+        <pathelement location="build/classes"/>
+        <pathelement path="${junit.jar}"/>
+      </path>
+      <do-javac-helper srcdir="tests" 
+                       dstdir="build/test-classes"
+                       classpathref="javac-tests-cp"/>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="do-javac-helper">
+    <attribute name="srcdir" />
+    <attribute name="classpathref"/>
+    <attribute name="dstdir"/>
+    <sequential>
+      <mkdir dir="@{dstdir}"/>
+      <javac srcdir="@{srcdir}"
+             classpathref="@{classpathref}"
+             destdir="@{dstdir}"
+             source="1.7"
+             listfiles="no"
+             fork="true"
+             debug="true"
+             includeantruntime="false"
+             deprecation="true"
+             >
+        <compilerarg value="-Xlint:unchecked"/>
+        <patternset includes="**/*.java"
+                    excludes="**/package-info.java"/>
+      </javac>
+
+    </sequential>
+  </macrodef>
+</project>

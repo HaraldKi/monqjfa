@@ -1,0 +1,30 @@
+<project>
+  <macrodef name="do-javadoc">
+    <sequential>
+      <property name="apidocdir" 
+                value="build/sitecontent/${ant.project.name}ApiDoc"/>
+      <mkdir dir="build/sitecontent"/>
+      <delete dir="${apidocdir}"/>
+      <javadoc sourcepath="src"
+               packagenames="*"
+               destdir="${apidocdir}"
+               overview="src/overview.html"
+               stylesheetfile="src/stylesheet.css"
+               linksource="yes"
+               windowtitle="Xmldego - XML define and go"
+               link="http://java.sun.com/javase/7/docs/api/"
+               header="&lt;span class='xheader'&gt;Xmldego v${svn.revision}&lt;/span&gt;"      >
+      </javadoc>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="do-javadoc-zip">
+    <sequential>
+      <property name="downloadDir" value="build/sitecontent/download"/>
+      <mkdir dir="${downloadDir}" />
+      <zip destfile="${downloadDir}/${ant.project.name}ApiDoc-${version}.zip"
+           basedir="${downloadDir}/../${ant.project.name}ApiDoc"
+           includes="**"/>
+    </sequential>
+  </macrodef>
+</project>

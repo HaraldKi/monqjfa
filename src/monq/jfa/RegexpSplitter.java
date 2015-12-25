@@ -103,7 +103,7 @@ public class RegexpSplitter implements TextSplitter {
     }
   }
   
-  public void split(TextStore dst, StringBuffer s, int start) {
+  public void split(TextStore dst, StringBuilder s, int start) {
 
     // We will use the tail of s also as a scratch
     // area. CharSequenceCharSource allows this by storing the end of

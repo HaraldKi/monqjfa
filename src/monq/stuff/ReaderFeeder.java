@@ -29,7 +29,7 @@ import java.nio.charset.*;
  * @author &copy; 2005 Harald Kirsch
  */
 public class ReaderFeeder extends AbstractPipe {
-  private Reader in;
+  private Reader rin;
   private Charset cs;
   private char[] buffer;
 
@@ -59,7 +59,7 @@ public class ReaderFeeder extends AbstractPipe {
   { 
     if( bsize<1 ) 
       throw new IllegalArgumentException("bsize must be >0, but is "+bsize);
-    this.in = source;
+    this.rin = source;
     this.cs = Charset.forName(csname);
     this.buffer = new char[bsize];
   }
@@ -73,12 +73,12 @@ public class ReaderFeeder extends AbstractPipe {
    * <code>InputStream</code> as the source, use {@link Pipe}.</p>
    */
   public void setSource(Reader in) {
-    this.in = in;
+    this.rin = in;
   }
   /**********************************************************************/  
   protected void pipe() throws IOException {
     int l;
-    while( -1!=(l=in.read(buffer)) ) wout.write(buffer, 0, l);
+    while( -1!=(l=rin.read(buffer)) ) wout.write(buffer, 0, l);
     wout.flush();
   }
   /**********************************************************************/

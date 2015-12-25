@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -14,36 +14,43 @@ along with this program; if not, write to the Free Software Foundation
 Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 ************************************************************************/
 
-import monq.jfa.*;
-import monq.programs.DictFilter;
 import monq.net.*;
 import monq.stuff.*;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import static org.junit.Assert.*;
+
 import java.io.*;
 import java.util.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
  * @author &copy; 2005 Harald Kirsch
  */
-public class PipeFilterTest extends TestCase {
+public class PipeFilterTest {
 
   private TcpServer tcp;
   private int filterPort;
 
   private static final class CopyService implements Service {
     private Exception e;
-    private Map m;
-    private InputStream in; 
+    private Map<Object,Object> m;
+    private InputStream in;
     private OutputStream out;
     public CopyService(InputStream in, OutputStream out, Object o) {
       this.in = in;
       this.out = out;
-      this.m = (Map)o;
+      @SuppressWarnings("unchecked")
+      Map<Object,Object> tmp = (Map<Object,Object>)o;
+      this.m = tmp;
     }
+    @Override
     public void run() {
       int b;
       // do all kinds of nasty things depending on the incoming
@@ -68,16 +75,19 @@ public class PipeFilterTest extends TestCase {
 	e.printStackTrace();
       }
     }
+    @Override
     public Exception getException() { return e; }
   }
   private static final class SFac implements ServiceFactory {
-    public Service createService(InputStream in, OutputStream out, 
+    @Override
+    public Service createService(InputStream in, OutputStream out,
 				 Object o) {
       return new CopyService(in, out, o);
     }
   }
 
   /**********************************************************************/
+  @Before
   public void setUp() throws Exception {
     FilterServiceFactory fac = new FilterServiceFactory(new SFac());
     java.net.ServerSocket s = new java.net.ServerSocket(0);
@@ -95,13 +105,15 @@ public class PipeFilterTest extends TestCase {
       throw new Error("cannot determine local port of filter server");
     }
   }
+
+  @After
   public void tearDown() {
     tcp.shutdown();
   }
   /**********************************************************************/
   public static String filter(DistPipeFilter dp,
-			      PipelineRequest[] req, final String s) 
-    throws IOException 
+			      PipelineRequest[] req, final String s)
+    throws IOException
   {
     StringBuffer out = new StringBuffer();
     InputStream pipe = dp.open(req, new CharSequenceFeeder(s, "UTF-8"));
@@ -112,6 +124,7 @@ public class PipeFilterTest extends TestCase {
     return out.toString();
   }
   /**********************************************************************/
+  @Test
   public void test0() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -120,10 +133,11 @@ public class PipeFilterTest extends TestCase {
 
     String s = filter(dp, req, "Harald Kirsch");
     //System.err.println(">>>"+s+"<<<");
-    assertEquals("Harald Kirsch", s); 
+    assertEquals("Harald Kirsch", s);
     dp.shutdown();
   }
   /**********************************************************************/
+  @Test
   public void test1() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -136,11 +150,12 @@ public class PipeFilterTest extends TestCase {
 
     String s = filter(dp, req, "Harald Kirsch");
     //System.err.println(">>>"+s+"<<<");
-    assertEquals("blop=bla;bla\nbla|bla\njoki=doki\nHarald Kirsch", s); 
+    assertEquals("blop=bla;bla\nbla|bla\njoki=doki\nHarald Kirsch", s);
     dp.shutdown();
     dp.shutdown();		// prove this does no harm
   }
   /**********************************************************************/
+  @Test
   public void test2() throws Exception {
     PipelineRequest req[] = new PipelineRequest[2];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -150,10 +165,11 @@ public class PipeFilterTest extends TestCase {
 
     String s = filter(dp, req, "Harald Kirsch");
     //System.err.println(">>>"+s+"<<<");
-    assertEquals("Harald Kirsch", s); 
+    assertEquals("Harald Kirsch", s);
     dp.shutdown();
   }
   /**********************************************************************/
+  @Test
   public void test_FeederThrowsIAE() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -161,7 +177,8 @@ public class PipeFilterTest extends TestCase {
     dp.start();
 
     InputStream in = dp.open(req, new AbstractPipe() {
-	public void pipe() { throw new IllegalArgumentException("x"); } });
+	@Override
+  public void pipe() { throw new IllegalArgumentException("x"); } });
     while( -1!=in.read() ) /* just run */;
     Throwable e = null;
     try {
@@ -173,6 +190,7 @@ public class PipeFilterTest extends TestCase {
     assertEquals("x", e.getMessage());
   }
   /**********************************************************************/
+  @Test
   public void test_FeederThrowsIOE() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -180,9 +198,10 @@ public class PipeFilterTest extends TestCase {
     dp.start();
 
     InputStream in = dp.open(req, new AbstractPipe() {
-	public void pipe() throws IOException { 
-	  throw new IOException("x"); 
-	} 
+	@Override
+	public void pipe() throws IOException {
+	  throw new IOException("x");
+	}
       });
     while( -1!=in.read() ) /* just run */;
     Throwable e = null;
@@ -194,7 +213,7 @@ public class PipeFilterTest extends TestCase {
     //System.err.println(">>>>"+e);
     assertTrue( e instanceof IOException );
     assertEquals("x", e.getMessage());
-    
+
     // close again to get the reaction
     e = null;
     try {
@@ -206,6 +225,7 @@ public class PipeFilterTest extends TestCase {
     assertTrue(e.getMessage().startsWith("connection bound to given"));
   }
   /**********************************************************************/
+  @Test
   public void test_BrokenPipe() throws Exception {
     PipelineRequest req[] = new PipelineRequest[2];
     req[0] = new PipelineRequest("localhost", 12345);
@@ -215,7 +235,8 @@ public class PipeFilterTest extends TestCase {
     dp.start();
 
     InputStream in = dp.open(req, new AbstractPipe() {
-	public void pipe() throws IOException {} 
+	@Override
+  public void pipe() throws IOException {}
       });
     while( -1!=in.read() ) /* just run */;
     Throwable e = null;
@@ -229,6 +250,7 @@ public class PipeFilterTest extends TestCase {
     assertTrue(e.getMessage().startsWith("The data was never asked for"));
   }
   /**********************************************************************/
+  @Test
   public void test_deadfilter() throws Exception {
     tcp.shutdown();
     PipelineRequest req[] = new PipelineRequest[1];
@@ -259,10 +281,11 @@ public class PipeFilterTest extends TestCase {
 
 //     String s = dp.filter(req, "Harald Kirsch");
 //     System.err.println(">>>"+s+"<<<");
-//     assertEquals("blop=bla;bla\nbla|bla\njoki=doki\nHarald Kirsch", s); 
+//     assertEquals("blop=bla;bla\nbla|bla\njoki=doki\nHarald Kirsch", s);
 //     dp.shutdown();
 //   }
   /**********************************************************************/
+  @Test
   public void test_DistPipeFilterNotRunning() throws Exception {
     PipelineRequest req[] = new PipelineRequest[1];
     req[0] = new PipelineRequest("localhost", filterPort);
@@ -277,6 +300,7 @@ public class PipeFilterTest extends TestCase {
     assertEquals("server not running", e.getMessage());
   }
   /**********************************************************************/
+  @Test
   public void test_WrongPortOnPipelineRequest() throws Exception {
     Exception e = null;
     int wrongPort = 4343333;
@@ -289,6 +313,7 @@ public class PipeFilterTest extends TestCase {
     assertTrue(e.getMessage().endsWith("is "+wrongPort));
   }
   /**********************************************************************/
+  @Test
   public void test_ForbiddenKeyOnPipelineRequest() throws Exception {
     Exception e = null;
     String wrongKey = ".blorb";

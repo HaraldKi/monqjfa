@@ -37,10 +37,10 @@ import java.io.Serializable;
  * identifying integers which can be associated with them.</p>
  *
  * <p>The parts can be accessed with two <code>getPart</code> methods
- * ({@link #getPart(StringBuffer, int) getPart()}, {@link
- * #getPart(StringBuffer, int, int, int) getPart()}), which append the
+ * ({@link #getPart(StringBuilder, int) getPart()}, {@link
+ * #getPart(StringBuilder, int, int, int) getPart()}), which append the
  * requested part, or a piece thereof to a given
- * <code>StringBuffer</code>.</p>
+ * <code>StringBuilder</code>.</p>
  *
  * <p><b>Note:</b> Many applications define part 0 to refer to the
  * whole stored string, but this is not mandatory.</p>
@@ -58,7 +58,7 @@ import java.io.Serializable;
  */
 public class TextStore implements Serializable {
 
-  private StringBuffer text = new StringBuffer();
+  private StringBuilder text = new StringBuilder();
 
   private int[] parts = new int[0];
   private byte[] ids = new byte[0];
@@ -110,8 +110,8 @@ public class TextStore implements Serializable {
    * text shall become a part, call {@link #setPart setPart()}
    * or {@link #addPart addPart()} afterwards.</p>
    */
-  public void append(StringBuffer s, int start, int end) {
-    Misc.append(text, s, start, end);
+  public void append(StringBuilder s, int start, int end) {
+    text.append(s, start, end);
   }
 
 
@@ -203,31 +203,31 @@ public class TextStore implements Serializable {
    * addPart()} such that the whole appended text will also define a
    * new part.</p>
    */
-  public void appendPart(StringBuffer s, int start, int end, byte id) {
+  public void appendPart(StringBuilder s, int start, int end, byte id) {
     int l = text.length();
     append(s, start, end);
     addPart(l, l+(end-start), id);
   }
-  public void appendPart(StringBuffer s, int start, int end) {
+  public void appendPart(StringBuilder s, int start, int end) {
     appendPart(s, start, end, (byte)-1);
   }
   /********************************************************************/
   /** 
    * <p>appends the requested part to the given
-   * <code>StringBuffer</code>. If <code>part</code> is out of range,
+   * <code>StringBuilder</code>. If <code>part</code> is out of range,
    * this is silently ignored and <code>sb</code> is not changed.</p>
    *
    * @param part see <a href="#indexing">part indexing</a>.
    */
-  public void getPart(StringBuffer sb, int part) {
+  public void getPart(StringBuilder sb, int part) {
     int idx = part2idx(part);
     if( idx<0 ) return;
-    Misc.append(sb, text, parts[idx], parts[idx+1]);
+    sb.append(text, parts[idx], parts[idx+1]);
   }
 
   /**
    * <p>returns the requested part.</p>
-   * @see  #getPart(StringBuffer,int)
+   * @see  #getPart(StringBuilder,int)
    */
   public String getPart(int part) {
     int idx = part2idx(part);
@@ -252,7 +252,7 @@ public class TextStore implements Serializable {
   }
   /** 
    * <p>appends a substring of the requested part to the given
-   * <code>StringBuffer</code>. The substring is indicated by
+   * <code>StringBuilder</code>. The substring is indicated by
    * <code>from</code> and <code>to</code>, where <code>to</code>
    * refers to the character just after the last one requested. Both
    * indices are relative to the part, not the whole internally stored
@@ -276,7 +276,7 @@ public class TextStore implements Serializable {
    *
    * @param part see <a href="#indexing">part indexing</a>
    */
-  public void getPart(StringBuffer sb, int part, int from, int to) {
+  public void getPart(StringBuilder sb, int part, int from, int to) {
     int idx = part2idx(part);
     if( idx<0 ) return;
 
@@ -285,13 +285,13 @@ public class TextStore implements Serializable {
     if( start<parts[idx] ) start=parts[idx];
     if( end>parts[idx+1] ) end=parts[idx+1];
     if( start>end) start = end = 0;
-    Misc.append(sb, text, start, end);
+    sb.append(text, start, end);
   }
 
   /**
    * <p>returns a substring of the requested part.<p>
    *
-   * @see #getPart(StringBuffer,int,int,int)
+   * @see #getPart(StringBuilder,int,int,int)
    */
   public String getPart(int part, int from, int to) {
     int idx = part2idx(part);
@@ -336,7 +336,7 @@ public class TextStore implements Serializable {
   }
   /********************************************************************/
   public String toString() {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     b.append(super.toString());
     b.append("[(").append(text).append(") ");
     for(int i=0; i<numParts; i++) {

@@ -22,7 +22,7 @@ import java.nio.charset.*;
 
 /**
  * <p>methods to encode/decode between a
- * <code>java.lang.StringBuffer</code> and a
+ * <code>java.lang.StringBuilder</code> and a
  * <code>java.nio.ByteBuffer</code>.</p>
  *
  * @author &copy; 2005 Harald Kirsch
@@ -62,11 +62,11 @@ public class Coder {
   /**********************************************************************/
   /**
    * decode the contents of a <code>ByteBuffer</code> and append them
-   * to a <code>StringBuffer</code>.
+   * to a <code>StringBuilder</code>.
    *
    * @param in must be in flipped mode, i.e. ready to be read from
    */
-  public void decode(ByteBuffer in, StringBuffer out)
+  public void decode(ByteBuffer in, StringBuilder out)
     throws java.nio.charset.CharacterCodingException
   {
     chars.clear();
@@ -82,14 +82,14 @@ public class Coder {
   }
   /**********************************************************************/
   /**
-   * <p>encode the contends of a <code>StringBuffer</code> into a
+   * <p>encode the contends of a <code>StringBuilder</code> into a
    * <code>ByteBuffer</code>.</p>
    *
    * @return is either the given <code>ByteBuffer</code> or a freshly
    * allocated, if the given one is too short.
    *
    */
-  public ByteBuffer encode(StringBuffer in, ByteBuffer out)
+  public ByteBuffer encode(StringBuilder in, ByteBuffer out)
     throws java.nio.charset.CharacterCodingException
   {
     int L = in.length();
@@ -97,7 +97,7 @@ public class Coder {
     char[] a = chars.array();
     while( pos<L || chars.position()>0 ) {
 
-      // transfer from StringBuffer to CharBuffer, there may be chars
+      // transfer from StringBuilder to CharBuffer, there may be chars
       // left in the CharBuffer from the previous round of this loop
       int copySize = chars.remaining();
       if( copySize>(L-pos) ) copySize = L-pos;
@@ -114,7 +114,7 @@ public class Coder {
       if( cr.isError() ) cr.throwException();
       if( cr.isOverflow() ) {
 	int rest = chars.position() + (L-pos);
-	rest = (int)((float)rest * enc.averageBytesPerChar());
+	rest = (int)(rest * enc.averageBytesPerChar());
 	byte[] aout = out.array();
 	aout = monq.stuff.ArrayUtil.resize(aout, aout.length+rest+1);
 	ByteBuffer newOut = ByteBuffer.wrap(aout);

@@ -50,7 +50,7 @@ public class TailContextN extends AbstractFaAction {
    * characters to push back.</p>
    */
   public TailContextN(int n) { this(n, null); }
-  public void invoke(StringBuffer out, int start, DfaRun r) 
+  public void invoke(StringBuilder out, int start, DfaRun r) 
     throws CallbackException 
   {
     r.unskip(out, out.length()-n);

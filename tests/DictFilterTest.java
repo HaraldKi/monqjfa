@@ -22,6 +22,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -38,43 +39,46 @@ public class DictFilterTest extends TestCase {
 
   public static void test_1() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
-    DictFilter df = new DictFilter(in, "raw", null, false);
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
+    DictFilter df = new DictFilter(rin, "raw", null, false);
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
-      ("blurb hallos äöüß".getBytes("UTF-8"));
+      ("blurb hallos Ã¤Ã¶Ã¼ÃŸ".getBytes("UTF-8"));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Service svc = df.createService(in, out, null);
     svc.run();
     assertEquals(null, svc.getException());
     String s = out.toString("UTF-8");
     //System.out.println("+++"+s);
-    assertEquals("blurb [hallos](17) äöüß", s);
+    assertEquals("blurb [hallos](17) Ã¤Ã¶Ã¼ÃŸ", s);
   }
 
   public static void test_2() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
-    DictFilter df = new DictFilter(in, "xml", null, false);
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
+    DictFilter df = new DictFilter(rin, "xml", null, false);
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
-      ("blurb <hallo>hallos</hallo> äöüß".getBytes("UTF-8"));
+      ("blurb <hallo>hallos</hallo> Ã¤Ã¶Ã¼ÃŸ".getBytes("UTF-8"));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Service svc = df.createService(in, out, null);
     svc.run();
     assertEquals(null, svc.getException());
     String s = out.toString("UTF-8");
     //System.out.println("+++"+s);
-    assertEquals("blurb <hallo>[hallos](17)</hallo> äöüß", s);
+    assertEquals("blurb <hallo>[hallos](17)</hallo> Ã¤Ã¶Ã¼ÃŸ", s);
   }
 
   public static void test_3() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
-    DictFilter df = new DictFilter(in, "elem", "x", false);
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
+    DictFilter df = new DictFilter(rin, "elem", "x", false);
     df.setInputEncoding("UTF-8");
     df.setOutputEncoding("UTF-8");
     in = new ByteArrayInputStream
-      ("blurb <hallo><x><hallo>hallos</hallo></x><hallo> äöüß"
+      ("blurb <hallo><x><hallo>hallos</hallo></x><hallo> Ã¤Ã¶Ã¼ÃŸ"
        .getBytes("UTF-8"));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Service svc = df.createService(in, out, null);
@@ -83,7 +87,7 @@ public class DictFilterTest extends TestCase {
     String s = out.toString("UTF-8");
     //System.out.println("+++"+s);
     assertEquals("blurb <hallo><x><[hallo](17)>[hallos](17)"+
-		 "</[hallo](17)></x><hallo> äöüß", s);
+		 "</[hallo](17)></x><hallo> Ã¤Ã¶Ã¼ÃŸ", s);
   }
   public static void test_IncompleteMwt() throws Exception {
     Reader rin = new StringReader("<mwt>");
@@ -158,9 +162,10 @@ public class DictFilterTest extends TestCase {
 
   public static void test_IllegArgToConstructor() throws Exception {
     InputStream in = new ByteArrayInputStream(EX1.getBytes("iso-8859-1"));
+    Reader rin = new InputStreamReader(in, Charset.forName("iso-8859-1"));
     Exception e = null;
     try {
-      new DictFilter(in, "yuck", "x", false);
+      new DictFilter(rin, "yuck", "x", false);
     } catch(IllegalArgumentException _e ) {
       e = _e;
     }

@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -18,7 +18,6 @@ package monq.jfa;
 
 import java.util.*;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 /**
  *
  * @author &copy; 2004 Harald Kirsch
@@ -29,60 +28,60 @@ public class SetTest extends TestCase {
 //   abstract Set newSet(int initialCapacity);
 //   abstract Set newSet(Collection col);
 
-//     Set newSet() { return new LeanSet(); }
-//     Set newSet(int s) { return new LeanSet(s); }
-//     Set newSet(Collection c) { return new LeanSet(c); }
-
-    Set newSet() { return new PlainSet(); }
-    Set newSet(int s) { return new PlainSet(s); }
-    Set newSet(Collection c) { return new PlainSet(c); }
+  <E> Set<E> newSet() { return new PlainSet<>(); }
+  <E> Set<E> newSet(int s) { return new PlainSet<>(s); }
+  <E> Set<E> newSet(Collection<E> c) { return new PlainSet<>(c); }
 
   /**********************************************************************/
   public void test0() throws Exception {
-    Set s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
+    Set<Long> s = newSet();
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
     for(long i=1; i!=0; i=i<<1) {
-      assertTrue(s.contains(new Long(i)));
+      assertTrue(s.contains(Long.valueOf(i)));
     }
   }
   /**********************************************************************/
-  public void test1() throws Exception {
-    Set s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
-    HashSet h = new HashSet(s);
+  public void testEqualsHashSet() throws Exception {
+    Set<Long> s = newSet();
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
+    HashSet<Long> h = new HashSet<>(s);
     assertTrue(s.equals(h));
-    Set other = newSet(h);
+
+    Set<Long> other = newSet(h);
     assertTrue(s.equals(other));
     assertTrue(s.equals(s));
 
-    other.add(s);
+    other.add(Long.valueOf(11));
     assertTrue(!s.equals(other));
 
   }
   /**********************************************************************/
   public void test2() throws Exception {
-    Set s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
-    Set other = newSet(s);
+    Set<Long> s = newSet();
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
+    Set<Long> other = newSet(s);
     assertTrue(s.equals(other));
 
     assertTrue(!s.addAll(other));
   }
   /**********************************************************************/
   public void test3() throws Exception {
-    Set s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
-    Set other = newSet(1000);
-    assertTrue(s.containsAll(s));
+    Set<Long> s = newSet();
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
+    
+    Set<Long> copy = newSet();
+    copy.addAll(s);
+    Set<Long> other = newSet(1000);
+    assertTrue(s.containsAll(copy));
     assertTrue(s.containsAll(other));
   }
   /**********************************************************************/
   public void test4() throws Exception {
-    Set s = newSet();
-    for(long i=1; i!=0; i=i<<1) s.add(new Long(i));
-    Set other = newSet(1000);
+    Set<Long> s = newSet();
+    for(long i=1; i!=0; i=i<<1) s.add(Long.valueOf(i));
+    Set<Long> other = newSet(1000);
 
-    Iterator it = s.iterator();
+    Iterator<Long> it = s.iterator();
     while( it.hasNext() ) other.add(it.next());
     assertTrue(s.equals(other));
     assertTrue(other.equals(s));
@@ -94,30 +93,32 @@ public class SetTest extends TestCase {
       if( i%2==0 ) it.remove();
     }
     assertTrue(s.containsAll(other));
-  }    
+  }
   /**********************************************************************/
   // have a class which intentionally creates identical hashcodes
-  // often 
+  // often
   private static class X {
     private int i;
     public X(int i) { this.i = i; }
+    @Override
     public boolean equals(Object other) {
       if( !(other instanceof X) ) return false;
       return ((X)other).i==i;
     }
+    @Override
     public int hashCode() {return i/10;}
   }
   public void test5() throws Exception {
     int N = 500;
-    Set s = newSet(N);
+    Set<X> s = newSet(N);
     for(int i=0; i<N; i+=10) {
       for(int j=0; j<10; j++) s.add(new X((j+5)%10+i));
     }
-    Set other = newSet();
+    Set<X> other = newSet();
     for(int i=3; i<N; i+=10) {
       other.add(new X(i));
     }
-    
+
 
     // The following seemingly arbitrary tests were constructed while
     // looking at a test coverage of containsAll and in order to cover
@@ -143,7 +144,7 @@ public class SetTest extends TestCase {
   public void test6() throws Exception {
 
     // trivial test of .isEmpty()
-    Set s = newSet();
+    Set<X> s = newSet();
     assertTrue(s.isEmpty());
 
     // another one, other result expected
@@ -151,7 +152,7 @@ public class SetTest extends TestCase {
     assertFalse(s.isEmpty());
 
     // trival test of .clear()
-    Set other = newSet(s);
+    Set<X> other = newSet(s);
     other.clear();
     assertTrue(other.isEmpty());
 
@@ -170,11 +171,13 @@ public class SetTest extends TestCase {
   /**********************************************************************/
   public void test_UpsetIterator() throws Exception {
     // let the iterator shout
-    Set s = newSet();
-    for(int i=0; i<100; i++) { s.add(new X(i)); }
-    Iterator it = s.iterator();
+    Set<X> s = newSet();
+    for(int i=0; i<100; i++) {
+      s.add(new X(i));
+    }
+    Iterator<X> it = s.iterator();
     int i = 0;
-    Exception e = null;
+
     try {
       while( it.hasNext() ) {
 	it.next();
@@ -184,68 +187,67 @@ public class SetTest extends TestCase {
 	}
 	i += 1;
       }
-    } catch( Exception _e ) {
-      e = _e;
+      fail("excpected IllegalStateException");
+    } catch( Exception e ) {
+      assertTrue(e instanceof IllegalStateException);
     }
-    assertTrue(e instanceof IllegalStateException);
 
-    e = null;
     while( it.hasNext() ) it.next();
     try {
       it.next();
-    } catch( Exception _e ) {
-      e = _e;
+      fail("excpected NoSuchElementException");
+    } catch( Exception e ) {
+      assertTrue(e instanceof NoSuchElementException );
     }
-    assertTrue(e instanceof NoSuchElementException );
   }
   /**********************************************************************/
   public void test7() throws Exception {
-    Set s = newSet();
+    Set<Integer> s = newSet();
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
     }
 
     // do we have just the right elements in ?
     for(int i=0; i<1000; i++) {
-      assertEquals(i%7!=0, s.contains(new Integer(i)));
+      assertEquals(i%7!=0, s.contains(Integer.valueOf(i)));
     }
-        
+
     // add elements which are already in
     for(int i=0; i<1000; i++) {
-      assertEquals(i%7==0, s.add(new Integer(i)));
+      assertEquals(i%7==0, s.add(Integer.valueOf(i)));
     }
   }
   /**********************************************************************/
   public void test_Interator() throws Exception {
-    Set s = newSet();
+    Set<Integer> s = newSet();
     int size = 0;
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
       size += 1;
     }
-    Iterator it = s.iterator();
+    Iterator<Integer> it = s.iterator();
     int i = 0;
     while( it.hasNext() ) {
       i += 1;
-      Integer I = (Integer)it.next();
+      Integer I = it.next();
       assertFalse(I.intValue()%7==0);
     }
     assertEquals(size, i);
   }
   /**********************************************************************/
   public void test_toArray1() throws Exception {
-    Set s = newSet();
+    Set<Integer> s = newSet();
     int size = 0;
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
       size += 1;
     }
     assertEquals(size, s.size());
-    Object[] a = s.toArray();
-    HashSet h = new HashSet();
+    Integer[] a = s.toArray(new Integer[s.size()]);
+    HashSet<Integer> h = new HashSet<>();
     for(int i=0; i<a.length; i++) h.add(a[i]);
 
     assertTrue(s.equals(h));
@@ -253,13 +255,13 @@ public class SetTest extends TestCase {
   }
   /**********************************************************************/
   public void test_toArray2() throws Exception {
-    Set s = newSet();
+    Set<Integer> s = newSet();
     for(int i=0; i<1000; i++) {
       if( i%7==0 ) continue;
-      s.add(new Integer(i));
+      s.add(Integer.valueOf(i));
     }
-    Integer[] a = (Integer[])s.toArray(new Integer[0]);
-    HashSet h = new HashSet();
+    Integer[] a = s.toArray(new Integer[0]);
+    HashSet<Integer> h = new HashSet<>();
     for(int i=0; i<a.length; i++) h.add(a[i]);
 
     assertTrue(s.equals(h));
@@ -267,12 +269,12 @@ public class SetTest extends TestCase {
 
 
     Integer[] x = new Integer[1000];
-    a = (Integer[])s.toArray(x);
+    a = s.toArray(x);
     for(int i=s.size(); i<1000; i++) {
       assertTrue(""+i, null==a[i]);
     }
     assertTrue(x==a);
-    h = new HashSet();
+    h = new HashSet<>();
     for(int i=0; i<s.size(); i++) h.add(a[i]);
 
     assertTrue(s.equals(h));
@@ -280,12 +282,12 @@ public class SetTest extends TestCase {
   }
   /**********************************************************************/
   public void test_massiveAddAll() throws Exception {
-    Set s = newSet(0);
-    Set s2 = newSet();
+    Set<X> s = newSet(0);
+    Set<X> s2 = newSet();
     for(int i=0; i<1000; i++) s2.add(new X(i));
     s.addAll(s2);
 
-    Set s3 = newSet();
+    Set<X> s3 = newSet();
     for(int i=-4000; i<0; i++) s3.add(new X(i));
     s.addAll(s3);
 
@@ -297,10 +299,7 @@ public class SetTest extends TestCase {
     assertEquals(s, s2);
 
   }
-  /**********************************************************************/
-  public static void main(String[] argv)   {
-    // Fa fa = new Fa();
-    junit.textui.TestRunner.run(new TestSuite(SetTest.class));
-  }
+  /*+******************************************************************/
+
 }
 

@@ -42,7 +42,7 @@ import monq.jfa.actions.*;
 public class Regexp {
   private Dfa dfa;
   private CharSequenceCharSource in = new CharSequenceCharSource();
-  private StringBuffer out = new StringBuffer();
+  private StringBuilder out = new StringBuilder();
   private SubmatchData smd = new SubmatchData();
   private TextStore ts = new TextStore();
   boolean analyzed;
@@ -68,7 +68,7 @@ public class Regexp {
     }
   }
   /**********************************************************************/
-  private IllegalArgumentException makeEx(String msg, Throwable cause) {
+  private static IllegalArgumentException makeEx(String msg, Throwable cause) {
     IllegalArgumentException e = new IllegalArgumentException(msg);
     e.initCause(cause);
     return e;

@@ -305,7 +305,7 @@ public class ByteCharSource extends EmptyCharSource {
    * that they are the very same characters previously delivered by
    * {@link #read()}.</p>
    */
-  public void pushBack(StringBuffer buf, int start) {
+  public void pushBack(StringBuilder buf, int start) {
     int N = buf.length()-start;
     super.pushBack(buf, start);
     // Manage the cache of character file positions. If this goes

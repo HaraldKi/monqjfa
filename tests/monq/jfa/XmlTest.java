@@ -33,7 +33,7 @@ import junit.framework.TestSuite;
 public class XmlTest extends TestCase {
 
   private FaAction h = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	Map m = Xml.splitElement(yytext, start);
 	yytext.setLength(start);
 	String[] keys = (String[])m.keySet().toArray(new String[0]);
@@ -120,7 +120,7 @@ public class XmlTest extends TestCase {
     assertEquals("55", r.filter("5</_bc>5"));
     assertEquals("55", r.filter("5</a:abc>5"));
     assertEquals("55", r.filter("5</abc-d>5"));
-    assertEquals("55", r.filter("5</özgüräß>5"));
+    assertEquals("55", r.filter("5</Ã¶zgÃ¼rÃ¤ÃŸ>5"));
 
     // lets pick some unicode more or less randomly
     // BaseChar introducing the tag
@@ -163,30 +163,30 @@ public class XmlTest extends TestCase {
   public void test_splitToHash1() throws Exception {
     String s = new 
       Nfa(Xml.STag()+Xml.S+"?", new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
-	    yytext.append("ößgür is `"+m.get("ößgür")+"', ");
+	    yytext.append("Ã¶ÃŸgÃ¼r is `"+m.get("Ã¶ÃŸgÃ¼r")+"', ");
 	    yytext.append("x is `"+m.get("x")+"'");
 	  }
 	})
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
-      .filter("<böller    \n ößgür='hallo' x = '11' >   ")
+      .filter("<bÃ¶ller    \n Ã¶ÃŸgÃ¼r='hallo' x = '11' >   ")
       ;
     //System.out.println(s+"<<");
-    assertEquals("tagname is `böller', ößgür is `hallo', x is `11'", s);
+    assertEquals("tagname is `bÃ¶ller', Ã¶ÃŸgÃ¼r is `hallo', x is `11'", s);
   }
   /**********************************************************************/
   public void test_splitToHash2() throws Exception {
     DfaRun r = new
       Nfa(Xml.GoofedElement("bla")+"|"+Xml.EmptyElemTag("bla"), new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
-	    yytext.append("ößgür is `"+m.get("ößgür")+"', ");
+	    yytext.append("Ã¶ÃŸgÃ¼r is `"+m.get("Ã¶ÃŸgÃ¼r")+"', ");
 	    yytext.append("content is `"+m.get(">")+"'");
 	  }
 	})
@@ -194,13 +194,13 @@ public class XmlTest extends TestCase {
       .createRun()
       ;
     String s = 
-      r.filter("<bla    \n ößgür='hallo'  >  <x>ÄÖÜ</x></bla  >")
+      r.filter("<bla    \n Ã¶ÃŸgÃ¼r='hallo'  >  <x>Ã„Ã–Ãœ</x></bla  >")
       ;
-    assertEquals("tagname is `bla', ößgür is `hallo', "+
-		 "content is `  <x>ÄÖÜ</x>'", s);
+    assertEquals("tagname is `bla', Ã¶ÃŸgÃ¼r is `hallo', "+
+		 "content is `  <x>Ã„Ã–Ãœ</x>'", s);
 
     s = r.filter("<bla />");
-    assertEquals("tagname is `bla', ößgür is `null', content is `null'",
+    assertEquals("tagname is `bla', Ã¶ÃŸgÃ¼r is `null', content is `null'",
 		 s);
     
   }
@@ -208,7 +208,7 @@ public class XmlTest extends TestCase {
   public static void test_XMLDecl() throws Exception {
     DfaRun r = new 
       Nfa(Xml.XMLDecl, new AbstractFaAction() {
-	  public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    Map m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tag=").append(m.get(Xml.TAGNAME))
@@ -237,6 +237,12 @@ public class XmlTest extends TestCase {
 		 +"xstandalone='yes'?>");
     assertEquals("<?xml version=\"1.0\" encoding='gorbo744' "
 		 +"xstandalone='yes'?>", s);
+  }
+  /**********************************************************************/
+  public static void test_getETagName() {
+    assertEquals("x", Xml.getETagName(new StringBuilder("</x>"), 0));
+    assertEquals("A_B-c", 
+		 Xml.getETagName(new StringBuilder("..</A_B-c  >"), 2));
   }
   /**********************************************************************/
   public static void main(String[] argv)   {

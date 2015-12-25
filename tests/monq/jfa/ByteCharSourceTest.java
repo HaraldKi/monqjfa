@@ -14,8 +14,6 @@ along with this program; if not, write to the Free Software Foundation
 Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 ************************************************************************/
 
-
-
 package monq.jfa;
 
 import java.io.*;
@@ -91,7 +89,7 @@ public class ByteCharSourceTest extends TestCase {
       int ch = bcs.read();
       assertEquals(i%26+'a', ch);
     }
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     String s = "alle meine entchen";
     sb.append(s);
     int L = sb.length();

@@ -99,7 +99,7 @@ public class SwitchDfa extends AbstractFaAction {
     }
     this.dfa = dfa; 
   }
-  public void invoke(StringBuffer out, int start, DfaRun r) 
+  public void invoke(StringBuilder out, int start, DfaRun r) 
     throws CallbackException
   {
     r.setDfa(dfa);

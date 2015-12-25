@@ -33,7 +33,7 @@ public class Fail extends AbstractFaAction {
    */
   public Fail(String message) { this.msg = message; }
 
-  public void invoke(StringBuffer out, int start, DfaRun runner) 
+  public void invoke(StringBuilder out, int start, DfaRun runner) 
     throws CallbackException
   {
     throw new CallbackException(msg);

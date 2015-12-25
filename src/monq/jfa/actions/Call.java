@@ -62,10 +62,10 @@ import java.lang.reflect.InvocationTargetException;
  *
  * <p><b>Example:</b></p>
  * <pre>public class Worker {
- *   public void <span style="color:red">invokeOne</span>(StringBuffer sb, int start, DfaRun r) {
+ *   public void <span style="color:red">invokeOne</span>(StringBuilder sb, int start, DfaRun r) {
  *     ...
  *   }
- *   public void <span style="color:red">invokeTwo</span>(StringBuffer sb, int start, DfaRun r) {
+ *   public void <span style="color:red">invokeTwo</span>(StringBuilder sb, int start, DfaRun r) {
  *     ...
  *   }
  * }
@@ -89,11 +89,11 @@ public class Call extends AbstractFaAction {
   private final String methodName;
 
   // describes a typical FaAction.invoke() method
-  private static final Class[] invokeArgs;
+  private static final Class<?>[] invokeArgs;
   static {
     try {
       invokeArgs = new Class[3];
-      invokeArgs[0] = Class.forName("java.lang.StringBuffer");
+      invokeArgs[0] = Class.forName("java.lang.StringBuilder");
       invokeArgs[1] = java.lang.Integer.TYPE;
       invokeArgs[2] = Class.forName("monq.jfa.DfaRun");
     } catch( ClassNotFoundException e ) {
@@ -124,7 +124,7 @@ public class Call extends AbstractFaAction {
    * throws a checked exception other than a
    * <code>CallbackException</code>.
    */
-  public void invoke(StringBuffer out, int start, DfaRun run) 
+  public void invoke(StringBuilder out, int start, DfaRun run) 
     throws CallbackException
   {
     Method m;    
@@ -169,7 +169,7 @@ public class Call extends AbstractFaAction {
   public int hashCode() { return methodName.hashCode(); }
   
 //   public String toString() {
-//     StringBuffer sb = new StringBuffer(30);
+//     StringBuilder sb = new StringBuilder(30);
 //     sb.append(super.toString())
 //       .append("[\"").append(pre).append("\", \"")
 //       .append(post).append("\"]")

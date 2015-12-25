@@ -60,7 +60,7 @@ public class SearchReplace extends AbstractFaAction {
     this.count = count;
     this.f = fmt;
     this.dfa = new Nfa(regexp, new AbstractFaAction() {
-	public void invoke(StringBuffer out, int start, DfaRun r) 
+	public void invoke(StringBuilder out, int start, DfaRun r) 
 	  throws CallbackException
 	{
 	  Info info = (Info)r.clientData;
@@ -104,7 +104,7 @@ public class SearchReplace extends AbstractFaAction {
     public Info(int count) { this.count = count; }
   }
   /*******************************************************************/
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     CharSequenceCharSource in = 
       new CharSequenceCharSource(out.substring(start));
     DfaRun r = new DfaRun(dfa, in);

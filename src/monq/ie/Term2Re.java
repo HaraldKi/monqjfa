@@ -37,21 +37,21 @@ public class Term2Re {
    * createConverter()} when creating the default converter used by
    * {@link #convert convert()}.</p>
    */
-  public static final String wordSplitRe = "[ \t\\-_]+";
+  public static final String RE_SPLIT_WORD = "[ \t\\-_]+";
 
   /**
    * <p>2nd parameter passed to {@link #createConverter
    * createConverter()} when creating the default converter used by
    * {@link #convert convert()}.</p>
    */
-  public static final String wordSepRe = "[ \\-_]*";
+  public static final String RE_SEP_WORD = "[ \\-_]*";
 
   /**
    * <p>3rd parameter passed to {@link #createConverter
    * createConverter()} when creating the default converter used by
    * {@link #convert convert()}.</p>
    */
-  public static final String trailContextRe = "[^A-Za-z0-9]";
+  public static final String RE_TRAIL_CONTEXT = "[^A-Za-z0-9]";
 
   /**
    * <p>4th parameter passed to {@link #createConverter
@@ -79,7 +79,7 @@ public class Term2Re {
 
   static {
     try {
-      convert = createConverter(wordSplitRe, wordSepRe, trailContextRe,
+      convert = createConverter(RE_SPLIT_WORD, RE_SEP_WORD, RE_TRAIL_CONTEXT,
 				reParser);
 
 //   	= new Nfa(wordSplitIn, new AbstractFaAction.Replace(wordSplitOut))
@@ -91,7 +91,7 @@ public class Term2Re {
 
       aeAut
 	= new Nfa(".ae", new AbstractFaAction() {
-	    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	    public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	      yytext.setLength(start+1);
 	      yytext.append("a?e");
 	    }
@@ -123,7 +123,7 @@ public class Term2Re {
    * changes to the code.-(</p>
    *
    * @param wordSplitRe is the regular expression used to separate an
-   * incoming term into individual words. See {@link #wordSplitRe} for
+   * incoming term into individual words. See {@link #RE_SPLIT_WORD} for
    * an example.
    *
    * @param wordSepRe is a regular expression put between the regular
@@ -163,12 +163,12 @@ public class Term2Re {
   /**********************************************************************/
   private static class DoFunnyWord extends AbstractFaAction {
     private ReParser rp;
-    private StringBuffer scratch = new StringBuffer();
+    private StringBuilder scratch = new StringBuilder();
     private DoFunnyWord(ReParser rp) { 
       priority = -2; 
       this.rp = rp;
     }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
       scratch.setLength(0);
       rp.escape(scratch, yytext, start);
       yytext.setLength(start);
@@ -178,15 +178,15 @@ public class Term2Re {
   /**********************************************************************/
   private static class DoOrdinaryWord extends AbstractFaAction {
     private ReParser rp;
-    private StringBuffer scratch = new StringBuffer();
-    private StringBuffer scratch2 = new StringBuffer();
+    private StringBuilder scratch = new StringBuilder();
+    private StringBuilder scratch2 = new StringBuilder();
 
     //public int getPriority() { return -1; }
     private DoOrdinaryWord(ReParser rp) { 
       this.rp = rp;
       priority = -1; 
     }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
       // transform characters with a special meaning in a regular
       // expression such that they stand only for themselves.
       scratch2.setLength(0);
@@ -237,14 +237,14 @@ public class Term2Re {
   }
 
   
-  private static StringBuffer sb = new StringBuffer(40);
+  private static StringBuilder sb = new StringBuilder(40);
   
   /**
    * converts a multi word term into a regular expression matching
    * that term as well as obvious generalizations. The algorithm is
    * not finalized yet. The converter used is created with {@link
-   * #createConverter} with {@link #wordSepRe}, {@link #wordSplitRe}
-   * and {@link #trailContextRe} as parameters.</p>
+   * #createConverter} with {@link #RE_SEP_WORD}, {@link #RE_SPLIT_WORD}
+   * and {@link #RE_TRAIL_CONTEXT} as parameters.</p>
    * Typical generalizations include:</p>
    */
   public static synchronized String convert(String s) {
@@ -265,9 +265,7 @@ public class Term2Re {
    * <code>System.in</code> and writes the result to
    * <code>System.out</code>.</p> 
    */
-  public static void main(String[] argv) 
-    throws ReSyntaxException, CompileDfaException, java.io.IOException
-  {
+  public static void main(String[] argv) throws java.io.IOException {
     //convert.getDfa().toDot(System.out);
     java.io.BufferedReader in = 
       new java.io.BufferedReader(new java.io.InputStreamReader(System.in));

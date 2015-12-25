@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -31,7 +31,7 @@ import monq.jfa.actions.*;
  *
    javac Example.java
    echo hallo 123 | java -cp monq.jar Example
- * 
+ *
  * @author &copy; 2005 Harald Kirsch
  *
  */
@@ -48,8 +48,8 @@ public class Example {
       .or("[A-Za-z]+", new Printf("<id>%0</id>"))
       .or("[0-9]+", new Printf("<num>%0</num>"))
       ;
-    
-    // Now we add all pattern/action pairs found on the command line. 
+
+    // Now we add all pattern/action pairs found on the command line.
     for(int i=0; i<argv.length; i+=2) {
       String pattern = argv[i];
       FaAction action = new Printf(true, argv[i+1]);

@@ -39,13 +39,13 @@ public class EncodingDetector {
   private EncodingDetector() {}
   /**********************************************************************/
   private static FaAction do_encoding = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	//System.err.println("gotcha: `"+yytext.substring(start)+"'");
-	Map m = Xml.splitElement(yytext, start);
+	Map<String,String> m = Xml.splitElement(yytext, start);
 	yytext.setLength(start);
       
 	EncodingDetector ed = (EncodingDetector)r.clientData;
-	ed.enc = (String)m.get("encoding");
+	ed.enc = m.get("encoding");
       
 	//System.err.println("now we have enc="+ed.enc);
 	if( ed.enc!=null ) r.setIn(new CharSequenceCharSource(""));
@@ -53,15 +53,15 @@ public class EncodingDetector {
     };
 
   private static FaAction do_content = new AbstractFaAction() {
-      public void invoke(StringBuffer yytext, int start, DfaRun r) {
+      public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	//System.err.println("gotcha: `"+yytext.substring(start)+"'");
-	Map m = Xml.splitElement(yytext, start);
+	Map<String,String> m = Xml.splitElement(yytext, start);
 	yytext.setLength(start);
 	
 	EncodingDetector ed = (EncodingDetector)r.clientData;
 	String s = null;
 	if( !"Content-Type".equals(m.get("http-equiv"))
-	    || (s=(String)m.get("content"))==null ) return;
+	    || (s=m.get("content"))==null ) return;
 
 	// fetch the charset=... out of s
 	int pos = s.indexOf("charset=");
@@ -225,8 +225,10 @@ public class EncodingDetector {
     r.clientData = ed;
     r.filter();
     in.reset();
-    if( ed.enc==null ) return deflt;
-    else return ed.enc;
+    if( ed.enc==null ) {
+      return deflt;
+    }
+    return ed.enc;
   }
   /**********************************************************************/
   /**
@@ -244,18 +246,4 @@ public class EncodingDetector {
     return result;
   }
   /**********************************************************************/
-  /**
-   * @deprecated  for testing purposes only
-   */
-  public static void main(String[] argv) throws Exception {
-    InputStream is = new FileInputStream(argv[0]);
-    if( !is.markSupported() ) is = new BufferedInputStream(is);
-    String encoding = detect(is);
-    System.err.println("Encoding: `"+encoding+"'");
-    Reader r = new InputStreamReader(is);
-    for(int i=0; i<100; i++) {
-      System.out.print((char)r.read());
-    }
-    System.out.println();
-  }
 }

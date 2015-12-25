@@ -105,10 +105,14 @@ Nfa nfa = new Nfa("\\[")</pre>
       <dd>A regular expression <em>re</em> followed by the hat (caret)
 	matches any string which does <b>not contain</b> a match of
 	<em>re</em>. The tilde operator is a convenience shortcut for
-	<code>"((.*re.*)?)^"</code>. If in doubt whether to use
+	<code>"((.*re.*)?)~"</code>. If in doubt whether to use
 	<code>re~</code> or <code>re^</code>, read the explanation
-	about <a href="../Nfa.html#not()">not()</a>. 
+	about <a href="../Nfa.html#not()">not()</a> and use <code>re^</code>. 
       </dd>
+      <dt><em>re@</em></dt>
+      <dd>A regular expression <em>re</em>followed by the at
+        sign matches all strings that <em>re</em> matches as well as
+        all non-empty prefixes of these.</dd>
       <dt><em>re<sub>1</sub>re<sub>2</sub></em></dt>
       <dd>matches all strings which match
 	<em>re<sub>1</sub></em> immediately followed by a match of
@@ -153,7 +157,7 @@ Nfa nfa = new Nfa("\\[")</pre>
     <code>"ab"</code> and the implementation will report this: within
     the string</p>
     <blockquote>
-      <code>"---ababc---"<code>
+      <code>"---ababc---"</code>
     </blockquote>
     <p>the match <code>"ababc"</code> will be found with the two
     submatches <code>"abab"</code> and <code>"abc"</code> assigned to
@@ -272,6 +276,5 @@ Nfa nfa = new Nfa("\\[")</pre>
     &lt;tag&gt;(.*&lt;/tag&gt;)!&lt;otherTag&gt;</pre> would not match
     at the beginning of the above string.</p>
     <hr>
-    Version: $Revision: 1.7 $, $Date: 2005-04-27 09:03:42 $
   </body>
 </html>

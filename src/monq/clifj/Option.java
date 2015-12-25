@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -16,7 +16,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.clifj;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * is a general command line option with zero or more string values.
@@ -29,8 +30,8 @@ public class Option {
   protected int cmax;
   private int cmin;
   private String usage;
-  private Vector<Object> values = null;
-  private Vector<Object> defalt = null;
+  private List<Object> values = null;
+  private List<Object> defalt = null;
   private boolean required = false;
 
   protected Option() {}
@@ -57,7 +58,7 @@ public class Option {
     this.usage = usage;
     this.cmin = cmin;
     this.cmax = cmax;
-    
+
     if( cmin>cmax ) {
       throw new IllegalArgumentException("cmin="+cmin
                                          +" greater than cmax="+cmax);
@@ -70,7 +71,7 @@ public class Option {
    * the constructor without default and then calls {@link #setDefalt} to set
    * the default values.
    * </p>
-   * 
+   *
    * @throws CommandlineException
    *           if the number of default values is wrong or if they are not of
    *           type String.
@@ -78,7 +79,7 @@ public class Option {
   public Option(String opt, String name, String usage,
                 int cmin, int cmax, Object[] defalt) throws CommandlineException {
     this(opt, name, usage, cmin, cmax);
-    
+
     if( defalt==null ) return;
     setDefalt(defalt);
   }
@@ -105,12 +106,12 @@ public class Option {
    */
   protected final Option setDefalt(Object[] defalt) throws CommandlineException {
     // save whatever is already available in values
-    Vector<Object> keep = values;
+    List<Object> keep = values;
     values = null;
-    
+
     for(Object o: defalt) addValue(o);
     assertCmin();
-    
+
     this.defalt = values;
     values = keep;
     return this;
@@ -120,16 +121,16 @@ public class Option {
    * <p>
    * adds the given <code>Object</code> to <code>this</code>.
    * </p>
-   * 
+   *
    * @throws CommandlineException
    *           if the values does not conform to {@link #check}.
-   * 
+   *
    * @throws IllegalArgumentException
    *           if <code>this</code> contains already enough elements.
    */
   private void addValue(Object v) throws CommandlineException {
     if( values==null ) {
-      values= new Vector<Object>();
+      values= new ArrayList<Object>();
     } else if( values.size()>=cmax ) {
       throw new IllegalArgumentException("to many arguments for option `"+opt+
                                          ", only "+cmax+" are allowed");
@@ -147,14 +148,14 @@ public class Option {
    * <b>Hint:</b> Subclasses must override this method to make sure the right
    * objects are stored.
    * </p>
-   * 
+   *
    * @throws CommandlineException
    *           if the value does not meet the requirements for this option (e.g.
    *           wrong type, value too large) and cannot be (easily) converted.
    */
   protected Object check(Object v) throws CommandlineException {
     if( v instanceof String ) return v;
-    
+
     throw new CommandlineException("value must be of type String");
   }
   /**********************************************************************/
@@ -187,7 +188,7 @@ public class Option {
    * the constructor. For subclasses of <code>Option</code>, different
    * types may be returned.
    */
-  public Vector<Object> getValues() {
+  public List<Object> getValues() {
     return values==null ? defalt : values;
   }
   /**
@@ -198,7 +199,7 @@ public class Option {
    * available()} should preceed this call.
    */
   public Object getValue() {
-    Vector v = getValues();
+    List<Object> v = getValues();
     return v.get(0);
   }
   /**********************************************************************/
@@ -208,8 +209,8 @@ public class Option {
       throw new CommandlineException
 	("option `"+opt+"' used more than once");
     }
-    values = new Vector<Object>();
-    while( i<argv.length && values.size()<cmax 
+    values = new ArrayList<Object>();
+    while( i<argv.length && values.size()<cmax
 	   && (!argv[i].startsWith("-") || values.size()<cmin) ) {
       //System.err.println(opt+i);
       String s;
@@ -223,11 +224,11 @@ public class Option {
   }
   //**********************************************************************/
   private void assertCmin() throws CommandlineException {
-    if( values.size()<cmin ) {
+    if( values!=null && values.size()<cmin ) {
       throw new CommandlineException
       ("not enough `"+name+"' arguments (option '"+opt+"'), found "
        +values.size()+" but want "+cmin);
-    }    
+    }
   }
   //**********************************************************************/
   protected String shortUsage() {

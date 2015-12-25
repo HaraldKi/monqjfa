@@ -39,8 +39,8 @@ public class Copy extends AbstractFaAction {
    * have to specify a priority.
    */
   public Copy(int priority) {this.priority = priority;}
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     // nothing to do here
   }
-  public String toString() {return "Copy";}
+  public String toString() {return "Copy(p="+priority+')';}
 }

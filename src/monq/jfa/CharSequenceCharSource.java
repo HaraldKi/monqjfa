@@ -26,13 +26,13 @@ import java.io.Serializable;
  * <p><b>Note:</b> The length of the sequence provided is stored
  * locally in objects of this class and is not updated, if the length
  * of the sequence changes. This allows to use the tail of a
- * <code>StringBuffer</code>, for example, for other purposes, while
+ * <code>StringBuilder</code>, for example, for other purposes, while
  * the head of it is read by an object of this class.</p>
  *
  * @author &copy; 2005 Harald Kirsch
  */
 public class CharSequenceCharSource 
-  extends EmptyCharSource implements CharSource, Serializable {
+  extends EmptyCharSource implements Serializable {
 
   private int next;
   private int end;

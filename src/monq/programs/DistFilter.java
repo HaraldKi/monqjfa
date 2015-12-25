@@ -40,7 +40,7 @@ public class DistFilter {
    */
   private static void addKeys(PipelineRequest req, 
 			      TextStore ts, int start,
-			      StringBuffer fiddle) {
+			      StringBuilder fiddle) {
     for(int kk=start; kk<ts.getNumParts(); kk+=2) {
       String value = ts.getPart(kk+1);
       fiddle.setLength(0);
@@ -66,22 +66,21 @@ public class DistFilter {
        "use a distributed pipe to filter stdin to stdout",
        "address",
        "address information listing servers to contact. An address "
-       +"looks like `host=xyz;port=12345', like `svr=name' or like "
-       +"`pipe=name'"
+       +"looks like `host=xyz;port=12345' or like `svr=name'"
        ,1, Integer.MAX_VALUE);
     cmd.addOption
       (new LongOption
        ("-p", "port", 
 	"local port to use, by default an arbitray one is chosen",
-	1, 1, 1024, 65535, null));
+	1, 1, 1024, 65535, new Object[0]));
 
     cmd.addOption(new BooleanOption("-v",
 				    "log server start/stop to stderr"));
-    String[] dfltConfig = {"/ebi/textmining/Web/config"};
+    String[] dfltConfig = {'.'+File.separator+"servers"};
     cmd.addOption
       (new Option
        ("-c", "confdir",
-	"config file directory containing server and pipe descriptions",
+	"config file directory containing server descriptions",
 	1, 1, dfltConfig)
        );
 
@@ -96,65 +95,40 @@ public class DistFilter {
     if( cmd.available("-p") ) port = ((Long)cmd.getValue("-p")).intValue();
 
     // Read configuration data
-    Map serverConfig = FilterSvrInfo.readAll(cmd.getStringValue("-c"));
-    Map pipeConfig = FilterPipeInfo.readAll(cmd.getStringValue("-c"), 
-					    serverConfig);
+    Map<String,FilterSvrInfo> serverConfig = 
+        FilterSvrInfo.readAll(cmd.getStringValue("-c"));
     // We have to invert the order of the servers listed on the
     // command line for the convenience of the user
-    String[] tmp = cmd.getStringValues("--");
+    String[] restArgs = cmd.getStringValues("--");
     List<PipelineRequest> reqs = new ArrayList<PipelineRequest>();
 
     String tailre = "(;(!"+PipelineRequest.KEYRE+")=(!([^;]|\\\\;)+))*";
     Regexp hostportre = new Regexp("host=(![^;]+);port=(![0-9]+)"+tailre);
     Regexp svrre = new Regexp("svr=(![^;]+)"+tailre);
-    Regexp pipere = new Regexp("pipe=(![^;]+)"+tailre);
-    StringBuffer fiddle =  new StringBuffer();
+    StringBuilder fiddle =  new StringBuilder();
 
-    for(int i=0; i<tmp.length; i++) {
+    for(int i=0; i<restArgs.length; i++) {
       TextStore ts = null;
-      if( pipere.matches(tmp[i]) ) {
-	ts = pipere.submatches();
-	
-	FilterPipeInfo pipe = (FilterPipeInfo)pipeConfig.get(ts.getPart(1));
-	if( pipe==null ) {
-	  System.err.println("pipe `"+ts.getPart(1)+"' unknown");
-	  System.exit(1);
-	}
-	if( pipe.e!=null ) {
-	  System.err.println("pipe `"+ts.getPart(1)
-			     +"' has broken config file");
-	  throw pipe.e;
-	}
-	PipelineRequest[] r = pipe.getRequest();
-	for(int j=0; j<r.length; j++) reqs.add(r[j]);
-	continue;
-      }
-
       PipelineRequest currentReq = null;
-      if( hostportre.matches(tmp[i]) ) {
+      if( hostportre.matches(restArgs[i]) ) {
 	ts = hostportre.submatches();
 	try {
 	  currentReq = new PipelineRequest(ts.getPart(1),
 					   Integer.parseInt(ts.getPart(2)));
 	} catch( NumberFormatException e ) {
-	  throw new Error("cannot parse `"+tmp[i]+"', see cause", e);
+	  throw new Error("cannot parse `"+restArgs[i]+"', see cause", e);
 	}
 	addKeys(currentReq, ts, 3, fiddle);
 	reqs.add(currentReq);
 	continue;
       }
 
-      if( svrre.matches(tmp[i]) ) {
+      if( svrre.matches(restArgs[i]) ) {
 	ts = svrre.submatches();
-	FilterSvrInfo svr = (FilterSvrInfo)serverConfig.get(ts.getPart(1));
+	FilterSvrInfo svr = serverConfig.get(ts.getPart(1));
 	if( svr==null ) {
 	  System.err.println("server `"+ts.getPart(1)+"' unknown");
 	  System.exit(1);
-	}
-	if( svr.e!=null ) {
-	  System.err.println("server `"+ts.getPart(1)
-			     +"' has broken config file");
-	  throw svr.e;
 	}
 	currentReq = svr.getRequest();
 	reqs.add(currentReq);
@@ -162,7 +136,7 @@ public class DistFilter {
 	continue;
       } 
 
-      System.err.println(prog+": cannot parse request `"+tmp[i]+"'");
+      System.err.println(prog+": cannot parse request `"+restArgs[i]+"'");
       System.exit(1);
 
     }

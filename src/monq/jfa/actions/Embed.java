@@ -50,7 +50,7 @@ public class Embed extends AbstractFaAction {
   public Embed(String pre, String post) {
     this(pre, post, 0);
   }
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     out.insert(start, pre);
     out.append(post);
   }
@@ -59,8 +59,12 @@ public class Embed extends AbstractFaAction {
     Embed o = (Embed)_o;
     return pre.equals(o.pre) && post.equals(o.post) && priority==o.priority;
   }
+  @Override
+  public int hashCode() {
+    return pre.hashCode() ^ post.hashCode() ^ priority;
+  }
   public String toString() {
-    StringBuffer sb = new StringBuffer(30);
+    StringBuilder sb = new StringBuilder(30);
     sb.append(super.toString())
       .append("[\"").append(pre).append("\", \"")
       .append(post).append("\"]")

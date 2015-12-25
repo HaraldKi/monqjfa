@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -19,12 +19,9 @@ package monq.jfa;
 //import jfa.*;
 import monq.jfa.actions.*;
 
-import java.io.StringReader;
-import java.lang.Class;
 import java.util.*;
 
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  *
@@ -33,10 +30,11 @@ import junit.framework.TestSuite;
 public class ReParserTest extends TestCase {
   Nfa nfa;
 
+  @Override
   public void setUp() throws ReSyntaxException {
     nfa = new Nfa();
   }
-  public void testEBSEOF() throws java.io.IOException {
+  public void testEBSEOF() {
     ReSyntaxException e = null;
     String s = "abcde\\";
     try {
@@ -49,7 +47,7 @@ public class ReParserTest extends TestCase {
     }
     assertEquals(ReSyntaxException.EBSATEOF, e.emsg);
   }
-  public void testEEXTRACHAR() throws java.io.IOException {
+  public void testEEXTRACHAR()  {
     ReSyntaxException e = null;
     String s = "a)";
     try {
@@ -62,7 +60,7 @@ public class ReParserTest extends TestCase {
     }
     assertEquals(ReSyntaxException.EEXTRACHAR, e.emsg);
   }
-  public void testEINVALUL() throws java.io.IOException {
+  public void testEINVALUL() {
     ReSyntaxException e = null;
     String s = "[a-]";
     try {
@@ -76,7 +74,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EINVALUL, e.emsg);
   }
 
-  public void testEINVRANGE() throws java.io.IOException {
+  public void testEINVRANGE() {
     ReSyntaxException e = null;
     String s = "[x-a]";
     try {
@@ -90,7 +88,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EINVRANGE, e.emsg);
   }
 
-  public void testECLOSINGP() throws java.io.IOException {
+  public void testECLOSINGP() {
     ReSyntaxException e = null;
     String s = "(abc";
     try {
@@ -104,7 +102,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.ECLOSINGP, e.emsg);
   }
 
-  public void testECHARUNEXbracket() throws java.io.IOException {
+  public void testECHARUNEXbracket() {
     ReSyntaxException e = null;
     String s = "[abc^]";
     try {
@@ -118,7 +116,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.ECHARUNEX, e.emsg);
   }
 
-  public void testEEOFUNEX() throws java.io.IOException {
+  public void testEEOFUNEX() {
     ReSyntaxException e = null;
     String s = "(";
     try {
@@ -132,7 +130,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EEOFUNEX, e.emsg);
   }
 
-  public void testECHARUNEX() throws java.io.IOException {
+  public void testECHARUNEX() {
     ReSyntaxException e = null;
     String s = "(*";
     try {
@@ -146,7 +144,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.ECHARUNEX, e.emsg);
   }
 
-  public void testCleanReset() throws java.io.IOException {
+  public void testCleanReset() {
     ReSyntaxException e = null;
     String s = "[a-";
     try {
@@ -160,9 +158,9 @@ public class ReParserTest extends TestCase {
     }
     assertEquals(ReSyntaxException.EINVALUL, e.emsg);
   }
-  public void testRecentWrap() throws java.io.IOException {
+  public void testRecentWrap() {
     ReSyntaxException e = null;
-    // make sure the recent buffer in the ReParser overflows. 
+    // make sure the recent buffer in the ReParser overflows.
     String s = "abcdefghijklmnopqrstuvwxyz"
       + "ABCDEFGHIJKLMNOPQRSTUVWXYZ::::::::::::::::::::::::"
       + ")0123456789";
@@ -178,8 +176,7 @@ public class ReParserTest extends TestCase {
     }
     assertEquals(ReSyntaxException.EEXTRACHAR, e.emsg);
   }
-  public void testBackslash() 
-    throws java.io.IOException, ReSyntaxException {
+  public void testBackslash() throws ReSyntaxException {
     String s = "\\[a[x\\]]b";
     nfa.or(s, Drop.DROP);
     assertEquals(4, nfa.findPath("[a]b"));
@@ -187,17 +184,14 @@ public class ReParserTest extends TestCase {
     assertEquals(-1, nfa.findPath("aaa"));
   }
 
-  public void testMinusInBracket() 
-    throws java.io.IOException, ReSyntaxException {
+  public void testMinusInBracket() throws ReSyntaxException {
     String s = "[-abc]+";
-    Nfa nfa = new Nfa(s, Drop.DROP);
-    assertEquals(4, nfa.findPath("a-bcd"));
-    assertEquals(4, nfa.findPath("----"));
+    Nfa nfas = new Nfa(s, Drop.DROP);
+    assertEquals(4, nfas.findPath("a-bcd"));
+    assertEquals(4, nfas.findPath("----"));
   }
 
-  public void testEOFinBracket() 
-    throws java.io.IOException 
-  {
+  public void testEOFinBracket() {
     ReSyntaxException e = null;
     try {
       nfa.or("ab[rst");
@@ -208,7 +202,7 @@ public class ReParserTest extends TestCase {
   }
 
   // a very basic test of the toString function
-  public void test_ReSyntaxException_toString() 
+  public void test_ReSyntaxException_toString()
   {
     ReSyntaxException e = null;
     try {
@@ -221,7 +215,7 @@ public class ReParserTest extends TestCase {
     int line3 = 1+msg.indexOf("\n", line2);
     String wrongText = msg.substring(line2, line3-1);
     String marker = msg.substring(line3);
-    
+
     assertEquals("  x?[", wrongText);
     assertEquals("    ^", marker);
   }
@@ -274,14 +268,9 @@ public class ReParserTest extends TestCase {
       assertEquals(expected, match);
       c += 1;
     } while( c!=Character.MAX_VALUE);
-    
+
   }
   //********************************************************************
-
-  public static void main(String[] argv) {
-    //ReParser rep = new ReParser();
-    junit.textui.TestRunner.run(new TestSuite(ReParserTest.class));
-  }
 }
 
- 
+

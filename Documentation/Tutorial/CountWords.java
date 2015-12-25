@@ -35,7 +35,7 @@ public class CountWords {
    * count for that word in a Map to be found in r.clientData.</p>
    */
   public static class DoCount extends AbstractFaAction {
-    public void invoke(StringBuffer iotext, int start, DfaRun r) {
+    public void invoke(StringBuilder iotext, int start, DfaRun r) {
       String word = iotext.substring(start);
       iotext.setLength(start);
 

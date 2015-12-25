@@ -41,7 +41,7 @@ public class Drop extends AbstractFaAction {
    */
   public Drop(int priority) {this.priority = priority;}
   public String toString() {return "Drop";}
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     out.setLength(start);
   }
 }

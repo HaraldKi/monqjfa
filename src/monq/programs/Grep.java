@@ -218,6 +218,7 @@ public class Grep implements ServiceFactory {
     int prioInc = autoPrio ? 1 : 0;
 
     Nfa nfa = new Nfa(Nfa.NOTHING);
+    nfa.setMemoryForSpeedTradeFactor(1e9f);
     for(int i=0; i<args.length; i+=2) {
       nfa.or(args[i], new Printf(true, args[i+1]).setPriority(prio));
       prio += prioInc;
@@ -281,6 +282,7 @@ public class Grep implements ServiceFactory {
     // a combination of Hold/Match/Decide callbacks to do the
     // work. Otherwise, a simple Printf suffices.
     Nfa nfa = new Nfa(Nfa.NOTHING);
+    nfa.setMemoryForSpeedTradeFactor(1e9f);
     if( select ) {
       this.needCom = true;
       toWorkAction = new Hold(toWorkAction);
@@ -309,6 +311,7 @@ public class Grep implements ServiceFactory {
     // into the ROI
     SwitchDfa toWork = new SwitchDfa(toWorkAction);
     Nfa envelope = new Nfa(roiOn, toWork);
+    envelope.setMemoryForSpeedTradeFactor(1e9f);
     main = envelope.compile(fmMain);
 
     // connect the SwitchDfa objects to their DFAs
@@ -342,7 +345,7 @@ public class Grep implements ServiceFactory {
   private static class Hold extends AbstractFaAction {
     private FaAction a;
     public Hold(FaAction a) { this.a = a; }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException {
       Com com = (Com)r.clientData;
       com.ship = false;
@@ -359,7 +362,7 @@ public class Grep implements ServiceFactory {
     public Match(String format) throws ReSyntaxException {
       this.a = new Printf(true, format);
     }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException {
       Com com = (Com)r.clientData;
       com.ship = true;
@@ -372,7 +375,7 @@ public class Grep implements ServiceFactory {
   private static class Decide extends AbstractFaAction {
     private FaAction a;
     public Decide(FaAction a) { this.a = a; }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException {
       Com com = (Com)r.clientData;
       a.invoke(yytext, start, r);
@@ -382,7 +385,7 @@ public class Grep implements ServiceFactory {
   }
   /**********************************************************************/
   // Do what normally the compiler does with '\r' etc.
-  private static String escapeLiteral(StringBuffer scratch, String s) {
+  private static String escapeLiteral(StringBuilder scratch, String s) {
     scratch.setLength(0);
     int l = s.length();
     for(int i=0; i<l; i++) {
@@ -475,7 +478,7 @@ public class Grep implements ServiceFactory {
       System.exit(1);
     }
     
-    StringBuffer scratch = new StringBuffer();
+    StringBuilder scratch = new StringBuilder();
     int l = args.length;
     for(int i=0; i<l; i+=1) args[i] = escapeLiteral(scratch, args[i]);
 

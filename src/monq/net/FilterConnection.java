@@ -41,7 +41,7 @@ class FilterConnection {
 
   private String host;
   private int port = -1;
-  private StringBuffer tail = new StringBuffer();
+  private StringBuilder tail = new StringBuilder();
 
   // the upstream connection
   private Socket socket = null;
@@ -62,11 +62,11 @@ class FilterConnection {
       requestParser = new
 	Nfa("[.]?"+PipelineRequest.KEYRE+"=([^;\n]|\\\\;|\\\\\n)*",
 	    new AbstractFaAction() {
-	      public void invoke(StringBuffer yytext, 
+	      public void invoke(StringBuilder yytext, 
 				 int start, DfaRun r) {
 		//System.out.println(">>>"+ts);
 		@SuppressWarnings("unchecked")
-		  Map<String,String> h = (Map)r.clientData;
+		  Map<String,String> h = (Map<String,String>)r.clientData;
 
 		if( h.size()>=MAXPARAMS ) {
 		  r.setIn(new CharSequenceCharSource
@@ -97,7 +97,7 @@ class FilterConnection {
 	    })
 	.or(";+", Drop.DROP)
 	.or("\n.*", new AbstractFaAction() {
-	    public void invoke(StringBuffer yytext, int start, DfaRun r) {
+	    public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	      yytext.deleteCharAt(0);
 	      r.setIn(new EmptyCharSource());
 	    }
@@ -115,7 +115,7 @@ class FilterConnection {
   /**
    * <p>return the full <code>Map</code> of parameters.</p>
    */
-  public Map getParameters() { return m; }
+  public Map<String,String> getParameters() { return m; }
   /**********************************************************************/
   public FilterConnection(InputStream ctrlIn) throws IOException {
     CharSource source = new ReaderCharSource(ctrlIn, "UTF-8");
@@ -125,8 +125,8 @@ class FilterConnection {
     // far too long, the next line throws IOException.
     r.filter(this.tail);
 
-    host = (String)m.remove(".host");
-    String portString = (String)m.remove(".port");
+    host = m.remove(".host");
+    String portString = m.remove(".port");
 //     System.err.println("FilterConnection just got [[[host="+host
 // 		       +", port="+portString+", map="+m+"]]]");
     if( host==null ) return;

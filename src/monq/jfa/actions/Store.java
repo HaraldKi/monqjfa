@@ -43,7 +43,7 @@ public class Store extends AbstractFaAction {
   public Store(String key) {
     this.key = key;
   }
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     MapProvider mp = (MapProvider)runner.clientData;
     Map<Object,Object> map = mp.getMap();
     map.put(key, out.substring(start));

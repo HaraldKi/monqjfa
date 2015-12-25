@@ -37,9 +37,9 @@ abstract class AbstractFaState
   // used in this map as a key. The values will be of type
   // FaSubinfo[], sorted according to FaSubinfo.id (see
   // FaSubinfo.compareTo()).
-  private Map<FaAction,FaSubinfo[]> subinfos = null;	// keys are FaAction objects
+  private Map<FaAction,FaSubinfo[]> subinfos = null;
 
-  public  Map getSubinfos() {
+  public Map<FaAction,FaSubinfo[]> getSubinfos() {
     return subinfos;
   }
   /**
@@ -116,20 +116,7 @@ abstract class AbstractFaState
     subinfos.remove(from);
     subinfos.put(to, o);
   }
-//   String getSubs() {
-//     if( subinfos==null ) return "null";
-//     StringBuffer b = new StringBuffer();
-//     Iterator it = subinfos.keySet().iterator();
-//     while( it.hasNext() ) {
-//       Object o = it.next();
-//       FaSubinfo[] ary = (FaSubinfo[])subinfos.get(o);
-//       for(int i=0; i<ary.length; i++) {
-// 	b.append("(").append(o).append(',')
-// 	  .append(ary[i]).append(')');
-//       }
-//     }
-//       return b.toString();
-//   }
+
   /**
    * called during compilation where this is a new state of the Dfa
    * and the given nfaStates is the set of states of the Nfa that
@@ -139,19 +126,19 @@ abstract class AbstractFaState
    * extreme case, this state may be a start/inner/stop node for a
    * certain subgraph.
    */
-  public void mergeSubinfos(Set nfaStates) {
+  public void mergeSubinfos(Set<FaState> nfaStates) {
     // loop over all given states
-    Iterator states = nfaStates.iterator();
+    Iterator<FaState> states = nfaStates.iterator();
     while( states.hasNext() ) {
-      FaState other = (FaState)(states.next());
-      Map otherSubs = other.getSubinfos();
+      FaState other = states.next();
+      Map<FaAction,FaSubinfo[]> otherSubs = other.getSubinfos();
       if( otherSubs==null ) continue;
 
       // loop over all actions in the other's subinfo
-      Iterator otherActions = otherSubs.keySet().iterator();
+      Iterator<FaAction> otherActions = otherSubs.keySet().iterator();
       while( otherActions.hasNext() ) {
-	FaAction a = (FaAction)(otherActions.next());
-	FaSubinfo[] ary = (FaSubinfo[])otherSubs.get(a);
+	FaAction a = otherActions.next();
+	FaSubinfo[] ary = otherSubs.get(a);
 
 	// loop over all subgraph markers and merge them in
 	for(int i=0; i<ary.length; i++) mergeSub(a, ary[i]);
@@ -169,7 +156,7 @@ abstract class AbstractFaState
   public boolean isImportant() {
     return getTrans()!=null || getAction()!=null || subinfos!=null;
   }
-  //public boolean isStop() {return getAction()!=null;}
+
   public FaState[] getEps() {return null;}
 
   public void addEps(FaState other) {
@@ -195,32 +182,38 @@ abstract class AbstractFaState
    * implements an {@link java.util.Iterator} over all states reachable
    * from this state. It iterates first over the character transitions
    * and then over the epsilon transitions.
-   * <p>The {@link java.util.Iterator#remove() remove()} operation is
+   * <p>The {@link java.util.Iterator#remove() remove()} operation is not
    * implemented.</p> 
    *
    * <p>Use {@link FaState#getChildIterator() getChildIterator()} of
    * an {@link FaState} object to create a <code>ChildIterator</code>
    * for that state.</p>
    */
-  public class ChildIterator implements Iterator {
+  public class ChildIterator implements Iterator<FaState> {
     private int trans_i = 0;
     private int trans_L = 0;
     private int eps_i = 0;
     private int eps_L = 0;
       
-    ChildIterator() {
-      FaState[] eps = getEps();
-      if( eps!=null ) eps_L = eps.length;
-      CharTrans t = getTrans();
-      if( t!=null ) trans_L = t.size();
+    ChildIterator(IterType iType) {
+      if (iType==IterType.ALL || iType==IterType.EPSILON) {
+        FaState[] eps = getEps();
+        if( eps!=null ) eps_L = eps.length;
+      }
+      if (iType==IterType.ALL || iType==IterType.CHAR) {
+        CharTrans t = getTrans();
+        if( t!=null ) trans_L = t.size();
+      }
     }
 
     public boolean hasNext() {
       return (eps_i<eps_L) || (trans_i<trans_L);
     }
 
-    public Object next() {
-      if( trans_i<trans_L ) return getTrans().getAt(trans_i++);
+    public FaState next() {
+      if( trans_i<trans_L ) {
+        return getTrans().getAt(trans_i++);
+      }
       if( eps_i<eps_L ) return getEps()[eps_i++];
       throw  new java.util.NoSuchElementException();
     }
@@ -229,20 +222,20 @@ abstract class AbstractFaState
     }
   }
   /**********************************************************************/
-  public Iterator getChildIterator() {
-    return new ChildIterator();
+  @Override
+  public Iterator<FaState> getChildIterator(IterType iType) {
+    return new ChildIterator(iType);
   }
   /********************************************************************/
-  public static FaState 
-    createDfaState(FaAction a, boolean needEps) 
-  {
+  public static FaState createDfaState(FaAction a, boolean needEps) {
     if( a!=null ) {
       // for stop states, there is anyway an epsilon
       return new DfaStopState(a);
-    } else {
-      if( needEps ) return new NfaState();
-      else return new DfaState();
+    } 
+    if( needEps ) {
+      return new NfaState();
     }
+    return new DfaState();
   }
   /********************************************************************/
   /**

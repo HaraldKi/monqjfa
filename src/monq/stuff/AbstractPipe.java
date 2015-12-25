@@ -112,27 +112,27 @@ public abstract class AbstractPipe implements Feeder, Drainer {
     this.e = null;		// allow for reuse of subclass objects
     try {
       pipe();
-    } catch( InterruptedIOException e ) {
+    } catch( InterruptedIOException ex ) {
       // we understand this as a valid request to quit
-    } catch( InterruptedException e ) {
+    } catch( InterruptedException ex ) {
       // we understand this as a valid request to quit
-    } catch( IOException e ) {
-      this.e = e;
+    } catch( IOException ex ) {
+      this.e = ex;
     }
     try {
       out.flush();
-    } catch( IOException e ) {
-      if( this.e==null ) this.e = e;
+    } catch( IOException ex ) {
+      if( this.e==null ) this.e = ex;
     }
     try {
       if(  out!=null && closeOut ) out.close();
-    } catch( IOException e ) {
-      if( this.e==null ) this.e = e;
+    } catch( IOException ex ) {
+      if( this.e==null ) this.e = ex;
     }
     try {
       if( in!=null && closeIn ) in.close();
-    } catch( IOException e ) {
-      if( this.e==null ) this.e = e;
+    } catch( IOException ex ) {
+      if( this.e==null ) this.e = ex;
     }
   }
   /**********************************************************************/

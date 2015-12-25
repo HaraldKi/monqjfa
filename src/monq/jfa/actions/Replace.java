@@ -39,12 +39,12 @@ public class Replace extends AbstractFaAction {
     this.priority = prio;
     this.s = s;
   }
-  public void invoke(StringBuffer out, int start, DfaRun runner) {
+  public void invoke(StringBuilder out, int start, DfaRun runner) {
     out.setLength(start);
     out.append(s);
   }
   public String toString() {
-    StringBuffer sb = new StringBuffer(30);
+    StringBuilder sb = new StringBuilder(30);
     sb.append(super.toString())
       .append("[\"").append(s).append("\"]")
       ;
@@ -53,7 +53,10 @@ public class Replace extends AbstractFaAction {
   public boolean equals(Object _o) {
     if( !(_o instanceof Replace) ) return false;
     Replace o = (Replace)_o;
-    return s.equals(o.s) && priority==o.priority;
-    
+    return s.equals(o.s) && priority==o.priority;    
+  }
+  @Override
+  public int hashCode() {
+    return s.hashCode() ^ priority;
   }
 }

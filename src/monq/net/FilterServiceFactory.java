@@ -138,8 +138,8 @@ public class FilterServiceFactory implements ServiceFactory {
       FilterConnection conn = null;
       try {
 	conn = new FilterConnection(controlIn);
-      } catch( IOException e ) {
-	this.e = e;
+      } catch( IOException ex ) {
+	this.e = ex;
 	return;
       }
 
@@ -147,10 +147,10 @@ public class FilterServiceFactory implements ServiceFactory {
       try {
 	InputStream filterIn = conn.connect();
 	svc = fac.createService(filterIn, filterOut, conn.getParameters());
-      } catch( IOException e ) {
+      } catch( IOException ex ) {
 	// we cannot just return here, because we have to close the
 	// two streams in any case.
-	this.e = e;
+	this.e = ex;
       }
 
       if( svc!=null ) {
@@ -160,9 +160,9 @@ public class FilterServiceFactory implements ServiceFactory {
 
       try {
 	conn.close();
-      } catch( java.io.IOException e ) {
-	e.printStackTrace(System.err);
-	throw new Error("what am I supposed to do with this?", e);
+      } catch( java.io.IOException ex ) {
+	ex.printStackTrace(System.err);
+	throw new Error("what am I supposed to do with this?", ex);
       }
     }
   }

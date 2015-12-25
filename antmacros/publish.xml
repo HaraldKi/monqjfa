@@ -1,0 +1,29 @@
+<project>
+  <macrodef name="do-publish">
+    <sequential>
+      <if>
+        <not>
+          <or>
+            <matches pattern="[0-9]+" string="${svn.revision}"/>
+            <equals arg1="${publish}" arg2="1"/>
+          </or>
+        </not>
+        <then>
+          <fail>svn.revision=${svn.revision}, but must be a number</fail>
+        </then>
+      </if>
+
+      <exec executable="rsync" dir="." failonerror="true">
+        <arg value="-avrc"/>
+        <arg value="--delete"/>
+        <!-- not from source but actually prevent deletion on target: -->
+        <arg value="--exclude"/>
+        <arg value="/index.html"/>
+        <arg value="build/sitecontent/"/>
+        <!-- set, for example, in ~/.ant.properties -->
+        <arg value="${ssh.publishroot}/${ant.project.name}"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+</project>

@@ -26,23 +26,26 @@ package monq.jfa;
  */
 class SingletonCharTrans implements java.io.Serializable, CharTrans {
   private char ch;
-  private Object o;
+  private FaState o;
 
   public static long stats = 0;
 
-  public SingletonCharTrans(char ch, Object o) {
+  public SingletonCharTrans(char ch, FaState o) {
     this.ch = ch;
     this.o = o;
     //System.out.println("Singleton("+Misc.printable(ch)+", "+o);
   }
 
-  public Object get(char ch) {
+  @Override
+  public FaState get(char queryChar) {
     stats += 1;
-    if( this.ch==ch ) return o;
+    if( this.ch==queryChar ) return o;
     return null;
   }
   public int size() {return 1;}
-  public Object getAt(int pos) {
+
+    @Override
+    public FaState getAt(int pos) {
     if( pos!=0 ) throw new ArrayIndexOutOfBoundsException(pos);
     return o;
   }

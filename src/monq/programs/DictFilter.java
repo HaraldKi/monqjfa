@@ -121,15 +121,11 @@ public class DictFilter implements ServiceFactory {
    * <p>force {@link #createService createService()} to set up the
    * filter with the given input encoding.</p>
    */
-  public void setInputEncoding(String enc) 
-    throws UnsupportedEncodingException
-  {
+  public void setInputEncoding(String enc) {
     this.inputEncoding = enc;
   }
   /**********************************************************************/
-  public void setOutputEncoding(String enc) 
-    throws UnsupportedEncodingException
-  {
+  public void setOutputEncoding(String enc) {
     this.outputEncoding = enc;
   }
   /**********************************************************************/
@@ -151,30 +147,9 @@ public class DictFilter implements ServiceFactory {
     // order to not having to deal with ambiguities.
     private int nextPrio = 1;
     
-    // a little helper to be reused while reading in the mwt file
-    monq.jfa.xml.StdCharEntities helper 
-      = new monq.jfa.xml.StdCharEntities();
-    
     public List<Object> getStack() { return stack; }
 
     public ReadHelper(boolean verbose) { this.verbose = verbose; }
-  }
-  /********************************************************************/
-  /**
-   * <p>after calling {@link monq.stuff.EncodingDetector#detect}, the
-   * other constructor is called with a reader prepared with the
-   * detected encoding from <code>mwtFile</code>.</p>
-   *
-   * @deprecated Use a proper {@link java.io.Reader} with the other
-   * constructor, please.
-   */
-  public DictFilter(java.io.InputStream mwtFile, String inputType, 
-		    String elemName, boolean verbose) 
-    throws java.io.IOException, ReSyntaxException, CompileDfaException
-  {
-    String enc = monq.stuff.EncodingDetector.detect(mwtFile);
-    Reader in = new InputStreamReader(mwtFile, enc);
-    init(in, inputType, elemName, verbose, false, true);
   }
   /********************************************************************/
   public DictFilter(Reader mwtFile, String inputType, 
@@ -273,11 +248,11 @@ public class DictFilter implements ServiceFactory {
       FaAction eofAction = 
 	new IfContext(null, Drop.DROP)
 	.elsedo(new AbstractFaAction() {
-	    public void invoke(StringBuffer b, int start, DfaRun r) 
+	    public void invoke(StringBuilder b, int start, DfaRun run) 
 	      throws CallbackException
 	    {
-	      ReadHelper rh = (ReadHelper)r.clientData;
-	      List stack = rh.getStack();
+	      ReadHelper rhelp = (ReadHelper)run.clientData;
+	      List<Object> stack = rhelp.getStack();
 	      Context ctx = (Context)stack.get(stack.size()-1);
 	      throw new CallbackException
 		("open context `"+ctx.getName()+"'");
@@ -331,7 +306,7 @@ public class DictFilter implements ServiceFactory {
     }
 
     if( memDebug ) {
-      Map<Class, Map<Class,Pair>> h;
+      Map<Class<?>, Map<Class<?>,Pair>> h;
       System.err.println("# Size of Nfa");
       h = monq.stuff.Sizeof.sizeof(nfa);
       monq.stuff.Sizeof.printTypes(System.err, h);
@@ -407,7 +382,7 @@ public class DictFilter implements ServiceFactory {
   /********************************************************************/
   private static final FaAction do_template = new AbstractFaAction() {
     Map<String,String>  m = new HashMap<String,String>();
-      public void invoke(StringBuffer yytext, int start, DfaRun r) 
+      public void invoke(StringBuilder yytext, int start, DfaRun r) 
 	throws CallbackException
       {
 	ReadHelper rh = (ReadHelper)r.clientData;
@@ -443,10 +418,10 @@ public class DictFilter implements ServiceFactory {
     public Do_t_r(ReParser rep) {
       try {
 	convert = 
-	  Term2Re.createConverter(Term2Re.wordSplitRe,
+	  Term2Re.createConverter(Term2Re.RE_SPLIT_WORD,
 				  //"[ \\-_]?",
-				  Term2Re.wordSepRe,
-				  Term2Re.trailContextRe,
+				  Term2Re.RE_SEP_WORD,
+				  Term2Re.RE_TRAIL_CONTEXT,
 				  rep);
       } catch( ReSyntaxException e ) {
 	throw new Error("impossible", e);
@@ -461,7 +436,7 @@ public class DictFilter implements ServiceFactory {
       }
     }
     
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException
     {
       ReadHelper rh = (ReadHelper)r.clientData;
@@ -511,14 +486,14 @@ public class DictFilter implements ServiceFactory {
       yytext.setLength(l);
       
       
-      String re = StdCharEntities.toChar((String)m.remove(Xml.CONTENT));
+      String re = StdCharEntities.toChar(m.remove(Xml.CONTENT));
       
       int tc = 0;		// length of trailing context
       if( isTerm ) {
 	re = convert(re);
 	tc = 1;
       } else {
-	String tmp = (String)m.remove("tc");
+	String tmp = m.remove("tc");
 	if( tmp==null ) tmp="0";
 	try {
 	  tc = Integer.parseInt(tmp);	      
@@ -534,9 +509,9 @@ public class DictFilter implements ServiceFactory {
       // the map must be empty by now (except one last key/value pair)
       m.remove(Xml.TAGNAME);
       if( m.size()>0 ) {
-	StringBuffer sb = new StringBuffer();
+	StringBuilder sb = new StringBuilder();
 	sb.append("superfluous attributes:");
-	Iterator it = m.keySet().iterator();
+	Iterator<String> it = m.keySet().iterator();
 	while( it.hasNext() ) {
 	  Object key = it.next();
 	  sb.append(' ').append(key).append('=').append(m.get(key));
@@ -568,7 +543,7 @@ public class DictFilter implements ServiceFactory {
       this.tc = tc;
       this.priority = prio;
     }
-    public void invoke(StringBuffer yytext, int start, DfaRun r) 
+    public void invoke(StringBuilder yytext, int start, DfaRun r) 
       throws CallbackException
     {
       int L = yytext.length();
@@ -587,7 +562,7 @@ public class DictFilter implements ServiceFactory {
       }
     }
     public String toString() {
-      StringBuffer sb = new StringBuffer(80);
+      StringBuilder sb = new StringBuilder(80);
       sb.append(super.toString()).append("[store=`");
       store.getPart(sb, 0);
       //sb.append("', prio=").append(getPriority())

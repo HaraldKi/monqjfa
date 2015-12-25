@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -35,7 +35,7 @@ interface CharTrans {
    character <code>ch</code>. If <code>ch</code> is not mapped,
    <code>null</code> is returned.</p>
   *****/
-  Object get(char ch);
+  FaState get(char ch);
 
   /**
    * returns the number of character ranges (and objects) stored.
@@ -45,17 +45,17 @@ interface CharTrans {
   /**
    * returns the object stored at index position <code>pos</code>.
    */
-  Object getAt(int pos);
+  FaState getAt(int pos);
 
   /**
    * returns the left boundary of the range stored at index
-   * <code>pos</code> 
+   * <code>pos</code>
    */
   char getFirstAt(int pos);
 
   /**
    * returns the right boundary of the range stored at index
-   * <code>pos</code> 
+   * <code>pos</code>
    */
   char getLastAt(int pos);
 

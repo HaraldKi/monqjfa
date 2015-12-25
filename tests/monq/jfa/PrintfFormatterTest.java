@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -19,8 +19,6 @@ package monq.jfa;
 //import jfa.*;
 import monq.jfa.actions.*;
 
-import java.io.StringReader;
-import java.lang.Class;
 import java.util.HashMap;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -33,11 +31,11 @@ import java.util.Map;
 public class PrintfFormatterTest extends TestCase {
 
   /**********************************************************************/
-  
-  public void testBasic1() 
+
+  public void testBasic1()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("a", new Printf("[%0]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -45,10 +43,10 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("[a]bb[a]", s);
   }
 
-  public void testNullSplitter_getNumParts() 
+  public void testNullSplitter_getNumParts()
       throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("a", new Printf("[%n]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -56,10 +54,10 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("b[1]b", s);
   }
 
-  public void testForceReallocOfops() 
+  public void testForceReallocOfops()
       throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("a", new Printf("%n%0%n%0%n"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -67,10 +65,10 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("b1a1a1b", s);
   }
 
-  public void testForceReallocInNullSplitter() 
+  public void testForceReallocInNullSplitter()
       throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("[a-z]+", new Printf("<t>%0</t>"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -78,10 +76,10 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("0123456789<t>abcdefghijklmnopqrstuvwxyzw</t>", s);
   }
 
-  public void test_getPartWithRange1() 
+  public void test_getPartWithRange1()
       throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("[a-z]+", new Printf("[%0(1,-1)]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -89,10 +87,10 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("---[bc]---", s);
   }
 
-  public void test_getPartWithRange2() 
+  public void test_getPartWithRange2()
       throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("[a-z]+", new Printf("[%0(-3,0)]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -100,21 +98,21 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("---[bcd]---", s);
   }
 
-  public void test_getPartWithRange3() 
+  public void test_getPartWithRange3()
       throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("[a-z]+", new Printf("[%0(0,2)]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("---abcd---");
     assertEquals("---[ab]---", s);
   }
-  public void test_getPartWithRange4() 
+  public void test_getPartWithRange4()
       throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    
-    String s = 
+
+    String s =
       new Nfa("[a-z]+", new Printf("[%0(0,6)]"))
       .compile(DfaRun.UNMATCHED_DROP)
       .createRun()
@@ -124,7 +122,7 @@ public class PrintfFormatterTest extends TestCase {
   public void test_getPartLen()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("[a-z]+", new Printf("[%l0]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -134,7 +132,7 @@ public class PrintfFormatterTest extends TestCase {
   public void test_getPartLen_WrongPart()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("[a-z]+", new Printf("[%l2]"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -144,7 +142,7 @@ public class PrintfFormatterTest extends TestCase {
   public void test_funnyChars()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = 
+    String s =
       new Nfa("[a-z]+", new Printf("%%-\\%-%0()-%0\\(0,1)"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -152,13 +150,11 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("---%-%-abcd()-abcd(0,1)---", s);
   }
 
-  public void test_formatError1()
-    throws ReSyntaxException
-  {
+  public void test_formatError1() {
     ReSyntaxException e = null;
     try {
-      Printf pf = 
-	new Printf("%axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+      FaAction a = new Printf("%axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+      fail("expected ReSyntaxException when creating "+a);
     } catch( ReSyntaxException _e) {
       e = _e;
     }
@@ -166,23 +162,22 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals(s, e.text.substring(0, s.length()));
     int L = e.text.length();
     assertEquals("x...", e.text.substring(L-4));
-    
+
 
   }
 
   // in contrast to the above, the format is very short resulting in
   // another preparation of the error string.
-  public void test_formatError2()
-    throws ReSyntaxException
-  {
-    ReSyntaxException e = null;
+  public void test_formatError2() {
+
     try {
-      Printf pf = new Printf("%abc");
-    } catch( ReSyntaxException _e) {
-      e = _e;
+      FaAction a = new Printf("%abc");
+      fail("expected ReSyntaxException when creating "+a);
+    } catch( Throwable e) {
+      assertTrue(e instanceof ReSyntaxException);
+      String s = "%abc";
+      assertEquals(s, ((ReSyntaxException)e).text);
     }
-    String s = "%abc";
-    assertEquals(s, e.text);
   }
 
   // for completeness of the coverage, do call the constructor with
@@ -191,7 +186,7 @@ public class PrintfFormatterTest extends TestCase {
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
     String s = new Nfa("a+", new Printf("[%0]"))
-      .or("a", new Printf(false, "<%0>", 1))
+      .or("a", new Printf(false, "<%0>").setPriority(1))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("xaxaa");
@@ -202,21 +197,21 @@ public class PrintfFormatterTest extends TestCase {
   public void test_ConstructorWithRe()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s 
-      = new Nfa("(![-+]?[0-9]+)[.](![0-9]+)", 
-		new Printf(true, "%1,%2", 0))
+    String s
+      = new Nfa("(![-+]?[0-9]+)[.](![0-9]+)",
+		new Printf(true, "%1,%2"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("-2.4 5.2 +9.0001");
     assertEquals("-2,4 5,2 +9,0001", s);
   }
-  
+
   public void test_NegativePartNumber1()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = new 
-      Nfa("(![A-Za-z]+)[0-9]+(![A-Za-z]+)[0-9]+(![A-Za-z]+)", 
-		       new Printf(true, "%-1-%-2", 0))
+    String s = new
+      Nfa("(![A-Za-z]+)[0-9]+(![A-Za-z]+)[0-9]+(![A-Za-z]+)",
+		       new Printf(true, "%-1-%-2"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("aaa0bbb1ccc r0s0t0")
@@ -226,9 +221,9 @@ public class PrintfFormatterTest extends TestCase {
   public void test_NegativePartNumber2()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = new 
+    String s = new
       Nfa("(![A-Za-z]+)[0-9]+(![A-Za-z]+)[0-9]+(![A-Za-z]+)",
-		       new Printf(true, "%-1(1,0)", 9))
+		       new Printf(true, "%-1(1,0)").setPriority(9))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("aaa0bbb1ccc r0s0t0")
@@ -239,9 +234,9 @@ public class PrintfFormatterTest extends TestCase {
   public void test_NegativePartNumber3()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = new 
+    String s = new
       Nfa("(![A-Za-z]+)[0-9]+(![A-Za-z]+)[0-9]+(![A-Za-z]+)",
-	  new Printf(true, "%l-1", 0))
+	  new Printf(true, "%l-1"))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       .filter("aaa0bbb1ccc r0s0t0")
@@ -249,12 +244,12 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("3 10", s);
   }
 
-  public void test_PartSequence() 
+  public void test_PartSequence()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
     String s = new Nfa("[A-Za-z0-9]+",
 		       new Printf
-		       (new RegexpSplitter("[A-Za-z]+", 
+		       (new RegexpSplitter("[A-Za-z]+",
 					   RegexpSplitter.FETCH),
 			new PrintfFormatter("%(2,-1)(%n)"), 0)
 		       )
@@ -269,7 +264,7 @@ public class PrintfFormatterTest extends TestCase {
   {
     String s = new Nfa("[A-Za-z0-9]+",
 		       new Printf
-		       (new RegexpSplitter("[A-Za-z]+", 
+		       (new RegexpSplitter("[A-Za-z]+",
 					   RegexpSplitter.FETCH),
 			new PrintfFormatter("%(2,-1, (+\\) )"), 0))
       .compile(DfaRun.UNMATCHED_COPY)
@@ -281,7 +276,7 @@ public class PrintfFormatterTest extends TestCase {
   public void test_PartSeqWithPiece()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = new Nfa("[A-Za-z0-9.]+", 
+    String s = new Nfa("[A-Za-z0-9.]+",
 		       new Printf
 		       (new RegexpSplitter("[A-Za-z]+",
 					   RegexpSplitter.FETCH),
@@ -295,9 +290,9 @@ public class PrintfFormatterTest extends TestCase {
   public void test_PartSeqWithBoth()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
-    String s = new Nfa("[A-Za-z0-9.]+", 
+    String s = new Nfa("[A-Za-z0-9.]+",
 		       new Printf
-		       (new RegexpSplitter("[A-Za-z]+", 
+		       (new RegexpSplitter("[A-Za-z]+",
 					   RegexpSplitter.FETCH),
 			new PrintfFormatter("%(2,-1,++)(1,-1)"), 0))
       .compile(DfaRun.UNMATCHED_COPY)
@@ -310,14 +305,15 @@ public class PrintfFormatterTest extends TestCase {
   /**********************************************************************/
   // recently, actions.Printf was rewritten to work with a lone
   // formatter. We'll check that now
-  public void test_PrintfOnlyWithFormatter() 
+  public void test_PrintfOnlyWithFormatter()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
     // we'll try to match digits within brackets, like "[99]" and the
     // digits are a submatch such that we can replace the brackets
     // with parentheses
     Formatter f = new Formatter() {
-	public void format(StringBuffer out, TextStore ts, Map m) {
+	@Override
+  public void format(StringBuilder out, TextStore ts, Map<Object,Object> m) {
 	  int L = ts.getNumParts();
 	  for(int i=1; i<L; i++) {
 	    out.append('(');
@@ -326,7 +322,7 @@ public class PrintfFormatterTest extends TestCase {
 	  }
 	}
       };
-    String s = new 
+    String s = new
       Nfa("(\\[(![0-9]+)\\])+", new Printf(null, f, 0))
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -336,7 +332,7 @@ public class PrintfFormatterTest extends TestCase {
     assertEquals("(88)x(99)(341)bla(99)", s);
   }
   /**********************************************************************/
-  public void test_GetVar() 
+  public void test_GetVar()
     throws java.io.IOException, ReSyntaxException, CompileDfaException
   {
     Store store = new Store("id");
@@ -346,8 +342,9 @@ public class PrintfFormatterTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun();
     r.clientData = new MapProvider() {
-	Map m = new HashMap();
-	public Map getMap() { return m; }
+	Map<Object,Object> m = new HashMap<>();
+	@Override
+  public Map<Object,Object> getMap() { return m; }
       };
     String s = r.filter("999bla=$id");
     assertEquals("bla=999", s);
@@ -379,8 +376,9 @@ public class PrintfFormatterTest extends TestCase {
       .createRun()
       ;
     r.clientData = new MapProvider() {
-	Map m = new HashMap();
-	public Map getMap() { return m; }
+	Map<Object,Object> m = new HashMap<>();
+	@Override
+  public Map<Object,Object> getMap() { return m; }
       };
     String s = r.filter("aya");
     assertEquals("aa", s);
@@ -399,4 +397,4 @@ public class PrintfFormatterTest extends TestCase {
     junit.textui.TestRunner.run(new TestSuite(PrintfFormatterTest.class));
   }
 }
- 
+

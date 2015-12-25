@@ -16,6 +16,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
+import java.util.Arrays;
 import java.util.Map;
 import monq.stuff.ArrayUtil;
 
@@ -35,7 +36,8 @@ class SubmatchData {
   // REMARK: This was a java.util.Stack before. Changing it to a plain
   // array and to my own resizing when necessary improved performance
   // by 16% on a typical text filtering application.
-  private Map[] subInfos = new Map[5];
+  @SuppressWarnings("unchecked")
+  private Map<FaAction,FaSubinfo[]>[] subInfos = new Map[5];
   private boolean haveSubs;
 
   // I allow access to this to allow a client to trim back to a
@@ -56,7 +58,7 @@ class SubmatchData {
   }
   /**********************************************************************/
   void add(FaState s) {
-    Map m = s.getSubinfos();
+    Map<FaAction,FaSubinfo[]> m = s.getSubinfos();
     haveSubs |= (m!=null);
     // NOTE: Just waiting for the exception seems to be faster than
     // an explicit test (last time I measured). Seems logical,
@@ -66,7 +68,7 @@ class SubmatchData {
       subInfos[size] = m;
     } catch( ArrayIndexOutOfBoundsException e ) {
       int newsize = size + 5 + size/10;
-      subInfos = (Map[])ArrayUtil.resize(subInfos, newsize);
+      subInfos = Arrays.copyOf(subInfos, newsize);
       subInfos[size] = m;
     }
     size += 1;
@@ -113,9 +115,9 @@ class SubmatchData {
       // above. 
       int hereLen = 0;
 
-      Map sub = subInfos[i];
+      Map<FaAction,FaSubinfo[]> sub = subInfos[i];
       if( sub!=null ) {
-	ary = (FaSubinfo[])sub.get(a);
+	ary = sub.get(a);
 	if( ary!=null ) hereLen = ary.length;
       }
 
@@ -129,13 +131,6 @@ class SubmatchData {
 	if( u==used ) c=1;
 	else if( n==hereLen ) c=-1;
 	else c = activeSubs[u].compareTo(ary[n]);
-// 	System.out.print("u="+u+", n="+n+", c="+c);
-// 	if( u<used ) {
-// 	  System.out.print(", f[u]="+activeSubs[u]+
-// 			   "("+posPairs[2*u]+","+posPairs[2*u+1]+")");
-// 	}
-// 	if( n<ary.length ) System.out.print(", g[n]="+ary[n]);
-// 	System.out.println();
 
 	if( c==0 ) {
 	  // u and n denote the same subgroup, i.e. u is being

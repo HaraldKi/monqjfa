@@ -18,6 +18,7 @@ package monq.jfa;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import monq.jfa.actions.Copy;
 
 /**
  * will copy any test in here for debugging
@@ -29,12 +30,12 @@ public class IntervalsTest extends TestCase {
 
   // exploit a bug once found in Intervals.setFrom()
   public static void test_Bug1() throws Exception {
-    Object inner = new Object();
-    Object outer = new Object();
-    Intervals ivals = new Intervals();
+    FaState inner = AbstractFaState.createDfaState(new Copy(0),  false);
+    FaState outer = AbstractFaState.createDfaState(new Copy(0), false);
+    IntervalsFaState ivals = new IntervalsFaState();
     ivals.invert(outer);
     ivals.overwrite('e', 'e', inner);
-    CharTrans t = ivals.toCharTrans();
+    CharTrans t = ivals.toCharTrans(1.0);
     ivals.setFrom(t);
     assertEquals(3, ivals.size());
     assertEquals(outer, ivals.getAt(0));
@@ -45,7 +46,7 @@ public class IntervalsTest extends TestCase {
   // this is mainly here to get the test coverage. Normally it should
   // be possible to switch the affected lines off for TC
   public static void test_toString() throws Exception {
-    Intervals ivals = new Intervals();
+    Intervals<Object> ivals = new Intervals<Object>();
     String s = ivals.toString();
     //System.out.println(s);
     assertEquals("Intervals[0x0->null...]", s);
@@ -53,11 +54,12 @@ public class IntervalsTest extends TestCase {
   /**********************************************************************/
   // similar for TableCharTrans
   public static void test_TCTtoString() throws Exception {
-    Intervals ivals = new Intervals();
+    IntervalsFaState ivals = new IntervalsFaState();
     for(int i=0; i<10; i++) {
-      ivals.overwrite((char)('a'+i), (char)('a'+i), new Integer(i));
+      FaState someState = AbstractFaState.createDfaState(new Copy(i), false);
+      ivals.overwrite((char)('a'+i), (char)('a'+i), someState);
     }
-    TableCharTrans t = (TableCharTrans)ivals.toCharTrans();
+    CharTrans t = ivals.toCharTrans(1.0);
     String s = t.toString();
     //System.out.println(s);
     assertEquals("[a,j ..........]", s);

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <macrodef name="do-assert-var-set">
+    <attribute name="var"/>
+    <attribute name="text" default=""/>
+    <sequential>
+      <if>
+        <not><isset property="@{var}"/></not>
+        <then>
+          <fail>property @{var} is not set. @{text} Consider setting it in ${user.home}/.ant.properties</fail>
+        </then>
+      </if>
+    </sequential>
+  </macrodef>
+</project>

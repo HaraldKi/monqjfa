@@ -128,10 +128,10 @@ public class IfContext extends AbstractFaAction {
   /**
    * required by interface {@link monq.jfa.FaAction}.
    */
-  public void invoke(StringBuffer yytext, int start, DfaRun r) 
+  public void invoke(StringBuilder yytext, int start, DfaRun r) 
     throws CallbackException 
   {
-    List stack = ((ContextStackProvider)r.clientData).getStack();
+    List<Object> stack = ((ContextStackProvider)r.clientData).getStack();
     Context ctx;
     int l = stack.size();
     try {
@@ -148,12 +148,12 @@ public class IfContext extends AbstractFaAction {
 //      System.out.println("IfContext: top=`"+cm.top()+"' on `"
 //  		       +yytext.substring(start)+"' doing "+a);
 
-    FaAction a = (FaAction)m.get(ctx);
+    FaAction a = m.get(ctx);
     if( a!=null ) {
       a.invoke(yytext, start, r);
       return;
     }
-    a = (FaAction)m.get(ELSE);
+    a = m.get(ELSE);
     if( a!=null ) {
       a.invoke(yytext, start, r);
       return;
@@ -174,9 +174,9 @@ public class IfContext extends AbstractFaAction {
   }
   /**********************************************************************/
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(super.toString());
-    Iterator it = m.keySet().iterator();
+    Iterator<Context> it = m.keySet().iterator();
     char sep = '[';
     while( it.hasNext() ) {
       Object key = it.next();

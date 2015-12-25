@@ -1,0 +1,45 @@
+<project>
+
+  <macrodef name="do-dist-jar">
+    <sequential>
+      <tstamp>
+        <format property="time.now" 
+                timezone="UTC"
+                pattern="yyyy-MM-dd HH:mm:ss Z"/>
+      </tstamp>
+      <property name="downloadDir" value="build/sitecontent/download"/>
+      <mkdir dir="${downloadDir}"/>
+      <jar destfile="${downloadDir}/${ant.project.name}-${version}.jar"
+           basedir="build/classes"
+           includes="**">
+        <manifest>
+          <attribute name="svn-revision" value="${svn.revision}" />
+          <attribute name="timestamp" value="${time.now}" />
+          <attribute name="version" value="${version}" />
+        </manifest>
+      </jar>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="do-src-zip">
+    <sequential>
+      <property name="srcname" value="${ant.project.name}-src-${version}"/>
+      <delete dir="build/${srcname}"/>
+      <exec executable="svn" dir="build">
+        <arg value="export"/>
+        <arg value="-q"/>
+        <arg value="--ignore-keywords"/>
+        <arg value="-r"/>
+        <arg value="head"/>
+        <arg value=".."/>
+        <arg value="${srcname}"/>
+      </exec>
+      <zip destfile="build/sitecontent/download/${srcname}.zip"
+           basedir="build"
+           includes="${srcname}/**"
+           whenempty="fail"/>
+      <delete dir="build/${srcname}"/>
+    </sequential>
+  </macrodef>
+
+</project>

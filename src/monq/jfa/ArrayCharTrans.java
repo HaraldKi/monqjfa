@@ -19,9 +19,11 @@ package monq.jfa;
 import java.io.Serializable;
 import java.util.List;
 
+import monq.stuff.Sizeof;
+
 /**
   <p>an implementation of interface <code>CharTrans</code> based on
-  explicit arrays for ranges and the objects they are mapped to.</p>
+  explicit arrays for ranges and the objects they are mapObjectped to.</p>
   @author &copy; 2003,2004 Harald Kirsch
 *****/
 
@@ -34,22 +36,24 @@ class ArrayCharTrans implements Serializable, CharTrans {
 
   // contains the value onto which the corresponding interval above is
   // mapped.
-  Object[] values;
+  FaState[] values;
 
   public static long stats = 0;
   /**********************************************************************/
   public static int estimateSize(int n) {
-    // size of the ranges array.
-    int n1 = n<=2 ? 16 : 16+8*( (2*n-4 + 7)/8 );
-    ///CLOVER:OFF
-    int n2 =  16 + 8*( (4*n-4 + 7)/8 );
-    ///CLOVER:ON
-    return 16+n1+n2;
+    int thisSize =
+        Sizeof.roundUp(Sizeof.MEM_OBJ_OVERHEAD+2*Sizeof.MEM_PTR_SIZE);
+    
+    int rangesSize = Sizeof.charArrayMemEstimate(2*n);
+
+    int valuesSize = Sizeof.objectArrayMemEstimate(n);
+
+    return thisSize + rangesSize + valuesSize;
   }
   /**********************************************************************/
   ///CLOVER:OFF
   public String toString() {
-    StringBuffer s = new StringBuffer(100);
+    StringBuilder s = new StringBuilder(100);
     for(int i=0, L=values.length; i<L; i++) {
       s.append("[`").append(Misc.printable(getFirstAt(i)))
 	.append("',`").append(Misc.printable(getLastAt(i)))
@@ -59,11 +63,10 @@ class ArrayCharTrans implements Serializable, CharTrans {
   }
   ///CLOVER:ON
   /**********************************************************************/
-  public ArrayCharTrans(StringBuffer sb, List<Object> values) {
-    this.ranges = new char[sb.length()];
-    sb.getChars(0, sb.length(), ranges, 0);
-    //this.size = values.size();
-    this.values = values.toArray();
+  public ArrayCharTrans(StringBuilder ranges2, List<FaState> values) {
+    this.ranges = new char[ranges2.length()];
+    ranges2.getChars(0, ranges2.length(), ranges, 0);
+    this.values = values.toArray(new FaState[values.size()]);
   }
   /**********************************************************************/
   public int size() {return values.length; }
@@ -74,11 +77,11 @@ class ArrayCharTrans implements Serializable, CharTrans {
   public char getLastAt(int pos) {
     return ranges[2*pos+1];
   }
-  public Object getAt(int pos) {
+  public FaState getAt(int pos) {
     return values[pos];
   }
   /********************************************************************/
-  public Object get(char ch) {
+  public FaState get(char ch) {
     stats += 1;
 
     int pos = getPos(ch);
@@ -100,7 +103,7 @@ class ArrayCharTrans implements Serializable, CharTrans {
 
     // access via getLastAt
     // 20.8%  1109  +     0    monq.jfa.ArrayCharTrans.getPos
-    // Ist im Rahmen der Me�ungenauigkeit identisch.
+    // Ist im Rahmen der Meßungenauigkeit identisch.
   *****/
   private int getPos(char ch) {
     int lo, hi; 

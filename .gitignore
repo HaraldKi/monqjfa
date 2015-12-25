@@ -1,10 +1,6 @@
-Classes
-javadoc packed
-ant.dtd
-monq-doc
-monq-doc.jar
-monq.jar
-emma
-lib
-ivy
-dist
+.project
+.settings
+.classpath
+build
+.svn
+pubsite.xml

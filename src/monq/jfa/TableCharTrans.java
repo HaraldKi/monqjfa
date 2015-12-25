@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -18,6 +18,8 @@ package monq.jfa;
 
 import java.util.List;
 
+import monq.stuff.Sizeof;
+
 /**
  * @author &copy; 2004 Harald Kirsch
  */
@@ -25,7 +27,7 @@ import java.util.List;
 class TableCharTrans implements java.io.Serializable, CharTrans {
   private char first;
   private char last;
-  private Object[] targets;
+  private FaState[] targets;
 
   // Note: the size is *not* equal to targets.length because targets
   // may contain null entries.
@@ -38,56 +40,67 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
    * <code>span==last-first+1</code> covered characters.
    */
   public static int estimateSize(int span) {
-    // compute the size of the Object[] 
-    int n2 = 16 + 8*( (4*span-4 + 7)/8 );
-    return n2+24;
+    int thisSize = Sizeof.roundUp(Sizeof.MEM_OBJ_OVERHEAD
+                                          + 2
+                                          + Sizeof.MEM_PTR_SIZE);
+    int targetsSize = Sizeof.objectArrayMemEstimate(span);
+    return thisSize + targetsSize;
   }
   /**********************************************************************/
   /**
    * We do not support emtpy transitions here. Consequently there
    * should be at least one range in <code>sb</code>
    */
-  public TableCharTrans(StringBuffer sb, List<Object> values) {
-    int L = sb.length();
-    first = sb.charAt(0);
-    last = sb.charAt(L-1);
+  public TableCharTrans(StringBuilder ranges, List<FaState> values) {
+    int L = ranges.length();
+    first = ranges.charAt(0);
+    last = ranges.charAt(L-1);
 
     // To the outside world we have to maintain the idea of
     // non-overlapping intervals mapped to a value. Therefore the
     // size() is exactly this:
     size = values.size();
 
-    targets = new Object[last-first+1];
+    targets = new FaState[last-first+1];
     L = values.size();
     for(int pos=0, i=0; pos<L; pos++) {
-      char from = sb.charAt(2*pos);
-      char to = sb.charAt(2*pos+1);
-      Object o = values.get(pos);
+      char from = ranges.charAt(2*pos);
+      char to = ranges.charAt(2*pos+1);
+      FaState o = values.get(pos);
       //System.out.println("from="+from+", to="+to+", pos="+pos);
       for(int ch=from; ch<=to; ch++) targets[i++] = o;
       if( pos+1<L ) {
-	char next = sb.charAt(2*pos+2);
+	char next = ranges.charAt(2*pos+2);
 	for(int ch=to+1; ch<next; ch++) targets[i++] = null;
       }
     }
   }
   /**********************************************************************/
-  public Object get(char ch) {
+  @Override
+  public FaState get(char ch) {
     stats += 1;
-    if( ch>=first && ch<=last ) return targets[ch-first];
+    if( ch>=first && ch<=last ) {
+      FaState result = targets[ch-first];
+      return result;
+    }
     return null;
   }
   /**********************************************************************/
+  @Override
   public int size() { return size; }
   /**********************************************************************/
-  
-  public Object getAt(int i) {
-    return targets[getPos(i)];
+
+  @Override
+  public FaState getAt(int i) {
+    FaState result = targets[getPos(i)];
+    return result;
   }
+  @Override
   public char getFirstAt(int i) {
     int pos = getPos(i);
     return (char)(first+pos);
   }
+  @Override
   public char getLastAt(int i) {
     int pos = getPos(i);
     Object here = targets[pos];
@@ -116,8 +129,9 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
   }
   /**********************************************************************/
   ///CLOVER:OFF
+  @Override
   public String toString() {
-    StringBuffer s = new StringBuffer(100);
+    StringBuilder s = new StringBuilder(100);
     s.append('[').append(first).append(',').append(last).append(' ');
     for(int i=0; i<targets.length; i++) {
       if( targets[i]==null ) s.append('0');

@@ -42,8 +42,8 @@ public class DfaRunService implements Service {
   public void run() {
     try {
       r.filter(out);
-    } catch( java.io.IOException e ) {
-      this.e = e;
+    } catch( java.io.IOException ex ) {
+      this.e = ex;
     }
   }
   /**********************************************************************/
