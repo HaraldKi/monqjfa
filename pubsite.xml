@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- DOCTYPE date SYSTEM "ant.dtd" -->
+<project name="publish-monq-on-pifpafpuf.de" default="pubsite">
+  <import file="build.xml"/>
+
+  <!-- create a tgz of the home page files -->
+  <target name="pubsite"
+          depends="cleanall,svnclean,jar,apidoc,apidocjar,
+                   srczip,
+                   tutorial,test-coverage">
+
+    <copy file="Documentation/RELNOTES" todir="build/sitecontent"/>
+    <exec executable="rsync" dir="." failonerror="true">
+      <arg value="-avrc"/>
+      <arg value="--delete"/>
+      <!-- not from source but actuall prevent deletion on target: -->
+      <arg value="--exclude"/>
+      <arg value="/index.html"/>
+      <arg value="build/sitecontent/"/>
+      <arg value="harald@gnuher.de:apache/pifpafpuf.de/Monq.jfa"/>
+    </exec>
+
+  </target>
+  <!-- *************************************************************** -->
+</project>

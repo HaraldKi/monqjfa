@@ -3,10 +3,10 @@
 
 <project name="monq" default="compile" basedir=".">
   <property file="${user.home}/.ant.properties"/>
-  <import file="ant-macros/svnrevision.xml"/>
-  <import file="ant-macros/util.xml"/>
-  <import file="ant-macros/cobertura.xml"/>
-  <import file="ant-macros/junit.xml"/>
+  <import file="antmacros/svnrevision.xml"/>
+  <import file="antmacros/util.xml"/>
+  <import file="antmacros/cobertura.xml"/>
+  <import file="antmacros/junit.xml"/>
   <taskdef resource="net/sf/antcontrib/antlib.xml"/>
   
   <do-assert-var-set var="junit.jar"
@@ -19,7 +19,6 @@
   </description>
 
   <property environment="env" />
-  <property name="NOT_stylefile" value="monq/jfa/ebistyle.css" />
   <property name="stylefile" value="src/monq/jfa/docstyle.css" />
 
   <property name="pubftp" value="/ebi/ftp/pub/software/textmining/monq" />
@@ -171,19 +170,22 @@
   --> <!-- check whether svn status -u produces no output (except one
   line) and set property svnclean if this is so -->
 
-  <target name="svnclean" description="check that svn status is clean">
-    
+  <target name="svnclean" description="check that svn status is clean">    
     <do-svnrevision/>
     <if>
-      <equals arg1="0" arg2="${svn.clean}"/>
-      <then>
+      <or>
+        <equals arg1="${svn.clean}" arg2="1"/>
+        <equals arg1="${force}"     arg2="1"/>
+      </or>
+      <then/>
+      <else>
         <concat>
           <header>The command svn status -u -q produces the output
 </header>
           <fileset file="build/svnstatus"/>
         </concat>
         <fail>EXITING.</fail>
-      </then>
+      </else>
     </if>
   </target>
 
@@ -206,25 +208,6 @@
     <delete dir="build"/>
   </target>
 
-  <!-- *************************************************************** -->
-  <!-- create a tgz of the home page files -->
-  <target name="pubsite"
-          depends="cleanall,svnclean,jar,apidoc,apidocjar,
-                   srczip,
-                   tutorial,test-coverage">
-
-    <copy file="Documentation/RELNOTES" todir="build/sitecontent"/>
-    <exec executable="rsync" dir="." failonerror="true">
-      <arg value="-avrc"/>
-      <arg value="--delete"/>
-      <!-- not from source but actuall prevent deletion on target: -->
-      <arg value="--exclude"/>
-      <arg value="/index.html"/>
-      <arg value="build/sitecontent/"/>
-      <arg value="harald@gnuher.de:apache/pifpafpuf.de/Monq.jfa"/>
-    </exec>
-
-  </target>
   <!-- *************************************************************** -->
   <!-- run pdflatex to create the tutorial -->
   <target name="tutorial">
