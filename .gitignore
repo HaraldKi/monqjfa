@@ -1,0 +1,7 @@
+.project
+.settings
+.classpath
+build
+.svn
+pubsite.xml
+*~

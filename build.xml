@@ -3,10 +3,10 @@
 
 <project name="monq" default="compile" basedir=".">
   <property file="${user.home}/.ant.properties"/>
-  <import file="antmacros/svnrevision.xml"/>
-  <import file="antmacros/util.xml"/>
-  <import file="antmacros/cobertura.xml"/>
-  <import file="antmacros/junit.xml"/>
+  <!-- get the following imports: https://github.com/HaraldKi/hkAntLib.git -->
+  <import file="../hkAntLib/util.xml"/>
+  <import file="../hkAntLib/cobertura.xml"/>
+  <import file="../hkAntLib/junit.xml"/>
   <taskdef resource="net/sf/antcontrib/antlib.xml"/>
   
   <do-assert-var-set var="junit.jar"
@@ -158,40 +158,6 @@
       <srcfileset dir="."><patternset refid="jsrc" /></srcfileset>
       <targetfileset dir="Classes/tests" includes="*.class"/>
     </dependset>
-  </target>
-
-  <!-- *************************************************************** -->
-  <target name="svnclean" description="check that svn status is clean">    
-    <do-svnrevision/>
-    <if>
-      <or>
-        <equals arg1="${svn.clean}" arg2="1"/>
-        <equals arg1="${force}"     arg2="1"/>
-      </or>
-      <then/>
-      <else>
-        <concat>
-          <header>The command svn status -u -q produces the output
-</header>
-          <fileset file="build/svnstatus"/>
-        </concat>
-        <fail>EXITING.</fail>
-      </else>
-    </if>
-  </target>
-
-  <!-- *************************************************************** -->
-  <!-- create a .zip for the source distribution -->
-  <target name="srczip" depends="setVersion, svnclean"
-    description="create .tar.gz for shipping the source">
-    <delete dir="build/monq-${version}"/>
-    <exec executable="svn" dir="build">
-      <arg line="export --ignore-keywords -r head .. monq-src-${version}"/>
-    </exec>
-    <zip destfile="build/sitecontent/download/monq-src-${version}.zip"
-         basedir="build"
-         includes="monq-src-${version}/**"
-         whenempty="fail"/>
   </target>
 
   <!-- *************************************************************** -->
