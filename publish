@@ -1,0 +1,7 @@
+#!/bin/bash
+cp -a 
+rm -rf monqApiDoc monq-test-coverage
+cp -a  ../build/sitecontent/monqApiDoc
+cp -a ../build/sitecontent/test-coverage/ monq-test-coverage
+git commit -a -m 'publishing new docs'
+git push origin gh-pages
