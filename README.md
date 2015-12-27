@@ -22,4 +22,9 @@ https://raw.githubusercontent.com/HaraldKi/monqjfa/master/Documentation/RELNOTES
 For some recent blog entry of how the speed improved recently, read
 http://pifpafpuf.de/2015-11/generated-index.html
 
-Design ©2007--2016 by [Harald Kirsch](mailto:Harald.Kirsch@pifpafpuf.de)
+Javadoc: http://haraldki.github.io/monqjfa/monqApiDoc/
+
+test-coverage: http://haraldki.github.io/monqjfa/monq-test-coverage/
+
+Design ©2007--2016 by [Harald Kirsch](mailto:pifpafpuf@gmx.de)
+
