@@ -23,7 +23,6 @@ import java.util.zip.GZIPInputStream;
 import org.junit.Before;
 import org.junit.Test;
 
-import monq.jfa.actions.Drop;
 import monq.jfa.actions.MapProvider;
 
 /**
@@ -32,7 +31,7 @@ import monq.jfa.actions.MapProvider;
  */
 public class PerformanceTest {
   private double speedupFactor;
-  
+
   private CharStatistics[] charStats;
   @Before
   public void setup() throws Exception {
@@ -53,14 +52,14 @@ public class PerformanceTest {
       for (int i=0; i<4; i++) {
         Timing slow = runFilter(nfa, text, 1.0f);
         Map<String,Count> slowMap = cw.reset();
-        
+
         Timing fast = runFilter(nfa, text, 100000.0f);
         Map<String,Count> fastMap = cw.reset();
 
         System.out.printf("slow and fast: %s>%s, speedup=%.1f%n", slow, fast,
                           slow.speedUpOver(fast));
         //System.out.println(slowMap);
-        assertTrue("slow and fast: "+slow+">"+fast, 
+        assertTrue("slow and fast: "+slow+">"+fast,
                    slow.dtSeconds()>fast.dtSeconds());
         assertEquals(slowMap, fastMap);
         assertTrue(slow.speedUpOver(fast)>speedupFactor);
@@ -76,16 +75,16 @@ public class PerformanceTest {
         @Override
         public Map<Object,Object> getMap() {
           return counts;
-        }        
+        }
       };
       String[] rexes = {"<[^>]*>", "[a-zA-Z]+", "[0-9]+", "[ \r\n\t]+"};
       String[] names = {"xml", "alpha", "num", "space"};
-        
+
       Nfa nfa = new Nfa(Nfa.NOTHING);
       for (int i=0; i<rexes.length; i++) {
         nfa.or(rexes[i], new CountAction(names[i]));
       }
-          
+
       StringBuilder text = createText(200_000);
       DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP));
       r.setIn(new CharSequenceCharSource(text));
@@ -96,7 +95,7 @@ public class PerformanceTest {
       System.out.println(javaResult);
       assertEquals(javaResult, counts);
     }
-    
+
     private static Map<String,Count>
     countMatches(String[] rexes, String[] names, StringBuilder text) {
       Map<String,Count> result = new HashMap<>();
@@ -109,7 +108,7 @@ public class PerformanceTest {
         re.append(s).append(")|(");
       }
       re.setLength(re.length()-2);
-      Pattern p = Pattern.compile(re.toString()); 
+      Pattern p = Pattern.compile(re.toString());
       Matcher m = p.matcher(text);
 
       int start = 0;
@@ -123,7 +122,7 @@ public class PerformanceTest {
       }
       return result;
     }
-    
+
     private static Timing runFilter(Nfa nfa, CharSequence text, float tradeOff)
         throws CompileDfaException, IOException
     {
@@ -131,7 +130,7 @@ public class PerformanceTest {
       Intervals.resetStats();
       Dfa dfa = nfa.compile(DfaRun.UNMATCHED_DROP);
       System.out.println(Intervals.logStats());
-      
+
       DfaRun r = new DfaRun(dfa);
       r.setIn(new CharSequenceCharSource(text));
       Timing t = new Timing();
@@ -170,15 +169,15 @@ public class PerformanceTest {
     /*+******************************************************************/
   /**
    * reads a file with lines like
-   * 
+   *
    * <pre>
    * et 101 116 448651
    * </pre>
-   * 
+   *
    * where the first entry is a character pair, the second and third are the
    * UNICODE code points of these characters and the forth item is the number
    * of times this pair was found in some text.
-   * 
+   *
    * @param fname
    * @return each element of the result array, indexed by characters, returns
    *         the statistics for the character following the index character.
@@ -224,7 +223,7 @@ public class PerformanceTest {
       @Override
       public String toString() {
         return String.format(Locale.ROOT, "%.2fs", dtSeconds());
-      }      
+      }
     }
     /*+******************************************************************/
     private static final class CountAction extends AbstractFaAction {
@@ -242,8 +241,8 @@ public class PerformanceTest {
         if (c==null) {
           m.put(name, c=new Count());
         }
-        c.count += 1;        
-      }      
+        c.count += 1;
+      }
     }
     /*+******************************************************************/
     private static final class CountWords extends AbstractFaAction {

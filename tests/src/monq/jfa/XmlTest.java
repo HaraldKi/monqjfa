@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -33,8 +33,9 @@ import junit.framework.TestSuite;
 public class XmlTest extends TestCase {
 
   private FaAction h = new AbstractFaAction() {
+      @Override
       public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	Map m = Xml.splitElement(yytext, start);
+	Map<String,String> m = Xml.splitElement(yytext, start);
 	yytext.setLength(start);
 	String[] keys = (String[])m.keySet().toArray(new String[0]);
 	Arrays.sort(keys);
@@ -50,7 +51,7 @@ public class XmlTest extends TestCase {
     };
 
   public void test_STag_1() throws Exception {
-    DfaRun r = 
+    DfaRun r =
       new Nfa(Xml.STag(), h)
       .compile(DfaRun.UNMATCHED_DROP)
       .createRun()
@@ -59,7 +60,7 @@ public class XmlTest extends TestCase {
     assertEquals("3.<.abc.x.1.y.2", s);
   }
   public void test_EmptyElemTag_1() throws Exception {
-    DfaRun r = 
+    DfaRun r =
       new Nfa(Xml.EmptyElemTag(), h)
       .compile(DfaRun.UNMATCHED_DROP)
       .createRun()
@@ -70,7 +71,7 @@ public class XmlTest extends TestCase {
   public void test_GoofedElement_1()
     throws CompileDfaException, java.io.IOException, ReSyntaxException
   {
-    DfaRun r = 
+    DfaRun r =
       new Nfa(Xml.GoofedElement("abc"), h)
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
@@ -81,7 +82,7 @@ public class XmlTest extends TestCase {
 
   // try to force a bug once found where ElementSplitter.split did not
   // add start to stag.splitX()
-  public void test_GoofedElement_2() 
+  public void test_GoofedElement_2()
     throws CompileDfaException, java.io.IOException, ReSyntaxException
   {
     DfaRun r = new Nfa(Xml.GoofedElement("abc"), h)
@@ -93,8 +94,8 @@ public class XmlTest extends TestCase {
     String s = r.filter("<abc>b</abc> <abc>w</abc>");
     assertEquals("2.<.abc.>.b2.<.abc.>.w", s);
   }
-	
-  public void test_ETag_1() 
+
+  public void test_ETag_1()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     DfaRun r =
@@ -106,7 +107,7 @@ public class XmlTest extends TestCase {
     assertEquals("55", r.filter("5</abc >5"));
     assertEquals("55", r.filter("5</abc\n>5"));
   }
-  public void test_ETag_2() 
+  public void test_ETag_2()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
   {
     DfaRun r =
@@ -125,7 +126,7 @@ public class XmlTest extends TestCase {
     // lets pick some unicode more or less randomly
     // BaseChar introducing the tag
     assertEquals("55", r.filter("5</\u03de>5"));
-    // Ideographic 
+    // Ideographic
     assertEquals("55", r.filter("5</\u3022>5"));
     // Digit within tagname
     assertEquals("55", r.filter("5</A\u0D66b>5"));
@@ -141,7 +142,7 @@ public class XmlTest extends TestCase {
   }
   /**********************************************************************/
   public void test_StdCharEntities() throws Exception {
-    String s = 
+    String s =
       StdCharEntities.toChar(" &amp; &quot; &apos; &lt; &gt; ");
     assertEquals(" & \" ' < > ", s);
 
@@ -161,10 +162,11 @@ public class XmlTest extends TestCase {
 //   }
   /********************************************************************/
   public void test_splitToHash1() throws Exception {
-    String s = new 
+    String s = new
       Nfa(Xml.STag()+Xml.S+"?", new AbstractFaAction() {
-	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	    Map m = Xml.splitElement(yytext, start);
+	  @Override
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
+	    Map<String,String> m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
 	    yytext.append("ößgür is `"+m.get("ößgür")+"', ");
@@ -182,8 +184,9 @@ public class XmlTest extends TestCase {
   public void test_splitToHash2() throws Exception {
     DfaRun r = new
       Nfa(Xml.GoofedElement("bla")+"|"+Xml.EmptyElemTag("bla"), new AbstractFaAction() {
-	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	    Map m = Xml.splitElement(yytext, start);
+	  @Override
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
+	    Map<String,String> m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tagname is `"+m.get("<")+"', ");
 	    yytext.append("ößgür is `"+m.get("ößgür")+"', ");
@@ -193,7 +196,7 @@ public class XmlTest extends TestCase {
       .compile(DfaRun.UNMATCHED_COPY)
       .createRun()
       ;
-    String s = 
+    String s =
       r.filter("<bla    \n ößgür='hallo'  >  <x>ÄÖÜ</x></bla  >")
       ;
     assertEquals("tagname is `bla', ößgür is `hallo', "+
@@ -202,14 +205,15 @@ public class XmlTest extends TestCase {
     s = r.filter("<bla />");
     assertEquals("tagname is `bla', ößgür is `null', content is `null'",
 		 s);
-    
+
   }
   /**********************************************************************/
   public static void test_XMLDecl() throws Exception {
-    DfaRun r = new 
+    DfaRun r = new
       Nfa(Xml.XMLDecl, new AbstractFaAction() {
-	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	    Map m = Xml.splitElement(yytext, start);
+	  @Override
+    public void invoke(StringBuilder yytext, int start, DfaRun r) {
+	    Map<String,String> m = Xml.splitElement(yytext, start);
 	    yytext.setLength(start);
 	    yytext.append("tag=").append(m.get(Xml.TAGNAME))
 	      .append(" version=").append(m.get("version"))
@@ -224,7 +228,7 @@ public class XmlTest extends TestCase {
     String s =
       r.filter("<?xml version='1.0' ?>");
     assertEquals("tag=xml version=1.0 encoding=null standalone=null", s);
-    
+
     s = r.filter("<?xml version=\"1.0\" encoding='gorbo744'?>");
     assertEquals("tag=xml version=1.0 encoding=gorbo744 standalone=null", s);
     s = r.filter("<?xml version=\"1.0\" encoding='gorbo744' "
@@ -241,7 +245,7 @@ public class XmlTest extends TestCase {
   /**********************************************************************/
   public static void test_getETagName() {
     assertEquals("x", Xml.getETagName(new StringBuilder("</x>"), 0));
-    assertEquals("A_B-c", 
+    assertEquals("A_B-c",
 		 Xml.getETagName(new StringBuilder("..</A_B-c  >"), 2));
   }
   /**********************************************************************/

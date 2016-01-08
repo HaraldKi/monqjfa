@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -15,7 +15,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 ************************************************************************/
 
 import monq.jfa.*;
-import monq.jfa.actions.*;
 /**
  * <p>This program copies System.in to System.out while embedding any text
  * which matches the regular expression given as the first command
@@ -23,7 +22,7 @@ import monq.jfa.actions.*;
  *
  * <p>This program is incomplete, since it does no decent checking of
  * the command line arguments. An Exception is all it eventually
- * throws.</p> 
+ * throws.</p>
  *
  * @author &copy; 2005, 2006 Harald Kirsch
  *
@@ -41,6 +40,7 @@ public class ExampleFaAction {
       this.pre = pre;
       this.post = post;
     }
+    @Override
     public void invoke(StringBuilder iotext, int start, DfaRun r) {
       iotext.insert(start, pre);
       iotext.append(post);

@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -18,8 +18,6 @@ package monq.jfa;
 
 //import jfa.*;
 
-import java.io.StringReader;
-import java.lang.Class;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -39,7 +37,7 @@ public class TextSplitterTest extends TestCase {
     {";;;"},
     {" abc ", "abc"},
     {"a b c d e f g h i j k l m n o p q x y z",
-     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", 
+     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
      "k", "l", "m", "n", "o", "p", "q", "x", "y", "z"}
   };
 
@@ -49,8 +47,9 @@ public class TextSplitterTest extends TestCase {
   // b) testAOut[0] is part 0 and must be longer than 4 chars
   // c) testAOut[1] is part 1 and must be longer than 4 chars
   String testAIn = "abcHallo;ballo";
-  String[] testAOut = {"Hallo;ballo", "Hallo"}; 
+  String[] testAOut = {"Hallo;ballo", "Hallo"};
 
+  @Override
   public void setUp() throws ReSyntaxException, CompileDfaException {
     client = new RegexpSplitter("[A-Za-z0-9]+", RegexpSplitter.FETCH);
     store = new TextStore();
@@ -60,7 +59,6 @@ public class TextSplitterTest extends TestCase {
   }
   public void testBeforeSplit2() {
     StringBuilder sb = new StringBuilder();
-    Exception e = null;
     store.getPart(sb, 1);
     assertEquals("", sb.toString());
 //     try {
@@ -72,7 +70,6 @@ public class TextSplitterTest extends TestCase {
   }
   public void testBeforeSplit3() {
     StringBuilder sb = new StringBuilder();
-    Exception e = null;
     store.getPart(sb, 0);
     assertEquals("", sb.toString());
 //     try {
@@ -84,7 +81,6 @@ public class TextSplitterTest extends TestCase {
   }
   public void testBeforeSplit4() {
     StringBuilder sb = new StringBuilder();
-    Exception e = null;
     store.getPart(sb, 0, 0, 0);
     assertEquals("", sb.toString());
 //     try {
@@ -96,7 +92,6 @@ public class TextSplitterTest extends TestCase {
   }
   public void testBeforeSplit5() {
     StringBuilder sb = new StringBuilder();
-    Exception e = null;
     store.getPart(sb, 0, 0, 1);
     assertEquals("", sb.toString());
 //     try {
@@ -140,20 +135,20 @@ public class TextSplitterTest extends TestCase {
       sb.setLength(0);
       store.getPart(sb, i, 1, -1);
       assertEquals("i="+i, testAOut[i].substring(1, L-1), sb.toString());
-      
+
       sb.setLength(0);
       store.getPart(sb, i, -3, 0);
       assertEquals(testAOut[i].substring(L-3, L), sb.toString());
-      
+
       sb.setLength(0);
       store.getPart(sb, i, 2, 2);
       assertEquals("", sb.toString());
-      
+
       sb.setLength(0);
       store.getPart(sb, i, 2, 3);
       assertEquals(testAOut[i].substring(2, 3), sb.toString());
 
-      // test left index too small 
+      // test left index too small
       sb.setLength(0);
       store.getPart(sb, i, -100, 0);
       assertEquals(testAOut[i], sb.toString());
@@ -223,14 +218,14 @@ public class TextSplitterTest extends TestCase {
 // 	e = _e;
 //       }
 //       assertTrue(e instanceof ArrayIndexOutOfBoundsException);
-      
+
     }
 
   }
 
   /**********************************************************************/
   // A special test for RegexpSplitter with a re matching the empty
-  // string 
+  // string
   public void test_REsplitterEmptyRE() throws Exception {
     TextSplitter sp = new RegexpSplitter("[@]", RegexpSplitter.SPLIT);
     Formatter fmt = new PrintfFormatter("[%(1,0,][)]");
@@ -250,4 +245,4 @@ public class TextSplitterTest extends TestCase {
   }
 }
 
- 
+

@@ -16,13 +16,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import monq.jfa.ctx.*;
-import monq.jfa.actions.*;
+import java.util.EmptyStackException;
+import java.util.List;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import java.util.*;
+import monq.jfa.actions.Copy;
+import monq.jfa.actions.Drop;
+import monq.jfa.actions.LowerCase;
+import monq.jfa.actions.Replace;
+import monq.jfa.ctx.Context;
+import monq.jfa.ctx.ContextManager;
+import monq.jfa.ctx.ContextStackProvider;
+import monq.jfa.ctx.IfContext;
 
 /**
  * exercises monq.jfa.ctx.
@@ -92,7 +98,7 @@ public class CtxTest extends TestCase {
     Context ctx = mgr.addXml("x");
     nfa.or("Z", new IfContext(ctx, new AbstractFaAction() {
 	public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	  List stack = ((ContextStackProvider)r.clientData).getStack();
+	  List<Object> stack = ((ContextStackProvider)r.clientData).getStack();
 	  // just mess it up somehow
 	  stack.add(this);
 	}
@@ -115,7 +121,7 @@ public class CtxTest extends TestCase {
     final Context ctx = mgr.addXml("x");
     nfa.or("Z", new IfContext(ctx, new AbstractFaAction() {
 	public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	  java.util.List stack 
+	  java.util.List<Object> stack 
 	    = ((ContextStackProvider)r.clientData).getStack();
 	  // just mess it up somehow
 	  stack.add(ctx);
@@ -166,7 +172,7 @@ public class CtxTest extends TestCase {
     // see test_defaultDropInIf for explanation
     Exception e = null;
     try {
-      String s = r.filter("abcABC<x>abcABC</x>abc");
+      r.filter("abcABC<x>abcABC</x>abc");
     } catch( CallbackException _e ) {
       e = _e;
     }
@@ -177,7 +183,7 @@ public class CtxTest extends TestCase {
   public static void test_startEndAction() throws Exception {
     Nfa nfa = new Nfa(Nfa.NOTHING);
     ContextManager mgr = new ContextManager(nfa);
-    Context ctx = mgr.addXml("x")
+    mgr.addXml("x")
       .setStartAction(new Replace("["))
       .setEndAction(new Replace("]"))
       .setFMB(DfaRun.UNMATCHED_COPY)
@@ -197,7 +203,7 @@ public class CtxTest extends TestCase {
       ;
 
     Context ctx = mgr.addXml("x");
-    Context cin = mgr.addXml(ctx, "a")
+    mgr.addXml(ctx, "a")
       .setFMB(DfaRun.UNMATCHED_COPY)
       .setStartAction(new Replace("["))
       .setEndAction(new Replace("]"))
@@ -273,7 +279,7 @@ public class CtxTest extends TestCase {
     mgr.add("{[0-9]*", "}")
       .setStartAction(new AbstractFaAction() {
 	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	    List stack = ((ContextStackProvider)r.clientData).getStack();
+	    List<Object> stack = ((ContextStackProvider)r.clientData).getStack();
 	    String s = yytext.substring(start+1);
 	    // a length of zero allows us to test the EmptyStackException
 	    if( s.length()>0 ) stack.add(s);
@@ -282,7 +288,7 @@ public class CtxTest extends TestCase {
 	})
       .setEndAction(new AbstractFaAction() {
 	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
-	    List stack = ((ContextStackProvider)r.clientData).getStack();
+	    List<Object> stack = ((ContextStackProvider)r.clientData).getStack();
 	    String s = (String)(ContextManager.pop(stack));
 	    yytext.insert(start, s);
 	  }

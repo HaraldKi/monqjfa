@@ -2,9 +2,9 @@
 <!-- DOCTYPE date SYSTEM "ant.dtd" -->
 
 <project name="monq" default="compile" basedir=".">
-  <property file="${user.home}/.ant.properties"/>
   <!-- get the following imports: https://github.com/HaraldKi/hkAntLib.git -->
   <import file="../hkAntLib/util.xml"/>
+  <import file="../hkAntLib/javac.xml"/>
   <import file="../hkAntLib/cobertura.xml"/>
   <import file="../hkAntLib/junit.xml"/>
   <taskdef resource="net/sf/antcontrib/antlib.xml"/>
@@ -50,32 +50,9 @@
     </loadfile>
   </target>
   <!-- *************************************************************** -->
-
-  <!-- before compilation, delete all class files to make sure there
-  is no outdated stuff lurking -->
-  <target name="purgeClasses">
-    <dependset>
-      <srcfileset dir="."><patternset refid="jsrc"/></srcfileset>
-      <targetfileset dir="Classes" includes="**/*.class"/>
-    </dependset>
-  </target>
-
   <!-- Main target is to compile all source files of the packages. -->
-  <target name="compile" 
-    depends="purgeClasses"
-    description="compile all Java source files to ./Classes">
-    <mkdir dir="build/classes"/>
-    <javac srcdir="src"
-	   destdir="build/classes" 
-	   source="1.7"
-           listfiles="no"
-	   fork="true"
-           debug="true"
-           deprecation="true"
-           includeantruntime="false">
-      <compilerarg value="-Xlint:unchecked"/>
-      <patternset refid="jsrc"/>
-    </javac>
+  <target name="compile" description="compile all Java source files to">
+    <do-javac/>
   </target>
 
   <!-- *************************************************************** -->
@@ -137,29 +114,10 @@
       basedir="build/sitecontent" 
       includes="monqApiDoc/**" />
   </target>
-
   <!-- *************************************************************** -->
-  <target name="compile-tests" depends="purgeTest,compile">
-    <mkdir dir="build/test-classes" />
-    <javac srcdir="tests" destdir="build/test-classes"
-      sourcepath="tests"
-      classpath="build/classes:${junit.jar}"
-      source="1.7" 
-      listfiles="no"
-      includeantruntime="false"
-      debug="true">
-      <patternset refid="testsrc"/>
-    </javac>
+  <target name="compile-tests" depends="compile">
+    <do-javac-tests/>
   </target>
-
-  <target name="purgeTest"> 
-    <dependset>
-      <srcfileset dir="tests" includes="*Test.java"/>
-      <srcfileset dir="."><patternset refid="jsrc" /></srcfileset>
-      <targetfileset dir="Classes/tests" includes="*.class"/>
-    </dependset>
-  </target>
-
   <!-- *************************************************************** -->
   <target name="cleanall">
     <delete dir="build"/>
