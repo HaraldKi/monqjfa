@@ -34,6 +34,7 @@ public class ReSyntaxException extends Exception {
   public static final String EEOFUNEX = "unexpected end of input";
   public static final String ECHARUNEX = "unexpected character";
 
+  public static final String ENOHEX = "character is not a hex digit";
   public static final String EFORMAT = "unknown format directive";
   public static final String ETOOMANYREPORTING = 
     "too many ( >255) reporting subexpressions";
@@ -51,7 +52,7 @@ public class ReSyntaxException extends Exception {
   public int column;
   public String text;
   public ReSyntaxException(String emsg, 
-			    String text,
+                           String text,
 			   int line, 
 			   int column) {
     this.emsg = emsg;

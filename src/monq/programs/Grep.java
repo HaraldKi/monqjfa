@@ -415,7 +415,10 @@ public class Grep implements ServiceFactory {
     String prog = System.getProperty("argv0", "Grep");
     Commandline cmd = new Commandline
       (prog,
-       "match regular expressions and reformat them to output",
+       "match regular expressions and reformat them to output,"
+       + "for the regular expression syntax, see"
+       + "http://haraldki.github.io/monqjfa/monqApiDoc/monq/jfa/doc-files/"
+       + "resyntax.html",
        "re format",
        "pairs of regular expression and PrintfFormatter formats",
        0, Integer.MAX_VALUE);

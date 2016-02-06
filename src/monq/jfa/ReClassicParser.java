@@ -140,7 +140,7 @@ public class ReClassicParser implements ReParser {
     token = valueForToken;
   }
   private void nextToken(boolean withinBracket)
-    throws  ReSyntaxException {
+    throws ReSyntaxException {
 
     if( lookaheadValid ) {
       token = lookaheadToken;
@@ -159,7 +159,13 @@ public class ReClassicParser implements ReParser {
     if( ch=='\\' ) {
       ch = nextChar();
       if( ch==-1 ) throw error(ReSyntaxException.EBSATEOF);
-      token = ch;
+      if (ch=='u') {
+        token = hexChar(4);
+      } else if (ch=='x') {
+        token = hexChar(2);
+      } else {
+        token = ch;
+      }
       return;
     }
 
@@ -188,6 +194,27 @@ public class ReClassicParser implements ReParser {
       }
       //System.out.println("xx>"+(char)ch+" "+ch);
     }
+  }
+  /********************************************************************/
+  private char hexChar(int numDigits) throws ReSyntaxException {
+    int result = 0;
+    for (int i=0; i<numDigits; i++) {
+      int ch = nextChar();
+      if (ch<0) {
+        throw error(ReSyntaxException.EEOFUNEX);
+      }
+      if (ch>='0' && ch<='9') {
+        result = (16*result)+(ch-'0');
+        continue;
+      }
+      ch = Character.toLowerCase(ch);
+      if (ch>='a' && ch<='f') {
+        result = (16*result)+(ch-'a'+10);
+        continue;
+      }
+      throw error(ReSyntaxException.ENOHEX);
+    }
+    return (char)result;
   }
   /********************************************************************/
   private void parseBracket(NfaParserView nfa) throws  ReSyntaxException {
@@ -379,5 +406,4 @@ public class ReClassicParser implements ReParser {
     }
   }
   /********************************************************************/
-
 }

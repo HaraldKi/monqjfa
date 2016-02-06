@@ -130,6 +130,19 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EEOFUNEX, e.emsg);
   }
 
+  public void testEEOFUNEXinHex() {
+    String s = "\\u123";
+    try {
+      nfa.or(s);
+      fail("expected exception");
+    } catch (ReSyntaxException e) {
+      assertEquals(s, e.text);
+      assertTrue(s.length()==e.column);
+      assertEquals(ReSyntaxException.EEOFUNEX, e.emsg);
+    }
+  }
+  
+  
   public void testECHARUNEX() {
     ReSyntaxException e = null;
     String s = "(*";
@@ -269,6 +282,27 @@ public class ReParserTest extends TestCase {
       c += 1;
     } while( c!=Character.MAX_VALUE);
 
+  }
+  //********************************************************************
+  public void testHexDigits() {
+    for (int ch=Character.MIN_VALUE; ch<=Character.MAX_VALUE; ch++) {
+      String s;
+      if (ch<256) {
+        s = String.format("abc\\x%02xdef", ch);
+      } else {
+        s = String.format("abc\\u%04xdef", ch);
+      }
+      Regexp re = new Regexp(s);
+      assertTrue(re.matches("abc"+(char)ch+"def"));
+    }
+  }
+  //********************************************************************
+  public void testHexDigitsInRange() {
+    String pattern = "abc[\\x00-\\x1f]def";
+    Regexp re = new Regexp(pattern);
+    for (char ch=0; ch<32; ch++) {
+      assertTrue(re.matches("abc"+ch+"def"));
+    }
   }
   //********************************************************************
 }

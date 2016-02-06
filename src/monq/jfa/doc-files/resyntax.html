@@ -37,14 +37,25 @@
 	below. Since Java is UNICODE based, a character can be any
 	UNICODE character.
       </dd>
+      <dt>\x<em>hh</em> \u<em>hhhh</em></dt>
+      <dd>
+        denotes the unicode character with the hexadecimal value
+        according to the 2 or 4 hexadecimal digits, which can be lower
+        or upper case.
+      </dd>
       <dt>\<em>c</em></dt>
-      <dd>A character escaped by a preceding backslash matches that
-	character, even if that character otherwise has a special
-	meaning in the regular expression syntax. Note that two
-	consecutive backslash characters are needed in constant
-	strings within Java programs. To construct an <code>Nfa</code>
-	which matches the open bracket, write<pre>
+      <dd>Except for the case noted above, a character escaped by a
+	preceding backslash matches that character, even if that
+	character otherwise has a special meaning in the regular
+	expression syntax. Note that two consecutive backslash
+	characters are needed in constant strings within Java
+	programs. To construct an <code>Nfa</code> which matches the
+	open bracket, write
+
+<pre>
 Nfa nfa = new Nfa("\\[")</pre>
+
+
       <dt>[<em>...</em>]</dt>
       <dd>A set of characters enclosed in brackets matches
 	any single character mentioned in the set. Within the
