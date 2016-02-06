@@ -137,12 +137,22 @@ public class ReParserTest extends TestCase {
       fail("expected exception");
     } catch (ReSyntaxException e) {
       assertEquals(s, e.text);
-      assertTrue(s.length()==e.column);
+      assertEquals(s.length(), e.column);
       assertEquals(ReSyntaxException.EEOFUNEX, e.emsg);
     }
   }
   
-  
+  public void testENOHEX() {
+    String s = "\\u12ggdideldum";
+    try {
+      nfa.or(s);
+      fail("expected exception");
+    } catch (ReSyntaxException e) {
+      assertEquals(s, e.text);
+      assertEquals(5, e.column);
+      assertEquals(ReSyntaxException.ENOHEX, e.emsg);
+    }
+  }
   public void testECHARUNEX() {
     ReSyntaxException e = null;
     String s = "(*";
