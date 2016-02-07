@@ -1,3 +1,23 @@
+VERSION 2.0.0
+
+Added two new syntax features to the regular expression parser.
+
+1) \xhh and \uhhhh with 2 or 4 hex digits is now understood as the
+respective unicode character.
+
+2) The syntax (re){low,high} or (re){count} or (re){low,} is now
+understood. Use with care, though, with high numbers, since for a Dfa,
+the re is duplicated as many times as needed, since a Dfa cannot
+count.
+
+In particular (2) is an imcompatible change, since '{' now has a
+special meaning which changes the meaning of available regular
+expressions.
+
+For more about the new syntax see:
+http://haraldki.github.io/monqjfa/monqApiDoc/monq/jfa/doc-files/resyntax.html
+
+
 VERSION 1.7.1
 
 Removed dependency on XStream to read in a single configuration

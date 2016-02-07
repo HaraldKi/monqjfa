@@ -93,12 +93,13 @@
 	     Windowtitle="monq packages"
              Header="monq-${version}"
 	     Bottom="&lt;div class=&quot;monqlink&quot;>download: &lt;a href='https://pifpafpuf.de/Monq.jfa/download' target='_top'>pifpafpuf.de&lt;/a>&lt;br/>home page: &lt;a href=&quot;http://pifpafpuf.de/Monq.jfa/&quot; target='_top'>pifpafpuf.de/Monq.jfa&lt;/a>&lt;/div>"
-	     Overview="src/monq/overview.html"
+	     Overview="src/java/monq/overview.html"
 	     additionalparam="-quiet"
 	     verbose="false"
              use="true"
 	     >
-      <packageset dir="src">
+      <arg value="-Xdoclint:all,-missing"/>
+      <packageset dir="src/java">
         <include name="monq/**"/>
         <!-- packageset just creates package names doc-files is no package -->
         <exclude name="**/doc-files"/>
@@ -141,6 +142,7 @@
     </copy>
   </target>
   <!-- *************************************************************** -->
-
+  <target name="package" depends="jar, apidocjar, tutorial">
+  </target>
 </project>
  
