@@ -244,7 +244,7 @@ public class CtxTest extends TestCase {
     // This is the basic rule to define a pair of braces. There is no
     // need to restrict the opening brace to any context, because the
     // outermost brace does not need a context.
-    mgr.add("{", "}")
+    mgr.add("\\{", "}")
       .setStartAction(Drop.DROP)
       .setEndAction(Drop.DROP);
 
@@ -276,7 +276,7 @@ public class CtxTest extends TestCase {
     
     // we look at brace-pairs like "{123 ...}" and move the number to
     // the end of the braces
-    mgr.add("{[0-9]*", "}")
+    mgr.add("\\{[0-9]*", "}")
       .setStartAction(new AbstractFaAction() {
 	  public void invoke(StringBuilder yytext, int start, DfaRun r) {
 	    List<Object> stack = ((ContextStackProvider)r.clientData).getStack();
