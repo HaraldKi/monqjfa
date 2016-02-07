@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -16,16 +16,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
  *
- * @author &copy; 2004 Harald Kirsch
+ * @author &copy; 2004--2016 Harald Kirsch
  */
-public class RegexpTest extends TestCase {
+public class RegexpTest {
 
-  public static void test_matches() {
+  @Test
+  public void test_matches() {
     assertTrue(Regexp.matches("a+", "aaaaaaa", 0));
     assertFalse(Regexp.matches("a+", "aaaab", 0));
     assertTrue(new Regexp("abc+").matches("abccc"));
@@ -39,7 +41,8 @@ public class RegexpTest extends TestCase {
 
   }
   /**********************************************************************/
-  public static void test_find() {
+  @Test
+  public void test_find() {
     Regexp re = new Regexp("(a|bc)+");
     assertEquals(4, re.find("0000abcbcabcbcaxyz"));
     assertEquals(11, re.length());
@@ -47,7 +50,7 @@ public class RegexpTest extends TestCase {
     assertEquals(11, re.length());
 
     assertEquals(-1, re.find("0000abcbcabcbcaxyz", 15));
-    
+
     Exception e = null;
     try {
       assertEquals(11, re.length());
@@ -59,7 +62,8 @@ public class RegexpTest extends TestCase {
     assertEquals(-1, Regexp.find("x+", "aaa", 1));
   }
   /**********************************************************************/
-  public static void test_startsWith() {
+  @Test
+  public void test_startsWith() {
     Regexp re = new Regexp("(a|bc)+");
     assertEquals(11, re.atStartOf("abcbcabcbcaxyz"));
     assertEquals(11, re.length());
@@ -78,7 +82,8 @@ public class RegexpTest extends TestCase {
     assertEquals(3, Regexp.atStartOf("abc", "xabc", 1));
   }
   /**********************************************************************/
-  public static void test_submatches() {
+  @Test
+  public void test_submatches() {
     Regexp re = new Regexp("(!a+)(!b+)");
     String s = "xyzaaaaabbbbbZ";
 
@@ -99,11 +104,15 @@ public class RegexpTest extends TestCase {
     assertTrue(e instanceof IllegalStateException);
 
   }
-  /**********************************************************************/
-  public static void main(String[] argv)   {
-    junit.textui.TestRunner.run(new TestSuite(RegexpTest.class));
+  /*+******************************************************************/
+  @Test
+  public void matchEmptyBug() {
+    Regexp re = new Regexp("a*");
+    assertTrue(re.matches(""));
+    assertTrue(re.matches("a"));
+    assertTrue(re.matches("aa"));
+    assertTrue(re.matches("aaa"));
   }
-
 }
 
 

@@ -67,6 +67,10 @@ public class Regexp {
       throw new Error("impossible", e);
     }
   }
+  /*+******************************************************************/
+  public Dfa getDfa() {
+    return dfa;
+  }
   /**********************************************************************/
   private static IllegalArgumentException makeEx(String msg, Throwable cause) {
     IllegalArgumentException e = new IllegalArgumentException(msg);
@@ -167,7 +171,13 @@ public class Regexp {
     } catch( java.io.IOException e ) {
       throw new Error("impossible", e);
     }
-    return (a!=null && a!=DfaRun.EOF) ? out.length() : -1;
+    if (a==null) {
+      return -1;
+    }
+    if (a!=DfaRun.EOF || (s.length()==pos && dfa.matchesEmpty())) {
+      return out.length();
+    }
+    return -1;
   }
   /**********************************************************************/
   /**
