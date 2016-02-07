@@ -17,20 +17,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import monq.jfa.actions.*;
+
+import static org.junit.Assert.*;
+
 import java.util.*;
-import junit.framework.TestCase;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
- * @author &copy; 2005 Harald Kirsch
+ * @author &copy; 2005-2016 Harald Kirsch
  */
-public class ReParserTest extends TestCase {
+public class ReParserTest {
   Nfa nfa;
 
-  @Override
+  @Before
   public void setUp() throws ReSyntaxException {
     nfa = new Nfa();
   }
+
+  @Test
   public void testEBSEOF() {
     ReSyntaxException e = null;
     String s = "abcde\\";
@@ -44,6 +51,7 @@ public class ReParserTest extends TestCase {
     }
     assertEquals(ReSyntaxException.EBSATEOF, e.emsg);
   }
+  @Test
   public void testEEXTRACHAR()  {
     String s = "a)";
     try {
@@ -56,6 +64,7 @@ public class ReParserTest extends TestCase {
       assertEquals(ReSyntaxException.EEXTRACHAR, e.emsg);
     }
   }
+  @Test
   public void testEINVALUL() {
     ReSyntaxException e = null;
     String s = "[a-]";
@@ -70,6 +79,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EINVALUL, e.emsg);
   }
 
+  @Test
   public void testEINVRANGE() {
     ReSyntaxException e = null;
     String s = "[x-a]";
@@ -84,6 +94,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EINVRANGE, e.emsg);
   }
 
+  @Test
   public void testECLOSINGP() {
     ReSyntaxException e = null;
     String s = "(abc";
@@ -98,6 +109,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.ECLOSINGP, e.emsg);
   }
 
+  @Test
   public void testECHARUNEXbracket() {
     ReSyntaxException e = null;
     String s = "[abc^]";
@@ -112,6 +124,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.ECHARUNEX, e.emsg);
   }
 
+  @Test
   public void testEEOFUNEX() {
     ReSyntaxException e = null;
     String s = "(";
@@ -126,6 +139,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EEOFUNEX, e.emsg);
   }
 
+  @Test
   public void testEEOFUNEXinHex() {
     String s = "\\u123";
     try {
@@ -138,6 +152,7 @@ public class ReParserTest extends TestCase {
     }
   }
 
+  @Test
   public void testENOHEX() {
     String s = "\\u12ggdideldum";
     try {
@@ -149,6 +164,7 @@ public class ReParserTest extends TestCase {
       assertEquals(ReSyntaxException.ENOHEX, e.emsg);
     }
   }
+  @Test
   public void testECHARUNEX() {
     ReSyntaxException e = null;
     String s = "(*";
@@ -163,6 +179,7 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.ECHARUNEX, e.emsg);
   }
 
+  @Test
   public void testCleanReset() {
     ReSyntaxException e = null;
     String s = "[a-";
@@ -177,6 +194,7 @@ public class ReParserTest extends TestCase {
     }
     assertEquals(ReSyntaxException.EINVALUL, e.emsg);
   }
+  @Test
   public void testRecentWrap() {
     ReSyntaxException e = null;
     // make sure the recent buffer in the ReParser overflows.
@@ -195,6 +213,7 @@ public class ReParserTest extends TestCase {
     }
     assertEquals(ReSyntaxException.EEXTRACHAR, e.emsg);
   }
+  @Test
   public void testBackslash() throws ReSyntaxException {
     String s = "\\[a[x\\]]b";
     nfa.or(s, Drop.DROP);
@@ -203,6 +222,7 @@ public class ReParserTest extends TestCase {
     assertEquals(-1, nfa.findPath("aaa"));
   }
 
+  @Test
   public void testMinusInBracket() throws ReSyntaxException {
     String s = "[-abc]+";
     Nfa nfas = new Nfa(s, Drop.DROP);
@@ -210,6 +230,7 @@ public class ReParserTest extends TestCase {
     assertEquals(4, nfas.findPath("----"));
   }
 
+  @Test
   public void testEOFinBracket() {
     ReSyntaxException e = null;
     try {
@@ -221,6 +242,7 @@ public class ReParserTest extends TestCase {
   }
 
   // a very basic test of the toString function
+  @Test
   public void test_ReSyntaxException_toString()
   {
     ReSyntaxException e = null;
@@ -241,6 +263,7 @@ public class ReParserTest extends TestCase {
   // ********************************************************************
   // try to make sure that all characters except the special characters match
   // themselves and check that special characters have a special meaning.
+  @Test
   public void testAllChars() throws Exception {
     String[] tests = {
         // special, regexp, input, expected
@@ -291,6 +314,7 @@ public class ReParserTest extends TestCase {
 
   }
   //********************************************************************
+  @Test
   public void testHexDigits() {
     for (int ch=Character.MIN_VALUE; ch<=Character.MAX_VALUE; ch++) {
       String s;
@@ -304,6 +328,7 @@ public class ReParserTest extends TestCase {
     }
   }
   //********************************************************************
+  @Test
   public void testHexDigitsInRange() {
     String pattern = "abc[\\x00-\\x1f]def";
     Regexp re = new Regexp(pattern);
@@ -312,6 +337,7 @@ public class ReParserTest extends TestCase {
     }
   }
   //********************************************************************
+  @Test
   public void testRangeBasic() {
     Regexp re = new Regexp("a{1,3}");
     assertFalse(re.matches(""));
@@ -321,6 +347,7 @@ public class ReParserTest extends TestCase {
     assertFalse(re.matches("aaaa"));
   }
   //********************************************************************
+  @Test
   public void testRangeZeroStart() {
     Regexp re = new Regexp("a{0,3}");
     assertTrue(re.matches(""));
@@ -330,14 +357,16 @@ public class ReParserTest extends TestCase {
     assertFalse(re.matches("aaaa"));
   }
   //********************************************************************
+  @Test
   public void testRangeExact() {
     Regexp re = new Regexp("a{4,4}");
     assertFalse(re.matches(""));
     assertFalse(re.matches("aaa"));
-    assertTrue(re.matches("aaaa"));    
-    assertFalse(re.matches("aaaaa"));    
+    assertTrue(re.matches("aaaa"));
+    assertFalse(re.matches("aaaaa"));
   }
   /*+******************************************************************/
+  @Test
   public void testRangeCompleteCombis() {
     for (int from=0; from<3; from++) {
       for (int to=from>0?from:1; to<6; to++) {
@@ -345,22 +374,24 @@ public class ReParserTest extends TestCase {
         String test = "";
         for (int i=0; i<to+1; i++) {
           assertEquals(test+",from="+from+", to="+to,
-                       i>=from && i<=to, re.matches(test));          
+                       i>=from && i<=to, re.matches(test));
           test = test + 'a';
         }
       }
     }
   }
   /*+******************************************************************/
+  @Test
   public void testRangeAndRange() {
     Regexp re = new Regexp("a{2,3}{2,2}");
     assertFalse(re.matches("aaa"));
     assertTrue(re.matches("aaaa"));
     assertTrue(re.matches("aaaaaa"));
     assertTrue(re.matches("aaaaaa"));
-    assertFalse(re.matches("aaaaaaa"));    
+    assertFalse(re.matches("aaaaaaa"));
   }
   /*+******************************************************************/
+  @Test
   public void testRangeAndStar() {
     Regexp re = new Regexp("a{3,3}*");
     assertTrue(re.matches(""));
@@ -372,6 +403,7 @@ public class ReParserTest extends TestCase {
     assertTrue(re.matches("aaaaaa"));
   }
   /*+******************************************************************/
+  @Test
   public void testOpenRange() {
     Regexp re = new Regexp("a{3,}");
     assertFalse(re.matches(""));
@@ -383,6 +415,7 @@ public class ReParserTest extends TestCase {
     assertTrue(re.matches("aaaaaa"));
   }
   /*+******************************************************************/
+  @Test
   public void testOpenRangeLikeStar() {
     Regexp re = new Regexp("a{0,}");
     String test = "";
@@ -392,6 +425,7 @@ public class ReParserTest extends TestCase {
     }
   }
   /*+******************************************************************/
+  @Test
   public void testRepeatComplex() {
     Regexp re = new Regexp("( ?(harald|kirsch)){2,3}");
     assertTrue(re.matches("harald kirsch"));
@@ -400,6 +434,7 @@ public class ReParserTest extends TestCase {
     assertTrue(re.matches("kirsch kirsch kirsch"));
   }
   /*+******************************************************************/
+  @Test
   public void testRepeatOneNum() {
     Regexp re = new Regexp("(ab|01|äü){3}");
     assertTrue(re.matches("abab01"));
@@ -409,6 +444,7 @@ public class ReParserTest extends TestCase {
     assertFalse(re.matches("abbaab"));
   }
   /*+******************************************************************/
+  @Test
   public void testETOLESSFROM() {
     try {
       nfa.or("a{3,1}");
@@ -418,15 +454,17 @@ public class ReParserTest extends TestCase {
     }
   }
   /*+******************************************************************/
+  @Test
   public void testEMISSINGCURLYCLOSE() {
     try {
       nfa.or("a{3,*");
-      fail("expected exception");      
+      fail("expected exception");
     } catch (ReSyntaxException e) {
       assertEquals(ReSyntaxException.EMISSINGCURLYCLOSE, e.emsg);
     }
   }
   /*+******************************************************************/
+  @Test
   public void testEEMPTY() {
     try {
       nfa.or("a{0,0}");
