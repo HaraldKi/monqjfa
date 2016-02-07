@@ -1,7 +1,5 @@
-monqjfa 
+monqjfa --- Nondeterministic and Deterministic Finita Automata for Java (NFA, DFA)
 =======
-
-Nondeterministic and Deterministic Finita Automata for Java (NFA, DFA)
 
 The Java class library monq.jfa provides fast and flexible text
 filtering with regular expressions. In contrast to java.util.regex,
