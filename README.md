@@ -23,8 +23,11 @@ For some recent blog entry of how the speed improved recently, read
 http://pifpafpuf.de/2015-11/generated-index.html
 
 Javadoc: http://haraldki.github.io/monqjfa/monqApiDoc/
+
 regular expression syntax: http://haraldki.github.io/monqjfa/monqApiDoc/monq/jfa/doc-files/resyntax.html
+
 test-coverage: http://haraldki.github.io/monqjfa/monq-test-coverage/
 
-Design ©2007--2016 by [Harald Kirsch](mailto:pifpafpuf@gmx.de)
+©2007--2016 by [Harald Kirsch](mailto:pifpafpuf@gmx.de)
+
 
