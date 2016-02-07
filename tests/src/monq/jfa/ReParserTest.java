@@ -16,11 +16,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-//import jfa.*;
 import monq.jfa.actions.*;
-
 import java.util.*;
-
 import junit.framework.TestCase;
 
 /**
@@ -48,17 +45,16 @@ public class ReParserTest extends TestCase {
     assertEquals(ReSyntaxException.EBSATEOF, e.emsg);
   }
   public void testEEXTRACHAR()  {
-    ReSyntaxException e = null;
     String s = "a)";
     try {
       nfa.or(s);
-    } catch( ReSyntaxException _e ) {
-      e = _e;
+      fail("expected exception");
+    } catch( ReSyntaxException e ) {
+      //System.out.println(e);
       assertEquals(s, e.text);
       assertTrue(s.length()==e.column);
-      //System.out.println(e);
+      assertEquals(ReSyntaxException.EEXTRACHAR, e.emsg);
     }
-    assertEquals(ReSyntaxException.EEXTRACHAR, e.emsg);
   }
   public void testEINVALUL() {
     ReSyntaxException e = null;
@@ -141,7 +137,7 @@ public class ReParserTest extends TestCase {
       assertEquals(ReSyntaxException.EEOFUNEX, e.emsg);
     }
   }
-  
+
   public void testENOHEX() {
     String s = "\\u12ggdideldum";
     try {
@@ -247,6 +243,7 @@ public class ReParserTest extends TestCase {
   // themselves and check that special characters have a special meaning.
   public void testAllChars() throws Exception {
     String[] tests = {
+        // special, regexp, input, expected
         "[", "[a1]+", "a11ab", "a11a",
         "]", "[x]", "x", "x",
         "(", "(a)", "a", "a",
@@ -261,8 +258,8 @@ public class ReParserTest extends TestCase {
 	"-", "[3-5]+", "345432", "34543",
 	"\\", "a\\!", "a!", "a!",
 	"~", "a~", "aaa", "aaa",
-	// '@' should disappear soon, it is deprecated
 	"@", "[@]", "@", "@",
+	"{", "a{1,3}", "aa", "aa",
     };
     Map<Character,Integer> m = new HashMap<Character,Integer>();
     for(int i=0; i<tests.length; i+=4) {
@@ -315,6 +312,129 @@ public class ReParserTest extends TestCase {
     }
   }
   //********************************************************************
+  public void testRangeBasic() {
+    Regexp re = new Regexp("a{1,3}");
+    assertFalse(re.matches(""));
+    assertTrue(re.matches("a"));
+    assertTrue(re.matches("aa"));
+    assertTrue(re.matches("aaa"));
+    assertFalse(re.matches("aaaa"));
+  }
+  //********************************************************************
+  public void testRangeZeroStart() {
+    Regexp re = new Regexp("a{0,3}");
+    assertTrue(re.matches(""));
+    assertTrue(re.matches("a"));
+    assertTrue(re.matches("aa"));
+    assertTrue(re.matches("aaa"));
+    assertFalse(re.matches("aaaa"));
+  }
+  //********************************************************************
+  public void testRangeExact() {
+    Regexp re = new Regexp("a{4,4}");
+    assertFalse(re.matches(""));
+    assertFalse(re.matches("aaa"));
+    assertTrue(re.matches("aaaa"));    
+    assertFalse(re.matches("aaaaa"));    
+  }
+  /*+******************************************************************/
+  public void testRangeCompleteCombis() {
+    for (int from=0; from<3; from++) {
+      for (int to=from>0?from:1; to<6; to++) {
+        Regexp re = new Regexp(String.format("a{%d,%d}", from, to));
+        String test = "";
+        for (int i=0; i<to+1; i++) {
+          assertEquals(test+",from="+from+", to="+to,
+                       i>=from && i<=to, re.matches(test));          
+          test = test + 'a';
+        }
+      }
+    }
+  }
+  /*+******************************************************************/
+  public void testRangeAndRange() {
+    Regexp re = new Regexp("a{2,3}{2,2}");
+    assertFalse(re.matches("aaa"));
+    assertTrue(re.matches("aaaa"));
+    assertTrue(re.matches("aaaaaa"));
+    assertTrue(re.matches("aaaaaa"));
+    assertFalse(re.matches("aaaaaaa"));    
+  }
+  /*+******************************************************************/
+  public void testRangeAndStar() {
+    Regexp re = new Regexp("a{3,3}*");
+    assertTrue(re.matches(""));
+    assertFalse(re.matches("a"));
+    assertFalse(re.matches("aa"));
+    assertTrue(re.matches("aaa"));
+    assertFalse(re.matches("aaaa"));
+    assertFalse(re.matches("aaaaa"));
+    assertTrue(re.matches("aaaaaa"));
+  }
+  /*+******************************************************************/
+  public void testOpenRange() {
+    Regexp re = new Regexp("a{3,}");
+    assertFalse(re.matches(""));
+    assertFalse(re.matches("a"));
+    assertFalse(re.matches("aa"));
+    assertTrue(re.matches("aaa"));
+    assertTrue(re.matches("aaaa"));
+    assertTrue(re.matches("aaaaa"));
+    assertTrue(re.matches("aaaaaa"));
+  }
+  /*+******************************************************************/
+  public void testOpenRangeLikeStar() {
+    Regexp re = new Regexp("a{0,}");
+    String test = "";
+    for (int i=0; i<10; i++) {
+      assertTrue(re.matches(test));
+      test += "a";
+    }
+  }
+  /*+******************************************************************/
+  public void testRepeatComplex() {
+    Regexp re = new Regexp("( ?(harald|kirsch)){2,3}");
+    assertTrue(re.matches("harald kirsch"));
+    assertTrue(re.matches("harald harald kirsch"));
+    assertTrue(re.matches("kirsch harald kirsch"));
+    assertTrue(re.matches("kirsch kirsch kirsch"));
+  }
+  /*+******************************************************************/
+  public void testRepeatOneNum() {
+    Regexp re = new Regexp("(ab|01|äü){3}");
+    assertTrue(re.matches("abab01"));
+    assertTrue(re.matches("abäüäü"));
+    assertTrue(re.matches("äüäüäü"));
+    assertTrue(re.matches("01ab01"));
+    assertFalse(re.matches("abbaab"));
+  }
+  /*+******************************************************************/
+  public void testETOLESSFROM() {
+    try {
+      nfa.or("a{3,1}");
+      fail("expected exception");
+    } catch (ReSyntaxException e) {
+      assertEquals(ReSyntaxException.ETOLESSFROM, e.emsg);
+    }
+  }
+  /*+******************************************************************/
+  public void testEMISSINGCURLYCLOSE() {
+    try {
+      nfa.or("a{3,*");
+      fail("expected exception");      
+    } catch (ReSyntaxException e) {
+      assertEquals(ReSyntaxException.EMISSINGCURLYCLOSE, e.emsg);
+    }
+  }
+  /*+******************************************************************/
+  public void testEEMPTY() {
+    try {
+      nfa.or("a{0,0}");
+      fail("expected exception");
+    } catch (ReSyntaxException e) {
+      assertEquals(ReSyntaxException.EEMPTY, e.emsg);
+    }
+  }
 }
 
 

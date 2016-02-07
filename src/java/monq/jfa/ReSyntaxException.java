@@ -46,6 +46,9 @@ public class ReSyntaxException extends Exception {
     = "the integer after '@' must be in the range [0,127]";
   public static final String EATMISSAT 
     = "missing closing '@'";
+  public static final String EMISSINGCURLYCLOSE = "missing closing '}'";
+  public static final String ETOLESSFROM = "upper boundary smaller than lower";
+  public static final String EEMPTY = "range {0,0} not allowed";
 
   public String emsg;
   public int line;

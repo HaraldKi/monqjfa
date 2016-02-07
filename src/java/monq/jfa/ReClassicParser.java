@@ -13,6 +13,7 @@ public class ReClassicParser implements ReParser {
   private static final int TOK_CBRACKET = Character.MAX_VALUE+']';
   private static final int TOK_OPAREN   = Character.MAX_VALUE+'(';
   private static final int TOK_CPAREN   = Character.MAX_VALUE+')';
+  private static final int TOK_OCURLY   = Character.MAX_VALUE+'{';
   private static final int TOK_QMARK    = Character.MAX_VALUE+'?';
   private static final int TOK_STAR     = Character.MAX_VALUE+'*';
   private static final int TOK_PLUS     = Character.MAX_VALUE+'+';
@@ -25,7 +26,9 @@ public class ReClassicParser implements ReParser {
   private static final int TOK_AT       = Character.MAX_VALUE+'@';
 
   private static final char[] specialChars
-    = "[]()?*+|.!^-\\~@".toCharArray();
+
+
+    = "[]{}()?*+|.!^-\\~@,".toCharArray();
   static { java.util.Arrays.sort(specialChars); }
 
   private static final String INTERNAL_ERROR_TMPL =
@@ -77,7 +80,7 @@ public class ReClassicParser implements ReParser {
     inNext = 0;
     recentNext = 0;
     recentWrapped = false;
-    nextToken(false);
+    nextToken();
     parseOr(nfa);
     if( token!=TOK_EOF ) throw error(ReSyntaxException.EEXTRACHAR);
   }
@@ -139,8 +142,16 @@ public class ReClassicParser implements ReParser {
     lookaheadToken = token;
     token = valueForToken;
   }
-  private void nextToken(boolean withinBracket)
-    throws ReSyntaxException {
+
+  private void nextBracketToken() throws ReSyntaxException {
+    _nextToken(true);
+  }
+
+  private void nextToken() throws ReSyntaxException {
+    _nextToken(false);
+  }
+
+  private void _nextToken(boolean withinBracket) throws ReSyntaxException {
 
     if( lookaheadValid ) {
       token = lookaheadToken;
@@ -179,6 +190,7 @@ public class ReClassicParser implements ReParser {
     } else {
       switch( ch ) {
       case '[': token = TOK_OBRACKET; break;
+      case '{': token = TOK_OCURLY; break;
       case '(': token = TOK_OPAREN; break;
       case ')': token = TOK_CPAREN; break;
       case '?': token = TOK_QMARK; break;
@@ -227,15 +239,15 @@ public class ReClassicParser implements ReParser {
     // recognized specially in this order "^]-"
     if( token==TOK_HAT ) {
       invert = true;
-      nextToken(true);
+      nextBracketToken();
     }
     if( token==TOK_CBRACKET ) {
       tmp.append("]]");
-      nextToken(true);
+      nextBracketToken();
     }
     if( token==TOK_MINUS ) {
       tmp.append("--");
-      nextToken(true);
+      nextBracketToken();
     }
 
     // collect single characters and character ranges
@@ -245,12 +257,12 @@ public class ReClassicParser implements ReParser {
         throw error(ReSyntaxException.ECHARUNEX);
       }
       int ch = token;
-      nextToken(true);
+      nextBracketToken();
       if( token!=TOK_MINUS ) {
 	tmp.append((char)ch).append((char)ch);
         continue;
       }
-      nextToken(true);
+      nextBracketToken();
       if( token>Character.MAX_VALUE ) {
         throw error(ReSyntaxException.EINVALUL);
       }
@@ -258,9 +270,9 @@ public class ReClassicParser implements ReParser {
         throw error(ReSyntaxException.EINVRANGE);
       }
       tmp.append((char)ch).append((char)token);
-      nextToken(true);
+      nextBracketToken();
     }
-    nextToken(false);
+    nextToken();
 
     nfa.pushCharSet(tmp, invert);
   }
@@ -271,14 +283,14 @@ public class ReClassicParser implements ReParser {
     // character is TOK_EXCL, this is a reporting subexpression.
     if( token==TOK_OPAREN ) {
       boolean isReporting = false;
-      nextToken(false);
+      nextToken();
       if( token==TOK_EXCL ) {
         isReporting = true;
-        nextToken(false);
+        nextToken();
       }
       parseOr(nfa);
       if( token!=TOK_CPAREN ) throw error(ReSyntaxException.ECLOSINGP);
-      nextToken(false);
+      nextToken();
 
       if( isReporting ) {
         if( !nfa.markAsSub() ) {
@@ -290,14 +302,14 @@ public class ReClassicParser implements ReParser {
 
     // a '[' starts a character class
     if( token==TOK_OBRACKET ) {
-      nextToken(true);
+      nextBracketToken();
       parseBracket(nfa);
       return;
     }
 
     // a '.' stands for every character
     if( token==TOK_DOT ) {
-      nextToken(false);
+      nextToken();
       nfa.pushDot();
       return;
     }
@@ -308,8 +320,8 @@ public class ReClassicParser implements ReParser {
     if( token<=Character.MAX_VALUE ) {
       tmp.setLength(0);
       tmp.append((char)token);
-      nextToken(false);
-      for(/**/; token<=Character.MAX_VALUE; nextToken(false) ) {
+      nextToken();
+      for(/**/; token<=Character.MAX_VALUE; nextToken() ) {
         tmp.append((char)token);
       }
       int L = tmp.length();
@@ -338,19 +350,19 @@ public class ReClassicParser implements ReParser {
 
     parseAtom(nfa);
 
-    boolean havePostfix = true;
-    while( havePostfix ) {
+    boolean tryPostfix = true;
+    while( tryPostfix ) {
       switch( token ) {
-      case TOK_QMARK: nfa.optional(); nextToken(false); break;
-      case TOK_STAR: nfa.star(); nextToken(false); break;
-      case TOK_PLUS: nfa.plus(); nextToken(false); break;
+      case TOK_QMARK: nfa.optional(); nextToken(); break;
+      case TOK_STAR: nfa.star(); nextToken(); break;
+      case TOK_PLUS: nfa.plus(); nextToken(); break;
       case TOK_EXCL: {
         try {
           nfa.shortest();
         } catch( CompileDfaException e) {
           throw error(String.format(INTERNAL_ERROR_TMPL, "shortest()"));
         }
-        nextToken(false);
+        nextToken();
         break;
       }
       case TOK_TILDE: {
@@ -359,7 +371,7 @@ public class ReClassicParser implements ReParser {
         } catch( CompileDfaException e) {
           throw error(String.format(INTERNAL_ERROR_TMPL, "invert()"));
         }
-        nextToken(false);
+        nextToken();
         break;
       }
       case TOK_HAT: {
@@ -368,7 +380,7 @@ public class ReClassicParser implements ReParser {
         } catch( CompileDfaException e) {
           throw error(String.format(INTERNAL_ERROR_TMPL, "not()"));
         }
-        nextToken(false);
+        nextToken();
         break;
       }
       case TOK_AT:
@@ -377,13 +389,83 @@ public class ReClassicParser implements ReParser {
         } catch( CompileDfaException e ) {
           throw error(String.format(INTERNAL_ERROR_TMPL, "allPrefixes()"));
         }
-        nextToken(false);
+        nextToken();
+        break;
+      case TOK_OCURLY:
+        nextToken();
+        parseRepeatCount(nfa);
         break;
       default:
-        havePostfix = false;
+        tryPostfix = false;
         break;
       }
     }
+  }
+  /********************************************************************/
+  private void parseRepeatCount(NfaParserView nfa) throws ReSyntaxException {
+    // have just seen the '{' and nextToken was called already
+    int from = parseNum();
+    int to = -1;
+    if (token==',') {
+      nextToken();
+      if (token>='0' && token<='9') {
+        to = parseNum();
+      }
+    } else {
+      to = from;
+    }
+    if (token!='}') {
+      throw error(ReSyntaxException.EMISSINGCURLYCLOSE);
+    }
+    nextToken();
+
+    // TODO: there are too many cases below. Is there a better way to do this
+    // with much fewer ifs?
+    if (to>-1 && to<from) {
+      throw error(ReSyntaxException.ETOLESSFROM);
+    }
+    if (to==0) {
+      throw error(ReSyntaxException.EEMPTY);
+    }
+
+    if (to<0) {
+      if (from==0) {
+        nfa.star();
+        return;
+      }
+      for (int i=0; i<from; i++) {
+        nfa.dup();
+      }
+      for (int i=0; i<from-1; i++) {
+        nfa.seq();
+      }
+      nfa.swap();
+      nfa.star();
+      nfa.seq();
+      return;
+    }
+
+    for (int i=0; i<to-1; i++) {
+      if (i==from) {
+        nfa.optional();
+      }
+      nfa.dup();
+    }
+    if (from==to-1) {
+      nfa.optional();
+    }
+    for (int i=0; i<to-1; i++) {
+      nfa.seq();
+    }
+  }
+  /*+******************************************************************/
+  private int parseNum() throws ReSyntaxException {
+    int result = 0;
+    while (token>='0' && token<='9') {
+      result = 10*result +(token-'0');
+      nextToken();
+    }
+    return result;
   }
   /********************************************************************/
   private void parseSequence(NfaParserView nfa) throws  ReSyntaxException {
@@ -400,7 +482,7 @@ public class ReClassicParser implements ReParser {
     parseSequence(nfa);
 
     while( token==TOK_OR ) {
-      nextToken(false);
+      nextToken();
       parseSequence(nfa);
       nfa.or();
     }

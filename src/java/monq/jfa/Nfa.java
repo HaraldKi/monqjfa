@@ -28,8 +28,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
+import monq.jfa.AbstractFaState.EpsState;
 import monq.jfa.FaState.IterType;
 import monq.jfa.actions.DefaultAction;
 
@@ -778,8 +780,8 @@ public class Nfa  {
         worker.complete(sink);
         state.setTrans(worker.toCharTrans(memoryForSpeedTradeFactor));
       }});
-
   }
+  /*+******************************************************************/
   /**
    * <p>inverts the automaton, such that the resulting automaton will
    * match the set-complement of the set of strings matched by the
@@ -969,8 +971,67 @@ public class Nfa  {
 
     return this;
   }
-
-  /**********************************************************************/
+  /*+******************************************************************/
+  /**
+   * creates a copy of this Nfa where all the states are duplicated, but the
+   * actions are kept such that both Nfas referernce the same actions.
+   * 
+   * @return
+   */
+  public Nfa copy() {
+    this.toDot("/home/harald/tmp/bla.dot");
+    final Map<FaState,FaState> visited = new IdentityHashMap<>();
+    final Queue<FaState> work = new LinkedList<>();
+    work.add(start);
+    Nfa result = new Nfa(Nfa.NOTHING);
+    result.start = new AbstractFaState.NfaState();
+    visited.put(start, result.start);
+    IntervalsFaState ivals = new IntervalsFaState();
+    
+    while (!work.isEmpty()) {
+      FaState current = work.remove();
+      FaState newState = visited.get(current);
+      if (current==lastState) {
+        result.lastState = (EpsState)newState;
+      }
+      FaState[] eps = current.getEps();
+      if (eps!=null) {
+        for (FaState oldTarget : eps) {
+          FaState newTarget = visited.get(oldTarget);
+          if (newTarget==null) {
+            newTarget = new AbstractFaState.NfaState();
+            work.add(oldTarget);
+            visited.put(oldTarget, newTarget);
+          }
+          newState.addEps(newTarget);
+        }
+      }
+      CharTrans trans = current.getTrans();
+      if (trans!=null) {
+        int l = trans.size();
+        ivals.reset();
+        for (int i=0; i<l; i++) {
+          char chFirst = trans.getFirstAt(i);
+          char chLast = trans.getLastAt(i);
+          FaState oldTarget = trans.getAt(i);
+          if (oldTarget==null) {
+            continue;
+          }
+          FaState newTarget = visited.get(oldTarget);
+           if (newTarget==null) {
+             newTarget = new AbstractFaState.NfaState();
+             work.add(oldTarget);
+             visited.put(oldTarget, newTarget);
+           }
+           ivals.overwrite(chFirst, chLast, newTarget);
+        }
+        newState.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
+      }
+    }
+    result.toDot("/home/harald/tmp/bli.dot");
+    return result;
+  }
+  /*+******************************************************************/
   /**
    * <p>extend the current automaton to recognize <code>regex</code>
    * as a suffix of the strings already recognized and arrange for the
@@ -1497,7 +1558,6 @@ public class Nfa  {
       startStack.clear();
       lastStack.clear();
     }
-
     @Override
     public void pushCharSet(CharSequence pairs, boolean invert) {
       startStack.add(start);
@@ -1538,6 +1598,12 @@ public class Nfa  {
     public void plus() { Nfa.this.plus(); }
     @Override
     public void optional() { Nfa.this.optional(); }
+    @Override
+    public void dup() {
+      Nfa copy = Nfa.this.copy();
+      startStack.add(copy.start);
+      lastStack.add(copy.lastState);
+    }
     @Override
     public void allPrefixes() throws CompileDfaException {
       Nfa.this.allPrefixes(); 

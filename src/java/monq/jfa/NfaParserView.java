@@ -84,6 +84,10 @@ public interface NfaParserView {
    * element of the expression stack.</p>
    */
   /**
+   * creates a copy of the top stack element and pushes it
+   */
+  void dup();
+  /**
    * <p>
    * performs the equivalent of {@link Nfa#allPrefixes(null)} on the top
    * element of the expression stack.</p>
