@@ -171,10 +171,9 @@ abstract class AbstractFaState
 
   public FaState follow(char ch) {
     CharTrans trans = getTrans();
-    //System.out.println("follow:"+ch+" in "+trans+"-->"+trans.get(ch));
     if( trans==null ) return null;
-    Object o = trans.get(ch);
-    return (FaState)o;
+    FaState state = trans.get(ch);
+    return state;
   }
 
   /**********************************************************************/
