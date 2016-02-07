@@ -247,13 +247,13 @@ public class Commandline {
    * and can be retrieved with {@link #getValues getValues()}. If an
    * error occurs during parsing, the message of the resulting {@link
    * CommandlineException} makes a good usage message. A typical
-   * application looks like<pre>
+   * application looks like</p><pre>
    *   try {
    *     cmd.parse(argv);
    *   } catch( CommandlineException e ) {
    *     System.err.println(e.getMessage());
    *     System.exit(1);
-   *   }</pre></p>
+   *   }</pre>
    */
 
   public void parse(String[] argv) throws CommandlineException {

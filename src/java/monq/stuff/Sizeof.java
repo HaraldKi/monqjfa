@@ -201,7 +201,7 @@ public class Sizeof {
    * Sizeof.Pair}. The <code>Pair</code> describes how often
    * <em>k</em> appears as a field in an object of type <em>r</em>. In
    * other words: within the object graph, objects of type <em>r</em>
-   * are parents of objects of type <em>k</em>.</p>
+   * are parents of objects of type <em>k</em>.
    */
   public static Map<Class<?>, Map<Class<?>,Pair>> sizeof(Object o) {
     Map<Class<?>, Map<Class<?>,Pair>> types = 

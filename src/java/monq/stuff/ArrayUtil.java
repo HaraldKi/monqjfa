@@ -52,7 +52,7 @@ public final class ArrayUtil {
    * inserts <code>elem</code> at index <code>pos</code> in
    * <code>ary</code> by shifting all elements at indices greater
    * <code>pos</code> to a one larger index position. The very last
-   * element of the array is lost.</p>
+   * element of the array is lost.
    */
   public static void insert(int[] ary, int pos, int elem) {
     System.arraycopy(ary, pos, ary, pos+1, ary.length-pos-1);

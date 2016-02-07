@@ -89,8 +89,9 @@ public interface NfaParserView {
   void dup();
   /**
    * <p>
-   * performs the equivalent of {@link Nfa#allPrefixes(null)} on the top
-   * element of the expression stack.</p>
+   * performs the equivalent of {@link Nfa#allPrefixes} on the top
+   * element of the expression stack.
+   * </p>
    */
   void allPrefixes() throws CompileDfaException;
   

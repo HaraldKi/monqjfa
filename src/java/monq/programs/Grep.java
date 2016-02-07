@@ -116,13 +116,13 @@ import java.io.*;
  * start to be confusing. The notes below might help to sort some
  * things out.</p>
  *
- * <h4>Lines have no significance</h4>
+ * <h3>Lines have no significance</h3>
  * <p><code>Grep</code> is not line oriented like the classic
  * <code>grep</code>. It does not care for line separators, except if
  * you specify them explicitly somehow in your regular
  * expressions.</p>
  *
- * <h4>Never use <code>'.*'</code> or <code>'.+'</code>.</h4>
+ * <h3>Never use <code>'.*'</code> or <code>'.+'</code>.</h3>
  * <p><code>Grep</code> lumps together all given REs <b>plus</b> the
  * regular expression denoting the end of the ROI into one big RE and
  * matches everything in parallel. The longest match wins. Guess which
@@ -142,8 +142,8 @@ import java.io.*;
  * match will extend exactly to the first match of
  * <code>'&lt;/endtag&gt;'</code>.</p>
  *
- * <h4>Use of <code>'%1'</code>, <code>'%2'</code>, etc. in
- * formats</h4>
+ * <h3>Use of <code>'%1'</code>, <code>'%2'</code>, etc. in
+ * formats</h3>
  * <p>Apart from <code>'%0'</code>, position parameters
  * <code>'%1'</code>, etc. can be 
  * used in a {@link monq.jfa.PrintfFormatter format string} under
@@ -160,8 +160,8 @@ import java.io.*;
  * will fetch the first attribute value from an XML element called
  * <code>'&lt;entry&gt;'</code>.
  *
- * <hr />
- * <h4>Footnotes</h4>
+ * <hr>
+ * <h3>Footnotes</h3>
  * <p class="footnote"><a name="fn1">1)</a> This has to do with the
  * fact that 
  * <code>Grep</code> works with deterministic finite automata which
@@ -170,7 +170,7 @@ import java.io.*;
  * can be found 
  * <a href="../monq/jfa/doc-files/resyntax.html#rse">here</a>.</p>
  *
- * <hr />
+ * <hr>
  * @author &copy; 2004,2005 Harald Kirsch
  */
 public class Grep implements ServiceFactory {

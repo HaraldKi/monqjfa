@@ -59,15 +59,13 @@ public class RegexpSplitter implements TextSplitter {
    * split()} is invoked, it will first partition the input string
    * into matching and non-matching parts. According to parameter
    * <code>what</code> these parts are then entered into the {@link
-   * TextStore} given to <code>split</code>:
+   * TextStore} given to <code>split</code>:</p>
    * <ul>
    * <li>{@link #SPLIT} &mdash; all non-matching parts are entered.</li>
    * <li>{@link #FETCH} &mdash; all matching parts are entered.</li>
    * <li>{@link #SEP} &mdash; all parts are entered i.e. the input is
    * <em>SEP</em>arated into parts</li>
    * </ul>
-   * </p>
-   *
    *
    * @param re a regular expression suitable for {@link monq.jfa.Nfa}. The
    * regular expression must not match the empty string.

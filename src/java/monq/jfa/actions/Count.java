@@ -41,7 +41,7 @@ import java.util.Map;
  *   nfa.or("start", cnt.reset())
  *      .or("fish", cnt)
  *      .or("end", new If(cnt.ge(2), a1, a2))</pre> 
- * The callback of <code>If</code> will call <code>ok()</code> on the
+ * <p>The callback of <code>If</code> will call <code>ok()</code> on the
  * <code>Verifier</code> returned by <code>cnt.ge(2)</code> and
  * perform either action <code>a1</code> or <code>a2</code>.</p>
  * 
@@ -49,7 +49,6 @@ import java.util.Map;
  * created by {@link #add}.</p>
  *
  * @author &copy; 2004 Harald Kirsch
- * @version $Revision: 1.6 $, $Date: 2005-07-08 13:01:26 $
  */
 public class Count extends AbstractFaAction {
   private final String key;
@@ -104,7 +103,6 @@ public class Count extends AbstractFaAction {
    *   Count cnt = new Count(7);
    *   ...
    *   nfa.or("pattern with weight 2", cnt.add(2));</pre>
-   * </p>
    */
   public AbstractFaAction add(int incr) { return new Add(incr); }
   private class Add extends AbstractFaAction {
@@ -119,11 +117,10 @@ public class Count extends AbstractFaAction {
   /**
    * <p>returns a {@link Verifier} which returns <code>true</code> if
    * the counter is greater than or equal to the given
-   * threshold. Example use:<pre> 
+   * threshold. Example use:</p><pre> 
    *   Count cnt = new Count();
    *   ...
    *   nfa.or("decision pattern", new If(cnt.ge(2), ..., ...));</pre>
-   * </p>
    */
   public Verifier ge(int threshold) { return new Ge(threshold); }
   private class Ge implements Verifier {

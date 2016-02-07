@@ -23,7 +23,7 @@ import java.net.InetAddress;
 import java.io.*;
 
 /**
- * a simple socket server able to serve multiple client
+ * <p>a simple socket server able to serve multiple client
  * connections in parallel. Using this class make sense, if the
  * service to be provided can be coded as a transformation of data
  * read from an <code>java.io.InputStream</code> and then written to a
@@ -33,7 +33,7 @@ import java.io.*;
  * {@link ServiceFactory} as a parameter rather than a service
  * object.</p>
  *
- * <p>A typical use of this class involves the following steps:
+ * <p>A typical use of this class involves the following steps:</p>
  * <ol>
  * <li>Write a class implementing <code>java.lang.Runnable</code>.
  * Its <code>run()</code> method should read input from an
@@ -46,6 +46,7 @@ import java.io.*;
  * <li>Call the {@link #serve} method of the
  * <code>TcpServer</code>.</li>
  * </ol>
+ * <p>
  * If you stick your <code>ServiceFactory</code> into a {@link
  * FilterServiceFactory} between steps 2 and 3 and pass the result to the
  * <code>TcpServer</code>, you get a pipe filter which can be used in

@@ -97,6 +97,19 @@ Nfa nfa = new Nfa("\\[")</pre>
       <dd>A regular expression <em>re</em> followed by the asterisk
 	matches zero or more occurences of <em>re</em>.
       </dd>
+      <dt><em>re</em>{n} <em>re</em>{n,} <em>re</em>{n,m}</dt>
+      <dd>
+        A regular expression followed by one of the shown range
+        specifications matches exactly n, at least n or between n and
+        m (inclusive) occurences of <em>re</em>. The range may not
+        specify the empty string, e.g. {0} or {0,0}. Further
+        n&#x2264;m is required. <br />
+        <b>Note:</b> A Dfa cannot count. Therefore the Dfa
+        for <em>re</em> is internally replicated up to m times. For a
+        large Dfa or large m or even both, this will use a lot of
+        memory. The feature was unit tested with m<200 and a 4
+        character Dfa.
+      </dd>
       <dt><em>re</em>!</dt>
       <dd>A regular expression <em>re</em> followed by the exclamation
 	mark matches the shortest match satisfying <em>re</em>. This

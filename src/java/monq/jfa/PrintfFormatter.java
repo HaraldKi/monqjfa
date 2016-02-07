@@ -60,16 +60,16 @@ import java.util.Map;
  * <em>j</em> may be negative to denote an index relative to the end
  * of the list.</p></li>
  *
- * <li></p>
- * <code>%(</code><em>i</em><code>,</code><em>j</em><font color="green">,<em>sep</em></font><code>)</code><font color="green">(</code><em>s</em>,<em>e</em><code>)</code></font>
- * is a combination of the two above mentioned formats. The green
- * parts are optional. The format requests a
+ * <li>
+ * <p><em>%(i,j,sep)(s,e)</em>
+ * is a combination of the two above mentioned formats. The second parenthesised 
+ * part is optional. The format requests a
  * range of parts (<em>i</em> to <em>j</em>) while at the same time
  * extracting only the substring denoted by <em>s</em> and <em>e</em>
  * from each part. In addition, when printing the substrings to the
  * output, they will be separated by <em>sep</em>.</p>
  *
- * If <em>sep</em> shall contain a closing parentheses, it must be
+ * <p>If <em>sep</em> shall contain a closing parentheses, it must be
  * escaped with a backslash. All other backslash characters are kept
  * as such. Note that in a constant string you write in source code,
  * the backslash must be doubled, because the compiler will take one
@@ -77,8 +77,8 @@ import java.util.Map;
  *
  * <p>Example: <code>"&lt;%(-2,0,/&gt; &lt;)(0,-1)/&gt;"</code> applied to
  * a <code>TextStore</code> which contains "rock", "zock" and "nock"
- * will print "&lt;zoc/&gt; &lt;noc/&gt;".
- *</p></li>
+ * will print "&lt;zoc/&gt; &lt;noc/&gt;".</p>
+ * </li>
  *
  * <li><p><code>%(</code><em>key</em><code>)</code> retrieves the value
  * stored for the given <em>key</em> from the
@@ -86,13 +86,14 @@ import java.util.Map;
  * the <code>Map</code> given is <code>null</code>, a
  * <code>NullPointerException</code> will be thrown. If, however, the
  * <em>key</em> does not exist in the map, the empty string is
- * silently inserted.</p></li>
+ * silently inserted.</p>
  *
  * <p>Example: <code>"PMID: %(pmid)"</code> will result in the text
  * <code>"PMID: 1234"</code> provided the value <code>1234</code> was
  * stored before in this object's <code>Map</code> for the key
  * <code>"pmid"</code>.</p>
- *
+ * </li>
+ * 
  * <li><code>%l</code><em>i</em> is replaced by the length of
  * the <em>i</em>ith part of the <code>TextStore</code>. Again,
  * <em>i</em> may be negative.</li>

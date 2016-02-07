@@ -166,7 +166,7 @@ public class Option {
   protected boolean isRequired() {return required;}
   /**********************************************************************/
   /**
-   * converts the option into a required command line argument and
+   * <p>converts the option into a required command line argument and
    * {@link Commandline#parse Commandline.parse()} will check this.</p>
    * @return <code>this</code>
    */

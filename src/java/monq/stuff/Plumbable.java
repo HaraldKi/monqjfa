@@ -25,26 +25,26 @@ import java.io.*;
 
   <p>It is expected, that classes implementing this interface will
   read from an input stream, write to an output stream or do both in
-  their <kbd>run()</kbd> method. The point of having the set-functions
+  their {@code run()} method. The point of having the set-functions
   instead of specifying the streams in the constructor of such a class
   is that objects of the class can be created and passed around to
   only later have the stream(s) sepcified.
   @author &copy; 2000,2001,2002,2003,2004 Harald Kirsch
   @version $Revision: 1.3 $ $Date: 2005-02-14 10:23:39 $
 *****/
-//<p>The {@link Exec} class make have use of <kbd>Plumbable</kbd>s.
+//<p>The {@link Exec} class make have use of {@code Plumbable}s.
 public interface Plumbable extends Runnable {
   void setOut(OutputStream out, boolean closeOnExit);
   void setIn(InputStream in, boolean closeOnExit);
 
   /**
     returns an exception which happend in the
-    <kbd>run()</kbd>-method, if any.
+    {@code run()}-method, if any.
 
     <p>Because input and output may cause exceptions while
-    the <kbd>run</kbd>-method can not throw anything, an implementing
+    the {@code run}-method can not throw anything, an implementing
     class must have this function which allows it to return an
-    exception which might happen during <kbd>run()</kbd>.
+    exception which might happen during {@code run()}.
   *****/
   Exception getException();
 }

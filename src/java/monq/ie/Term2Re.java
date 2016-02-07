@@ -240,12 +240,11 @@ public class Term2Re {
   private static StringBuilder sb = new StringBuilder(40);
   
   /**
-   * converts a multi word term into a regular expression matching
+   * <p>converts a multi word term into a regular expression matching
    * that term as well as obvious generalizations. The algorithm is
    * not finalized yet. The converter used is created with {@link
    * #createConverter} with {@link #RE_SEP_WORD}, {@link #RE_SPLIT_WORD}
    * and {@link #RE_TRAIL_CONTEXT} as parameters.</p>
-   * Typical generalizations include:</p>
    */
   public static synchronized String convert(String s) {
     sb.setLength(0);

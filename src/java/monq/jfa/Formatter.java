@@ -23,7 +23,7 @@ import java.util.Map;
  * in a {@link TextStore} and/or in a <code>java.util.Map</code>
  * append them to a <code>StringBuilder</code>.
  *
- * <p><b>Hint:</b>Typically a {@link TextSplitter}> and a
+ * <p><b>Hint:</b>Typically a {@link TextSplitter} and a
  * <code>Formatter</code> are used in tandem and communicate via a
  * <code>TextStore</code>.</p>
  * @author &copy; 2003, 2004 Harald Kirsch
@@ -34,7 +34,7 @@ public interface Formatter extends java.io.Serializable {
    * <p>arranges (some of) the pieces of text found in <code>st</code>
    * or <code>m</code> in an implementation dependend manner and
    * <b>appends</b> them to <code>out</code>. Depending on the
-   * implementation, both, <code>st</code> and </code>m</code> or even
+   * implementation, both, <code>st</code> and <code>m</code> or even
    * both may be allowed to be <code>null</code>.</p>
    *
    * <p><b>Postcondition</b>: This method may not change the content of

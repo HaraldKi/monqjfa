@@ -473,6 +473,18 @@ public class ReParserTest {
       assertEquals(ReSyntaxException.EEMPTY, e.emsg);
     }
   }
+  /*+******************************************************************/
+  @Test
+  public void testRangeMultiDigit() {
+    Regexp re = new Regexp("a(ab|cd){150}z");
+    StringBuilder sb = new StringBuilder(500);
+    sb.append('a');
+    for(int i=0; i<75; i++) {
+      sb.append("abcd");
+    }
+    sb.append('z');
+    assertTrue(re.matches(sb.toString()));
+  }
 }
 
 

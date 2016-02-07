@@ -78,7 +78,7 @@ public class FilterSvrInfo {
    * <code>FilterSvrInfo</code> object. Try using {@link #fromFile} to
    * avoid any exception being thrown.
    * </p>
-   * @throws Exception if anything goes wrong while reading the
+   * @throws ServiceCreateException if anything goes wrong while reading the
    * configuration file.
    */
   public static FilterSvrInfo from(Properties props)
@@ -104,10 +104,11 @@ public class FilterSvrInfo {
   }
   /**********************************************************************/
   /**
-   * <p>calls {@link #read read()} and stores any exception thrown in
+   * <p>calls {@link #readAll read()} and stores any exception thrown in
    * the object returned. This allows to keep inoperable objects for
-   * later reference and explanation.
-   * @throws IOException
+   * later reference and explanation.</p>
+   * 
+   * @throws IOException if called methods throw this exception
    */
   public static FilterSvrInfo fromFile(String fName) throws IOException {
     Properties props = new Properties();

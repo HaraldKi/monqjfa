@@ -30,79 +30,90 @@ import java.io.*;
 import java.util.*;
 
 /**
- * <p><b>(Command Line Program)</b> is a class to create a text markup
- * filter
- * from a long list of term/ID or regex/ID mappings.
- * A canonical use, implemented in {@link #main}, looks like:<pre>
- *   InputStream mwtFile = new FileInputStream(mwtFileName);
- *   DictFilter dict = new DictFilter(mwtFile, inputType, 
- *                                    elemName, verbose);
- *   mwtFile.close();
- *   DfaRun r = dict.createRun();
- *   r.setIn(System.in);
- *   r.filter(System.out);</pre>
- * An example input file looks like:<pre>
- * &lt;?xml version='1.0'?>
- * 
- * &lt;mwt>
- *   &lt;template>&lt;protein id="%1">%0&lt;/protein>&lt;/template>
- *   &lt;t p1="ipi4355">casein&lt;/t>
- *   &lt;t p1="X33355">p53&lt;/t>
- * 
- *   &lt;template>&lt;disease id="%1">%0&lt;/disease>&lt;/template>
- *   &lt;t p1="UMLS4711" p2="bla">alzheimer&lt;/t>
- *
- *   &lt;template>&lt;special>%0&lt;/special>&lt;/template>
- *   &lt;r>[ \r\n\t;.,:?!]&lt;/r>
- * &lt;/mwt></pre>
+ * <p>
+ * <b>(Command Line Program)</b> is a class to create a text markup filter
+ * from a long list of term/ID or regex/ID mappings. A canonical use,
+ * implemented in {@link #main}, looks like:
  * </p>
- * <h5>The <code>&lt;template&gt;</code> element</h5>
- * <p>describes the output to be produced on a
- * match. The whole content of the element is taken as-is and
- * interpreted as a format for {@link monq.jfa.PrintfFormatter}. It
- * applies to all the <code>&lt;r&gt;</code> and
- * <code>&lt;t&gt;</code> elements that follow before another
- * <code>&lt;template&gt;</code> element or before the end of the
- * file. Print format directive <code>%0</code> refers the whole
- * match, while <code>%1</code> etc. refers to the values provided as
- * attributes named <code>p1</code> etc. in the <code>&lt;r&gt;</code> and
- * <code>&lt;t&gt;</code> elements.</p>
+ * 
+ * <pre>
+ * InputStream mwtFile = new FileInputStream(mwtFileName);
+ * DictFilter dict = new DictFilter(mwtFile, inputType, elemName, verbose);
+ * mwtFile.close();
+ * DfaRun r = dict.createRun();
+ * r.setIn(System.in);
+ * r.filter(System.out);
+ * </pre>
+ * 
+ * An example input file looks like:
+ * 
+ * <pre>
+ * {@code
+ * <?xml version='1.0'?
+ * 
+ * <mwt>
+ *   <template><protein id="%1">%0</protein></template>
+ *   <t p1="ipi4355">casein</t>
+ *   <t p1="X33355">p53</t>
+ * 
+ *   <template><disease id="%1">%0</disease></template>
+ *   <t p1="UMLS4711" p2="bla">alzheimer</t>
  *
- * <h5>The <code>&lt;t&gt;</code> element</h5> <p>describes a
- * dictionary term. It will be converted to a regular expression with
- * {@link Term2Re#convert Term2Re.convert()}. Note in particular that
- * terms are matched with a one character trailing context.</p>
+ *   <template><special>%0</special></template>
+ *   <r>[ \r\n\t;.,:?!]</r>
+ * </mwt>}
+ * </pre>
+ * 
+ * <h3>The <code>&lt;template&gt;</code> element</h3>
+ * <p>
+ * describes the output to be produced on a match. The whole content of the
+ * element is taken as-is and interpreted as a format for
+ * {@link monq.jfa.PrintfFormatter}. It applies to all the
+ * <code>&lt;r&gt;</code> and <code>&lt;t&gt;</code> elements that follow
+ * before another <code>&lt;template&gt;</code> element or before the end of
+ * the file. Print format directive <code>%0</code> refers the whole match,
+ * while <code>%1</code> etc. refers to the values provided as attributes
+ * named <code>p1</code> etc. in the <code>&lt;r&gt;</code> and
+ * <code>&lt;t&gt;</code> elements.
+ * </p>
  *
- * <h5>The <code>&lt;r&gt;</code> element</h5>
- * <p>allows to specify an arbitrary regular expression. The regular
- * expression is taken as-is. In addition to the attributes
- * <code>p1</code>, <code>p2</code>, etc. as described above, the
- * following attributes are allowed:</p>
+ * <h3>The <code>&lt;t&gt;</code> element</h3>
+ *
+ * <p>
+ * describes a dictionary term. It will be converted to a regular expression
+ * with {@link Term2Re#convert Term2Re.convert()}. Note in particular that
+ * terms are matched with a one character trailing context.
+ * </p>
+ *
+ * <h3>The <code>&lt;r&gt;</code> element</h3>
+ * <p>
+ * allows to specify an arbitrary regular expression. The regular expression
+ * is taken as-is. In addition to the attributes <code>p1</code>,
+ * <code>p2</code>, etc. as described above, the following attributes are
+ * allowed:
+ * </p>
  * <dl>
- * <dt>tc</dt><dd>denotes the length of a <em>trailing context</em>
- * matched by this regular expression. It must be a non-negative
- * integer which is guaranteed to be smaller than the whole match. The
- * specified number of characters are then chopped off the end of the
- * match and pushed back into the input before the
- * <code>&lt;template&gt;</code> is processed. For example
- * <blockquote>
- *   <code>&lt;r tc="1"&gt;[a-z]+ &lt;/r&gt;</code>
- * </blockquote>
- * would match a string
- * of lowercase characters only if followed by a blank, but only the
- * lowercase characters are considered part of the match. Should a match be
- * shorter than or equal to the length given, nothing at all is pushed
- * back into 
- * the input.</dd>
+ * <dt>tc</dt>
+ * <dd>denotes the length of a <em>trailing context</em> matched by this
+ * regular expression. It must be a non-negative integer which is guaranteed
+ * to be smaller than the whole match. The specified number of characters are
+ * then chopped off the end of the match and pushed back into the input
+ * before the <code>&lt;template&gt;</code> is processed. For example
+ * <blockquote> <code>&lt;r tc="1"&gt;[a-z]+ &lt;/r&gt;</code> </blockquote>
+ * would match a string of lowercase characters only if followed by a blank,
+ * but only the lowercase characters are considered part of the match. Should
+ * a match be shorter than or equal to the length given, nothing at all is
+ * pushed back into the input.</dd>
  * </dl>
  *
  * <h3>Encodings used</h3>
- * <p>The input encoding is guessed from the input file
- * with {@link monq.stuff.EncodingDetector#detect
- * EncodingDetector.detect()}. This can be 
- * changed with {@link #setInputEncoding setInputEncoding()}. The
- * output encoding is defaults to the platforms default encoding but
- * can be changed with {@link #setOutputEncoding setOutputEncoding()}.</p>
+ * <p>
+ * The input encoding is guessed from the input file with
+ * {@link monq.stuff.EncodingDetector#detect EncodingDetector.detect()}. This
+ * can be changed with {@link #setInputEncoding setInputEncoding()}. The
+ * output encoding is defaults to the platforms default encoding but can be
+ * changed with {@link #setOutputEncoding setOutputEncoding()}.
+ * </p>
  *
  * @author &copy; 2004 Harald Kirsch
  */
@@ -160,7 +171,7 @@ public class DictFilter implements ServiceFactory {
   }
   /**********************************************************************/
   /**
-   * creates a <code>DictFilter</code> from the given
+   * <p>creates a <code>DictFilter</code> from the given
    * <code>Reader</code> which must comply to the format
    * described above. The <code>inputType</code> is one of the strings
    * <code>"raw"</code>, <code>"xml"</code> or <code>"elem"</code>

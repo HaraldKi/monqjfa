@@ -258,7 +258,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /** 
    * <p>changes the input source. Within a thread, this is permissable at
    * all times because a <code>DfaRun</code> object does not buffer
-   * input data between calls to any of its methods.<p>
+   * input data between calls to any of its methods.</p>
    *
    * <p>Apart from (re)initializing the input source, this method
    * initializes two other parameters:</p>
@@ -280,7 +280,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   }
 
   /**
-   * <p>returns the currently active input source.</p.
+   * <p>returns the currently active input source.</p>.
    */
   public CharSource getIn() { return in; }
 
@@ -398,14 +398,14 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * href="doc-files/resyntax.html#rse">submatches</a>. Retrieving
    * submatches must be 
    * done before the match is changed in any way. A typical call
-   * within an {@link FaAction} looks like <pre>
+   * within an {@link FaAction} looks like</p> <pre>
    *   public void invoke(StringBuilder out, int start, DfaRun r) 
    *     throws CallbackException {
    *   {
    *     TextStore ts = r.submatches(out, start);
    *     ...
    *   }</pre>
-   * Parameter <code>txt</code> is not changed in any way.</p>
+   * <p>Parameter <code>txt</code> is not changed in any way.</p>
    *
    * @param txt must contain the full match starting at position
    * <code>start</code>. It may contain more characters.
@@ -642,7 +642,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * filtered. It also means that this method should be called again
    * because there might be more input waiting to be processed. Only
    * if <code>false</code> is returned, all input is completely
-   * processed and <code>out</code> was not changed.</p>
+   * processed and <code>out</code> was not changed.
    */
   public boolean read(StringBuilder out) throws java.io.IOException {
     // copy stuff which might have been pushed back to the output

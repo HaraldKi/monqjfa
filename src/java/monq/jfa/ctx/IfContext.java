@@ -7,12 +7,13 @@ import java.util.*;
 /**
  * <p>is an {@link monq.jfa.FaAction} to execute different client actions
  * depending on the {@link Context} in which
- * <code>IfContext.invoke()</code> is called. Typical usage:<pre>
+ * <code>IfContext.invoke()</code> is called. Typical usage:</p>
+ * <pre>
  * nfa.or("regex", new IfContext(ctx1, action1)
  *                      .ifthen(ctx2, action2)
  *                      .ifthen(ctx3, action3)
  *                      .elsedo(actionDefault))</pre>
- * The context objects <code>ctx1</code> etc. must be acquired before
+ * <p>The context objects <code>ctx1</code> etc. must be acquired before
  * by use of a {@link ContextManager}.</p>
  * 
  * <p>It is not necessary to add all valid contexts for a certain

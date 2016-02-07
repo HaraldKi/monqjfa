@@ -26,12 +26,12 @@ package monq.jfa;
  * <p>Extend this class and override the <code>read()</code> methods to
  * create a character source which is not empty up front. The
  * implementation of the <code>read()</code> function should look like
- * this:<pre>
- *     public int read() throws java.io.IOException {
- *       int ch = super.readOne();
- *       if( ch>=0 ) return ch;
- *       <em>code to deliver new data</em></pre>
- * </p>
+ * this:</p>
+ * <pre>{@code   public int read() throws java.io.IOException {
+ *     int ch = super.readOne();
+ *     if( ch>=0 ) return ch;
+ *     <em>code to deliver new data</em>
+ *   }}</pre>
  *
  * <p><b>Hint:</b> Use objects of this class with {@link DfaRun#setIn
  * DfaRun.setIn()} from within an {@link FaAction} to force early EOF

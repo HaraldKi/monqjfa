@@ -18,9 +18,9 @@ import java.util.*;
  * <code>add...()</code> methods.</li>
  * <li>Add more regex/action pairs directly to the <code>Nfa</code>,
  * typically with calls like<pre>
- * .or("regex", new IfContext().ifthen(ctx, action))</pre>
- * where <code>ctx</code> is a context returned by a one of the
- * <code>add...()</code> methods.</p>
+ * .or("regex", new IfContext().ifthen(ctx, action))</pre> where
+ *  <code>ctx</code> is a context returned by a one of the
+ * <code>add...()</code> methods.
  * </ol>
  * 
  * <p>Note that changing the defaults on this object will have effect
@@ -104,7 +104,7 @@ public class ContextManager {
    * <p>adds a new context to the client <code>Nfa</code>. The context
    * starts whenever the regular expression <code>reIn</code>
    * matches while the given <code>parent</code> context is active. It
-   * ends as soon as <code>reOut</code> is found.<p>
+   * ends as soon as <code>reOut</code> is found.</p>
 
    * <p>With <code>parent==null</code>, <code>reIn</code> will only
    * switch to the new context from the outermost level, i.e. when no

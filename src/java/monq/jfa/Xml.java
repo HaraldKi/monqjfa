@@ -251,8 +251,7 @@ public final class Xml {
   /**
    * a regular expression matching an XML CombiningChar.
    *
-   * @see <a
-   * href="http://www.w3.org/TR/REC-xml#NT-CombiningChar>XML syntax: CombiningChar</a> 
+   * @see <a href="http://www.w3.org/TR/REC-xml#NT-CombiningChar">XML syntax: CombiningChar</a> 
    */
   public static final String CombiningChar = "["
     +"\u0300-\u0345\u0360-\u0361\u0483-\u0486"
@@ -289,8 +288,7 @@ public final class Xml {
     +"]";
   /**
    * a regular expression matching an XML Extender.
-   * @see <a
-   * href="http://www.w3.org/TR/REC-xml#NT-Extender>XML syntax: Extender</a> 
+   * @see <a href="http://www.w3.org/TR/REC-xml#NT-Extender">XML syntax: Extender</a> 
    */
   public static final String Extender = "["
     +"\u00B7\u02D0\u02D1"

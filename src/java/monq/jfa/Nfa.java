@@ -219,8 +219,6 @@ public class Nfa  {
    * </p>
    *
    * The default is 1.0.
-   *
-   * @param f
    */
   public void setMemoryForSpeedTradeFactor(float f) {
     memoryForSpeedTradeFactor = f;
@@ -611,7 +609,6 @@ public class Nfa  {
    * 
    * Any actions already specified will be deleted.
    * 
-   * @param action
    * @throws CompileDfaException if the internally called compile operation
    *         throws this exception
    */
@@ -855,7 +852,7 @@ public class Nfa  {
    * <blockquote>which are <span style="color:red">not</span> completely
    * uppercase.</blockquote>
    *
-   * In particular <code>"xHallo"</code> or <code>"Hallo"</code> will
+   * <p>In particular <code>"xHallo"</code> or <code>"Hallo"</code> will
    * be matched.</p>
    *
    * <p>To the contrary, <code>"([A-Z]+)^</code>,
@@ -975,8 +972,6 @@ public class Nfa  {
   /**
    * creates a copy of this Nfa where all the states are duplicated, but the
    * actions are kept such that both Nfas referernce the same actions.
-   * 
-   * @return
    */
   public Nfa copy() {
     this.toDot("/home/harald/tmp/bla.dot");
@@ -1095,8 +1090,8 @@ public class Nfa  {
   /**
    * <p>joins the other <code>Nfa</code> into this automaton while
    * keeping all stop states and assigned actions. The
-   * <code>other</code> <code>Nfa<code> is initialized to the same
-   * state as if just created constructed with {@link #Nfa()}.<p>
+   * <code>other</code> <code>Nfa</code> is initialized to the same
+   * state as if just created constructed with {@link #Nfa()}.</p>
    *
    * <p>FIX ME: unassigned reporting subexpressions in other may
    * create a mess</p>

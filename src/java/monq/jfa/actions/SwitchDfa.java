@@ -29,7 +29,7 @@ import monq.jfa.*;
  * examination. Given that start and end of the relevant parts can
  * be detected by regular expressions <em>rIn</em> and
  * <em>rOut</em>, two <code>Dfa</code>s can be set up like
- * this:<pre>
+ * this:</p><pre>
  *   SwitchDfa toWork = new SwitchDfa(Drop.DROP);
  *   SwitchDfa toSkip = new SwitchDfa(Drop.DROP);
  *   Dfa skip = new Nfa(rIn, toWork)
@@ -43,7 +43,7 @@ import monq.jfa.*;
  *   toSkip.setDfa(skip);
  *   DfaRun r = new DfaRun(skip, ...);</pre>
  *
- * When <code>rIn</code> is detected, <code>toWork.invoke()</code>
+ * <p>When <code>rIn</code> is detected, <code>toWork.invoke()</code>
  * gets called which switches the calling <code>DfaRun</code> to run
  * the automaton <code>work</code>. When later the end of the
  * relevant part is detected by a match with <code>rOut</code>, the

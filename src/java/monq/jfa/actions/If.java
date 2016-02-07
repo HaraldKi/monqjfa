@@ -22,14 +22,15 @@ import monq.jfa.*;
 /**
  * <p>run one or another {@link monq.jfa.FaAction} depending on the outcome
  * of asking a {@link Verifier}. A typical use case normally employs
- * a <code>Verifier</code> and a {@link Hold}:<pre>
+ * a <code>Verifier</code> and a {@link Hold}:</p><pre>
  * Hold hold = new Hold();
  * Count c = new Count("yada");
  * Nfa nfa = new Nfa("start", new Run(hold, c.reset()))
  *               .or("cute pattern", c)
  *               .or("end", new If(c.ge(2), hold.ship(), hold.drop());
  * </pre>
- * In the example, a {@link Count} object is used to count the
+ * 
+ * <p>In the example, a {@link Count} object is used to count the
  * occurrences of the string <code>"cute pattern"</code>. The counter
  * is reset on seeing <code>"start"</code>. When seeing
  * <code>"end"</code>, <code>If</code> calls the <code>Verifier</code>

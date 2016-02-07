@@ -23,14 +23,13 @@ import monq.net.Service;
  * <p>encapsulates a <code>java.lang.Process</code> object, feeds it with
  * input and collects the output.</p>
  *
- * <p>Example use:<pre>
+ * <p>Example use:</p><pre>
  *    Process p = new Process("your command here");
  *    Exec exec = new Exec(p);
  *    if( !exec.done() ) {
  *       // do something with exec.getErrorText()
  *       // check p.exitValue() if the above is empty
  *    }</pre>
- * </p>
  *
  * @author &copy; 2004 Harald Kirsch
  * @version $Revision: 1.5 $, $Date: 2005-11-17 09:34:47 $
@@ -94,7 +93,7 @@ public class Exec implements Service {
    * collects standard output and standard error output
    * internally. The latter two can then be retrieved with {@link
    * #getOutputText} and it is <code>null</code>, it is collected and
-   * made available via {@link #getErrorText}.</p>
+   * made available via {@link #getErrorText}.
    *
    * <p>This is equivalent to <code>Exec(p, null, null, null)</code>.</p>
    */

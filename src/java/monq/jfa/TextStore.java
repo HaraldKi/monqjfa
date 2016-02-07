@@ -45,7 +45,7 @@ import java.io.Serializable;
  * <p><b>Note:</b> Many applications define part 0 to refer to the
  * whole stored string, but this is not mandatory.</p>
  *
- * <a name="indexing"><b>Part Indexing</b></a><br />
+ * <a name="indexing"><b>Part Indexing</b></a><br>
  * <p>All methods which have a part index as parameter accept negative
  * values to address parts relative to the end of the part list. In
  * particular -1 refers to the last part.</p>
@@ -127,7 +127,7 @@ public class TextStore implements Serializable {
    * out of range
    * @throws IllegalArgumentException if <code>start</code> and
    * <code>end</code> do not satisfy the
-   * relation <code>0<=start<=end<=textSize()</code>. 
+   * relation {@code 0<=start<=end<=textSize()}.
    */
   public void setPart(int part, int start, int end, byte id) {
     int idx = part2idx(part);
@@ -266,13 +266,12 @@ public class TextStore implements Serializable {
    * <p>If <code>start</code> or <code>end</code> are out of range,
    * they are truncated to the nearest fitting value.</p>
    *
-   * <p><b>Examples</b>
+   * <p><b>Examples</b></p>
    * <ul>
    * <li><code>from=0, to=0</code> refers to the whole part</li>
    * <li><code>from=-2, to=-1</code> returns the 2nd to last
    * character</li>
    * </ul>
-   * </p>
    *
    * @param part see <a href="#indexing">part indexing</a>
    */
@@ -289,7 +288,7 @@ public class TextStore implements Serializable {
   }
 
   /**
-   * <p>returns a substring of the requested part.<p>
+   * returns a substring of the requested part.
    *
    * @see #getPart(StringBuilder,int,int,int)
    */

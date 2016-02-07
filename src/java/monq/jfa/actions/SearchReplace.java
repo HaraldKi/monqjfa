@@ -48,7 +48,7 @@ public class SearchReplace extends AbstractFaAction {
    * @param count is the number of replacements to make. If
    * <code>count</code> is negative, up to 2<sup><span
    * style="font:smaller">32</span></sup> matches 
-   * (i.e. all) are replaced.</p>
+   * (i.e. all) are replaced.
    *
    * @see monq.jfa.PrintfFormatter format string
    */

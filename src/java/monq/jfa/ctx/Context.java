@@ -19,7 +19,7 @@ import java.util.List;
  * <code>ContextManager</code>. They can be changed with {@link
  * #setStartAction setStartAction()} and {@link #setEndAction
  * setEndAction()}. Normally they are used to handle the text matching
- * the regular expressions defining the context.<p>
+ * the regular expressions defining the context.</p>
  *
  * <p>The client actions may push/pop elements on/from the {@link
  * java.util.List} provided via the {@link ContextStackProvider} that

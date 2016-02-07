@@ -25,7 +25,7 @@ import java.util.Map;
  * found in the {@link monq.jfa.DfaRun#clientData} field of the
  * calling <code>DfaRun</code>, this is passed on to the
  * <code>Formatter</code>'s {@link Formatter#format format()} method
- * to allow for <q><code>%(key)</code></q> expansions. To store values
+ * to allow for "<code>%(key)</code>" expansions. To store values
  * in the <code>Map</code>, use {@link Store}.</p>
  *
  * @see PrintfFormatter format strings
@@ -81,9 +81,9 @@ public class Printf extends AbstractFaAction {
 
   /**
    * <p>creates an <code>FaAction</code> to format a match according to
-   * the given format string. This is a shortcut for<pre>
-   * Printf(false, format, 0)</pre>
-   *</p>
+   * the given format string. This is a shortcut for {@code
+   * Printf(false, format, 0)}.</p>
+   *
    */
   public Printf(String format) throws ReSyntaxException {
     this(false, format);

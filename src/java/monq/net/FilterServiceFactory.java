@@ -37,7 +37,7 @@ import java.io.*;
  * <code>run()</code> method that reads data from an
  * <code>InputStream</code>, possibly manipulates it, and then sends
  * it to an <code>OutputStream</code>. Lets call this class
- * <code>Blorg</code>. Normally it will have a constructor like</p>
+ * <code>Blorg</code>. Normally it will have a constructor like
  *
  * <pre>Blorg(InputStream, OutputStream)</pre>
  *
@@ -60,8 +60,7 @@ import java.io.*;
  * </li>
  * </ol>
  *
- * @author &copy; 2004 Harald Kirsch
- * @version $Revision: 1.12 $, $Date: 2005-11-09 12:13:45 $
+ * @author &copy; 2004-2016 Harald Kirsch
  */
 public class FilterServiceFactory implements ServiceFactory {
 

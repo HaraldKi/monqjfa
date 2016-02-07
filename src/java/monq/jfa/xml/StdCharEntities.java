@@ -26,15 +26,14 @@ import monq.jfa.actions.*;
  * create an instance but use it only in one thread.</p>
  *
  * <p>The following replacements are made:</p>
- * <table style="font-family:monospace" border="1" align="center">
+ * <table summary="" style="font-family:monospace;text-align:center" border="1">
  *   <tr><th>from</th><th>to</th></tr>
  *   <tr><td>&amp;amp;</td><td>&amp;</td></tr>
  *   <tr><td>&amp;quot;</td><td>&quot;</td></tr>
- *   <tr><td>&amp;apos;</td><td>&apos;</td></tr>
+ *   <tr><td>&amp;apos;</td><td>'</td></tr>
  *   <tr><td>&amp;lt;</td><td>&lt;</td></tr>
  *   <tr><td>&amp;gt;</td><td>&gt;</td></tr>
  *  </table>
- * </p>
  *
  * @author &copy; 2004 Harald Kirsch
  */
