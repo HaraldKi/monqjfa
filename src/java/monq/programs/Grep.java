@@ -416,8 +416,8 @@ public class Grep implements ServiceFactory {
     Commandline cmd = new Commandline
       (prog,
        "match regular expressions and reformat them to output,"
-       + "for the regular expression syntax, see"
-       + "http://haraldki.github.io/monqjfa/monqApiDoc/monq/jfa/doc-files/"
+       + "for the regular expression syntax, see\n"
+       + "http://haraldki.github.io/monqjfa/monqApiDoc/monq/programs/Grep.html"
        + "resyntax.html",
        "re format",
        "pairs of regular expression and PrintfFormatter formats",

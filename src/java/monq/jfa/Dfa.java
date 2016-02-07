@@ -163,10 +163,7 @@ public class Dfa implements Serializable {
     toDot(out);
     out.close();
   }
-
-
   /**********************************************************************/
-
   /**
    * used internally by DfaRun.next() to get not only the match, but
    * also data about submatches.
@@ -198,6 +195,9 @@ public class Dfa implements Serializable {
       int ch = in.read();
       if( ch<0 ) {
 	// if we did not move yet, we hit EOF
+        // TODO: we are not able to return an action for a match of the empty
+        // string at the end of input, a corner case, but a problem for
+        // Regexp.matches()
 	if( out.length()==startPos ) return DfaRun.EOF;
 	break;
       }

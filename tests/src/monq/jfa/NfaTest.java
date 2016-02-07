@@ -1741,7 +1741,7 @@ public class NfaTest {
     Nfa nfa = new Nfa("(abc1+|abXY)@", Drop.DROP);
     
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
-    dfa.toDot("/home/harald/tmp/bla.dot");
+
     StringBuilder out = new StringBuilder();
     for (String text : new String[]{"a", "ab", "abc", "abc1", "abc11", "abX"}) {
       FaAction a = 
