@@ -299,7 +299,6 @@ public class Nfa  {
     } else {
       last1.addEps(start2);
     }
-
     start = start1;
     lastState = last2;
   }

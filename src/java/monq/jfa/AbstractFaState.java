@@ -173,21 +173,9 @@ class AbstractFaState implements FaState, Serializable {
    }
    public void setEps(FaState[] eps) {
      this.eps = eps;
-     }
-
-   public void addEps(FaState other) {
-     if( eps==null ) {
-       eps = new FaState[1];
-       eps[0] = other;
-       return;
-     }
-     FaState[] tmp = new FaState[eps.length+1];
-     System.arraycopy(eps, 0, tmp, 0, eps.length);
-     eps = tmp;
-     eps[eps.length-1] = other;
    }
-   
-   public void addEps(FaState[] others) {
+
+   public void addEps(FaState... others) {
      if( others==null ) return;
      if( eps==null ) {
        eps = new FaState[others.length];

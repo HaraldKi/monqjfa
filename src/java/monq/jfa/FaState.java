@@ -49,6 +49,12 @@ interface FaState {
   void setEps(FaState[] newEps);
 
   /**
+   * adds epsilon transitions to the given state (optional
+   * operation). 
+   */
+  void addEps(FaState ... others);
+
+  /**
    * returns the character transition table of this state.
    */
   CharTrans getTrans();
@@ -80,15 +86,6 @@ interface FaState {
    * to another state, <code>null</code> is returned.</p>
    */
   FaState follow(char ch);
-
-  /**
-   * adds an epsilon transition to the given state (optional
-   * operation). 
-   * @throws UnsupportedOperationException if the <code>addEps</code>
-   * operation is not supported by this state.
-   */
-  void addEps(FaState other);
-  void addEps(FaState[] others);
 
   /** 
    * mark this state part of the subautomaton <code>sfi</code>.
