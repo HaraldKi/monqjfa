@@ -30,8 +30,8 @@ public class IntervalsTest extends TestCase {
 
   // exploit a bug once found in Intervals.setFrom()
   public static void test_Bug1() throws Exception {
-    FaState inner = AbstractFaState.createDfaState(new Copy(0),  false);
-    FaState outer = AbstractFaState.createDfaState(new Copy(0), false);
+    FaState inner = new AbstractFaState(new Copy(0));
+    FaState outer = new AbstractFaState(new Copy(0));
     IntervalsFaState ivals = new IntervalsFaState();
     ivals.invert(outer);
     ivals.overwrite('e', 'e', inner);
@@ -56,7 +56,7 @@ public class IntervalsTest extends TestCase {
   public static void test_TCTtoString() throws Exception {
     IntervalsFaState ivals = new IntervalsFaState();
     for(int i=0; i<10; i++) {
-      FaState someState = AbstractFaState.createDfaState(new Copy(i), false);
+      FaState someState = new AbstractFaState(new Copy(i));
       ivals.overwrite((char)('a'+i), (char)('a'+i), someState);
     }
     CharTrans t = ivals.toCharTrans(1.0);

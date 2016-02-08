@@ -31,7 +31,6 @@ import java.lang.reflect.Method;
 
 import org.junit.Test;
 
-import monq.jfa.AbstractFaState.EpsState;
 import monq.jfa.actions.Copy;
 import monq.jfa.actions.Drop;
 import monq.jfa.actions.Embed;
@@ -1713,20 +1712,20 @@ public class NfaTest {
   @Test
   public void test_deleteUseless() throws Exception {
     FaState[] children = new FaState[3];
-    EpsState start = new EpsState();
+    FaState start = new AbstractFaState();
     start.setEps(children);
-    FaState stop = AbstractFaState.createDfaState(new Copy(0), false);
-    FaState useless = new EpsState();
-    FaState useless2 = new EpsState();
+    FaState stop = new AbstractFaState(new Copy(0));
+    FaState useless = new AbstractFaState();
+    FaState useless2 = new AbstractFaState();
     useless.setEps(new FaState[]{useless2});
     useless2.setEps(new FaState[]{useless});
-    FaState loop = new EpsState();
+    FaState loop = new AbstractFaState();
     loop.setEps(new FaState[]{start});
 
     children[0] = useless;
     children[1] = loop;
     children[2] = stop;
-    Nfa nfa = new Nfa(start, (EpsState)stop);
+    Nfa nfa = new Nfa(start, stop);
 
     Method deleteUseless = Nfa.class.getDeclaredMethod("removeUseless");
 

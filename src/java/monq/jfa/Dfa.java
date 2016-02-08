@@ -125,7 +125,7 @@ public class Dfa implements Serializable {
    *         structure.
    */
   public Nfa toNfa() {
-    AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
+    FaState newLast = new AbstractFaState();
 
     FaStateTraverser<FaState> fasTrav = 
         new FaStateTraverser<FaState>(IterType.ALL, newLast);
@@ -137,7 +137,7 @@ public class Dfa implements Serializable {
       }
     });
 
-    AbstractFaState.EpsState newStart = new AbstractFaState.EpsState();
+    FaState newStart = new AbstractFaState();
     newStart.addEps(startState);
     Nfa nfa = new Nfa(newStart, newLast);
     startState = null;

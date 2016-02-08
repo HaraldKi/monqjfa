@@ -25,20 +25,27 @@ import java.io.Serializable;
 /**
  * implements a prototype of an {@link FaState} to
  * ease subclassing for specialized states of an automaton.
- *
- * @author &copy; 2005 Harald Kirsch
  */
-
-abstract class AbstractFaState 
-  implements FaState, Serializable
-{
+class AbstractFaState implements FaState, Serializable {
+  private FaState[] eps = null;
+  private CharTrans trans = null;
+  private FaAction action = null;
+   
   // A state can be part of several subgraphs. Subgraphs are
   // identified by a pair (FaAction, FaSubinfo.id). The FaAction is
   // used in this map as a key. The values will be of type
   // FaSubinfo[], sorted according to FaSubinfo.id (see
   // FaSubinfo.compareTo()).
   private Map<FaAction,FaSubinfo[]> subinfos = null;
-
+  /*+******************************************************************/
+  public AbstractFaState() {
+    // empty
+  }
+  /*+******************************************************************/
+  public AbstractFaState(FaAction a) {
+    this.action = a;
+  }
+  /*+******************************************************************/
   public Map<FaAction,FaSubinfo[]> getSubinfos() {
     return subinfos;
   }
@@ -145,37 +152,60 @@ abstract class AbstractFaState
       }
     }
   }
-  /**********************************************************************/
-  
-  public CharTrans getTrans() {return null;}
-  public void setTrans(CharTrans trans) {
-    throw new UnsupportedOperationException(getClass().getName());
+  /**********************************************************************/  
+  public CharTrans getTrans() {
+    return trans;
   }
-  public FaAction getAction() {return null;}
-  public void clearAction() {;}
+  public void setTrans(CharTrans trans) {
+    this.trans = trans;
+  }
+  public FaAction getAction() {
+    return action;
+  }
+  public void clearAction() {
+    action = null;
+  }
   public boolean isImportant() {
     return getTrans()!=null || getAction()!=null || subinfos!=null;
   }
+   public FaState[] getEps() {
+     return eps;
+   }
+   public void setEps(FaState[] eps) {
+     this.eps = eps;
+     }
 
-  public FaState[] getEps() {return null;}
-
-  public void addEps(FaState other) {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  public void addEps(FaState[] others) {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  public void setEps(FaState[] others) {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  public FaState follow(char ch) {
-    CharTrans trans = getTrans();
-    if( trans==null ) return null;
-    FaState state = trans.get(ch);
-    return state;
-  }
-
+   public void addEps(FaState other) {
+     if( eps==null ) {
+       eps = new FaState[1];
+       eps[0] = other;
+       return;
+     }
+     FaState[] tmp = new FaState[eps.length+1];
+     System.arraycopy(eps, 0, tmp, 0, eps.length);
+     eps = tmp;
+     eps[eps.length-1] = other;
+   }
+   
+   public void addEps(FaState[] others) {
+     if( others==null ) return;
+     if( eps==null ) {
+       eps = new FaState[others.length];
+       System.arraycopy(others, 0, eps, 0, others.length);
+       return;
+     }
+     FaState[] tmp = new FaState[eps.length+others.length];
+     System.arraycopy(eps, 0, tmp, 0, eps.length);
+     System.arraycopy(others, 0, tmp, eps.length, others.length);
+     eps = tmp;
+   }
+ 
+   public FaState follow(char ch) {
+     CharTrans trans = getTrans();
+     if( trans==null ) return null;
+     FaState state = trans.get(ch);
+     return state;
+   }
   /**********************************************************************/
   /**
    * implements an {@link java.util.Iterator} over all states reachable
@@ -224,115 +254,6 @@ abstract class AbstractFaState
   @Override
   public Iterator<FaState> getChildIterator(IterType iType) {
     return new ChildIterator(iType);
-  }
-  /********************************************************************/
-  public static FaState createDfaState(FaAction a, boolean needEps) {
-    if( a!=null ) {
-      // for stop states, there is anyway an epsilon
-      return new DfaStopState(a);
-    } 
-    if( needEps ) {
-      return new NfaState();
-    }
-    return new DfaState();
-  }
-  /********************************************************************/
-  /**
-   * is an {@link FaState} which has only epsilon transitions. Other
-   * subclasses of <code>AbstractFaState</code> which need epsilon
-   * transitions inherit from this one.
-   *
-   * <p><b>FIX ME:</b>I don't really bother to check in the
-   * <code>addEps</code> methods whether I add a transition a 2nd
-   * time. Normally this does not happen in Thompson's
-   * construction. And if it does, it is no harm anyway.</p>
-   */
-  static class EpsState extends AbstractFaState {
-    private FaState[] eps=null;
-
-    public FaState[] getEps() {return eps;}
-    public void setEps(FaState[] eps) {this.eps = eps;}
-
-    public void addEps(FaState other) {
-      if( eps==null ) {
-	eps = new FaState[1];
-	eps[0] = other;
-	return;
-      }
-      FaState[] tmp = new FaState[eps.length+1];
-      System.arraycopy(eps, 0, tmp, 0, eps.length);
-      eps = tmp;
-      eps[eps.length-1] = other;
-    }
-    
-    public void addEps(FaState[] others) {
-      //throw new UnsupportedOperationException(getClass().getName());
-      if( others==null ) return;
-      if( eps==null ) {
-	eps = new FaState[others.length];
-	System.arraycopy(others, 0, eps, 0, others.length);
-	return;
-      }
-      FaState[] tmp = new FaState[eps.length+others.length];
-      System.arraycopy(eps, 0, tmp, 0, eps.length);
-      System.arraycopy(others, 0, tmp, eps.length, others.length);
-      eps = tmp;
-    }
-  }
-
-  /********************************************************************/
-  /**
-   * is an {@link FaState} which has only explicit character
-   * transitions. 
-   */
-  static class DfaState extends AbstractFaState {
-    CharTrans trans = null;
-
-    //public DfaState(CharTrans trans) { this.trans = trans; }
-    public CharTrans getTrans() {return trans;}
-    public void setTrans(CharTrans t) {this.trans = t;}
-  }
-  /********************************************************************/
-  /**
-   * implements a state which can store character transitions, an
-   * action and, a bit surprisingly, epsilon transitions. The reason
-   * for the latter is, that every FA shall always be usable in
-   * regexp-operations. Most of these operations are all implemented
-   * by means of epsilon transitions which are added in particular to
-   * stop states.
-   */
-  static class DfaStopState extends EpsState {
-    CharTrans trans = null;
-    FaAction action = null;
-
-    public DfaStopState(FaAction action) {
-      this.trans = null;
-      this.action = action;
-    }
-    public CharTrans getTrans() {return trans;}
-    public void setTrans(CharTrans t) {this.trans = t;}
-    public void clearAction() {action = null;}
-    public FaAction getAction() {return action;}
-  }
-  /**
-   * is an {@link FaState} which has epsilon transitions and can store
-   * an action.
-   */
-  static class EpsStopState extends EpsState {
-    FaAction action = null;
-    public EpsStopState(FaAction a) { action = a; }
-    public FaAction getAction() { return action; }
-    public void clearAction() { action = null; }
-  }
-  /********************************************************************/
-  /**
-   * is an {@link FaState} with epsilon as well as character
-   * transitions. 
-   */
-  static class NfaState extends EpsState {
-    CharTrans trans = null;
-    public CharTrans getTrans() {return trans;}
-    public void setTrans(CharTrans t) {this.trans = t;}
   }
   /********************************************************************/
 }

@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import monq.jfa.AbstractFaState.EpsState;
 import monq.jfa.FaState.IterType;
 import monq.jfa.actions.DefaultAction;
 
@@ -65,7 +64,7 @@ public class Nfa  {
   // is always treated as if it were a stop state, except in
   // compile(). To make it a into a stop state which survives
   // compilation, addAction() must be called just before compilation.
-  private AbstractFaState.EpsState lastState;
+  private FaState lastState;
 
   // our private parser for regular expressions
   private ReParser reParser = null;
@@ -231,13 +230,13 @@ public class Nfa  {
    * <p>initializes this automaton to recogize nothing.<p>
    */
   private void initialize() {
-    start = new AbstractFaState.EpsState();
-    lastState = new AbstractFaState.EpsState();
+    start = new AbstractFaState();
+    lastState = new AbstractFaState();
   }
   //-*******************************************************************
   private void initialize(final CharSequence pairs, boolean invert) {
-    start = new AbstractFaState.NfaState();
-    lastState = new AbstractFaState.EpsState();
+    start = new AbstractFaState();
+    lastState = new AbstractFaState();
 
     IntervalsFaState ivals = new IntervalsFaState();
 
@@ -263,7 +262,7 @@ public class Nfa  {
   // given string. (no regex parsing!)
   private void initialize(CharSequence s) {
     //System.out.println("+++"+s.toString());
-    start = new AbstractFaState.NfaState();
+    start = new AbstractFaState();
 
     IntervalsFaState assemble = new IntervalsFaState();
     FaState current = start;
@@ -271,20 +270,20 @@ public class Nfa  {
     char ch;
     int i, L;
     for(i=0, L=s.length(); i<L-1; i++) {
-      other = new AbstractFaState.DfaState();
+      other = new AbstractFaState();
       ch = s.charAt(i);
       assemble.overwrite(ch, ch, other);
       current.setTrans(assemble.toCharTrans(memoryForSpeedTradeFactor));
       current = other;
     }
-    lastState = new AbstractFaState.EpsState();
+    lastState = new AbstractFaState();
     ch = s.charAt(i);
     assemble.overwrite(ch, ch, lastState);
     current.setTrans(assemble.toCharTrans(memoryForSpeedTradeFactor));
   }
   private void initializeAsSequence(FaState start1, FaState last1,
 				    FaState start2,
-				    AbstractFaState.EpsState last2) {
+				    FaState last2) {
     // FIX ME:
     // Since we are sure that start2 has no incoming transitions, we
     // can drop that state if we transfer all its transitions to
@@ -306,9 +305,9 @@ public class Nfa  {
   }
   //-*******************************************************************
   private void initializeAsOr(FaState start1,
-			      AbstractFaState.EpsState last1,
+			      FaState last1,
 			      FaState start2,
-			      AbstractFaState.EpsState last2) {
+			      FaState last2) {
     // To conserve objects, we want to use one of the last states as
     // the new lastState. However, a state with an action is not a
     // good last state as it would assign that action to the other
@@ -318,7 +317,7 @@ public class Nfa  {
       // action to the automaton ending in last2
       if( null!=last2.getAction() ) {
 	// again no good lastState, so we need a fresh one
-	lastState = new AbstractFaState.EpsState();
+	lastState = new AbstractFaState();
 	last1.addEps(lastState);
 	last2.addEps(lastState);
       } else {
@@ -405,7 +404,7 @@ public class Nfa  {
   public Nfa addAction(FaAction a) {
     if( a==null ) return this;
 
-    AbstractFaState.EpsStopState newLast = new AbstractFaState.EpsStopState(a);
+    AbstractFaState newLast = new AbstractFaState(a);
     lastState.addEps(newLast);
     lastState = newLast;
 
@@ -442,7 +441,7 @@ public class Nfa  {
   /**
    * for internal use by {@link Dfa#toNfa()} only.
    */
-  Nfa(FaState start, AbstractFaState.EpsState lastState) {
+  Nfa(FaState start, FaState lastState) {
     this.start = start;
     this.lastState = lastState;
   }
@@ -526,8 +525,8 @@ public class Nfa  {
    * state has no outgoing ones.
    */
   private void embed() {
-    FaState newStart = new AbstractFaState.EpsState();
-    AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
+    FaState newStart = new AbstractFaState();
+    AbstractFaState newLast = new AbstractFaState();
     newStart.addEps(start);
     lastState.addEps(newLast);
     start = newStart;
@@ -617,11 +616,11 @@ public class Nfa  {
       addAction(DefaultAction.nullInstance());
     }
     // need an automaton were all states can carry eps-transitions
-    FaState dfaStart = compile_p(true);
+    FaState dfaStart = compile_p();
 
-    start = new AbstractFaState.EpsState();
+    start = new AbstractFaState();
     start.addEps(dfaStart);
-    lastState = new AbstractFaState.EpsState();
+    lastState = new AbstractFaState();
     
     // everything shall become a stop state, but not useless states
     removeUseless();
@@ -812,10 +811,10 @@ public class Nfa  {
 
     // This automaton needs to be compiled; we lose the lastState by
     // this, but will add a new one later on
-    FaState dfaStart = compile_p(true);
+    FaState dfaStart = compile_p();
 
-    AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
-    FaState sinkState = AbstractFaState.createDfaState(null, true);
+    AbstractFaState newLast = new AbstractFaState();
+    FaState sinkState = new AbstractFaState(null);
     worker.complete(sinkState);
     sinkState.setTrans(worker.toCharTrans(memoryForSpeedTradeFactor));
 
@@ -823,7 +822,7 @@ public class Nfa  {
 
     invertState(dfaStart, sinkState, newLast, worker);
 
-    start = new AbstractFaState.EpsState();
+    start = new AbstractFaState();
     start.addEps(dfaStart);
     lastState = newLast;
     
@@ -953,14 +952,14 @@ public class Nfa  {
     // have epsilon transitions going out. In addition, it might have
     // incoming transitions, therefore we prefix a harmless state in
     // front.
-    FaState newStart = new AbstractFaState.EpsState();
-    newStart.addEps(compile_p(false));
+    FaState newStart = new AbstractFaState();
+    newStart.addEps(compile_p());
 
     // the following may result in totally disconnected states which
     // we leave for the garbage collector (in C this was a real
     // pain). However, we cannot live with dead states, i.e. states
     // from which we cannot reach any stop state
-    AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
+    AbstractFaState newLast = new AbstractFaState();
     trimStopState(newStart, Nfa.<FaState>newSet(), newLast, mark);
 
     start = newStart;
@@ -979,7 +978,7 @@ public class Nfa  {
     final Queue<FaState> work = new LinkedList<>();
     work.add(start);
     Nfa result = new Nfa(Nfa.NOTHING);
-    result.start = new AbstractFaState.NfaState();
+    result.start = new AbstractFaState();
     visited.put(start, result.start);
     IntervalsFaState ivals = new IntervalsFaState();
     
@@ -987,14 +986,14 @@ public class Nfa  {
       FaState current = work.remove();
       FaState newState = visited.get(current);
       if (current==lastState) {
-        result.lastState = (EpsState)newState;
+        result.lastState = newState;
       }
       FaState[] eps = current.getEps();
       if (eps!=null) {
         for (FaState oldTarget : eps) {
           FaState newTarget = visited.get(oldTarget);
           if (newTarget==null) {
-            newTarget = new AbstractFaState.NfaState();
+            newTarget = new AbstractFaState();
             work.add(oldTarget);
             visited.put(oldTarget, newTarget);
           }
@@ -1014,7 +1013,7 @@ public class Nfa  {
           }
           FaState newTarget = visited.get(oldTarget);
            if (newTarget==null) {
-             newTarget = new AbstractFaState.NfaState();
+             newTarget = new AbstractFaState();
              work.add(oldTarget);
              visited.put(oldTarget, newTarget);
            }
@@ -1351,7 +1350,7 @@ public class Nfa  {
   public Dfa compile(DfaRun.FailedMatchBehaviour fmb, FaAction eofAction)
     throws CompileDfaException
   {
-    FaState tmpStart = compile_p(false);
+    FaState tmpStart = compile_p();
     return new Dfa(tmpStart, fmb, eofAction);
   }
 
@@ -1371,7 +1370,7 @@ public class Nfa  {
   // the invert() method. The start state will allow storage of eps
   // moves anyway so that the result of this compilation can be used
   // in automaton operations like or() again.
-  FaState compile_p(boolean needEps) throws CompileDfaException {
+  FaState compile_p() throws CompileDfaException {
     // If we find multiple actions on some stop states, these are
     // registered as clashes here and will finally result in an
     // exception.
@@ -1406,8 +1405,7 @@ public class Nfa  {
     // later operations like 'or'.
     FaAction startAction = findAction(dfaPath, '1', '0',
 				      clashes, actions, starters);
-    FaState dfaStart =
-      AbstractFaState.createDfaState(startAction, true);
+    FaState dfaStart = new AbstractFaState(startAction);
     dfaStart.mergeSubinfos(starters);
     haveStopState |= startAction!=null;
 
@@ -1479,7 +1477,7 @@ public class Nfa  {
 	  FaAction a = findAction(dfaPath, first, last,
 				  clashes, actions, stateSet);
 	  haveStopState |= a!=null;
-	  dst = AbstractFaState.createDfaState(a, needEps);
+	  dst = new AbstractFaState(a);
 	  dst.mergeSubinfos(stateSet);
 
 	  CompileTask t =
@@ -1504,7 +1502,7 @@ public class Nfa  {
       // empty string. Should there be now a huge network of states,
       // they are useless. We return a much more concise
       // representation of an automaton which matches nothing.
-      return AbstractFaState.createDfaState(null, true);
+      return new AbstractFaState();
     }
 
     return dfaStart;
@@ -1538,8 +1536,7 @@ public class Nfa  {
   //-*****************************************************************
   private class ParserView implements NfaParserView {
     private List<FaState> startStack = new ArrayList<FaState>();
-    private List<AbstractFaState.EpsState> lastStack
-      = new ArrayList<AbstractFaState.EpsState>();
+    private List<FaState> lastStack = new ArrayList<FaState>();
 
     private <T> T pop(List<T> stack) {
       return stack.remove(stack.size()-1);
@@ -1577,13 +1574,13 @@ public class Nfa  {
     @Override
     public void or() {
       FaState oldStart = pop(startStack);
-      AbstractFaState.EpsState oldLast = pop(lastStack);
+      FaState oldLast = pop(lastStack);
       initializeAsOr(oldStart, oldLast, start, lastState);
     }
     @Override
     public void seq() {
       FaState oldStart = pop(startStack);
-      AbstractFaState.EpsState oldLast = pop(lastStack);
+      FaState oldLast = pop(lastStack);
       initializeAsSequence(oldStart, oldLast, start, lastState);
     }
 
