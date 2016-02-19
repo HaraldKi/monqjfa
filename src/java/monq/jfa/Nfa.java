@@ -974,7 +974,6 @@ public class Nfa  {
    * actions are kept such that both Nfas referernce the same actions.
    */
   public Nfa copy() {
-    this.toDot("/home/harald/tmp/bla.dot");
     final Map<FaState,FaState> visited = new IdentityHashMap<>();
     final Queue<FaState> work = new LinkedList<>();
     work.add(start);
@@ -1023,7 +1022,6 @@ public class Nfa  {
         newState.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
       }
     }
-    result.toDot("/home/harald/tmp/bli.dot");
     return result;
   }
   /*+******************************************************************/
