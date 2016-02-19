@@ -29,13 +29,13 @@ package monq.jfa;
   * @author &copy; 2005 Harald Kirsch
 *****/
 
-interface CharTrans {
+interface CharTrans<T> {
   /**
    <p>returns the object stored in the transition table map for
    character <code>ch</code>. If <code>ch</code> is not mapped,
    <code>null</code> is returned.</p>
   *****/
-  FaState get(char ch);
+  T get(char ch);
 
   /**
    * returns the number of character ranges (and objects) stored.
@@ -45,7 +45,7 @@ interface CharTrans {
   /**
    * returns the object stored at index position <code>pos</code>.
    */
-  FaState getAt(int pos);
+  T getAt(int pos);
 
   /**
    * returns the left boundary of the range stored at index

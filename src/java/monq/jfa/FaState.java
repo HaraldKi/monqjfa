@@ -26,7 +26,7 @@ import java.util.Iterator;
   *
   * @author &copy; 2003, 2004 Harald Kirsch
 *****/
-interface FaState {
+interface FaState<STATE extends FaState<STATE>> {
 
   /**
     returns true, if the state has at least one outgoing transition on
@@ -41,23 +41,24 @@ interface FaState {
     transitions. Otherwise the array returned contains at
     least one element.
   *****/
-  FaState[] getEps();
+  STATE[] getEps();
 
   /**
     is an optional operation <code>FaState</code>.
   *****/
-  void setEps(FaState[] newEps);
+  void setEps(STATE[] newEps);
 
   /**
    * adds epsilon transitions to the given state (optional
    * operation). 
    */
-  void addEps(FaState ... others);
-
+  void addEps(STATE[] others);
+  void addEps(STATE other);
+  
   /**
    * returns the character transition table of this state.
    */
-  CharTrans getTrans();
+   CharTrans<STATE> getTrans();
   
   /**
    * changes the character transition table of this state. The
@@ -65,7 +66,7 @@ interface FaState {
    * character transition table, in which case an
    * <code>UnsupportedOperationException</code> will be thrown.
    */
-  void setTrans(CharTrans trans);
+  void setTrans(CharTrans<STATE> trans);
   FaAction getAction();
   void clearAction();
   
@@ -75,7 +76,7 @@ interface FaState {
    * transitions as well as those reachable by epsilon
    * transitions.
    */
-  Iterator<FaState> getChildIterator(IterType iType);
+  Iterator<STATE> getChildIterator(IterType iType);
 
   enum IterType {
     EPSILON, CHAR, ALL;
@@ -85,7 +86,7 @@ interface FaState {
    * character <code>ch</code>. If the given character does not lead
    * to another state, <code>null</code> is returned.</p>
    */
-  FaState follow(char ch);
+  STATE follow(char ch);
 
   /** 
    * mark this state part of the subautomaton <code>sfi</code>.
@@ -113,7 +114,7 @@ interface FaState {
    * subautomata assignments from a set of nfa states. This method
    * performs the transfer of the assignments.</p>
    */
-  void mergeSubinfos(Set<FaState> nfaStates);
+  <X extends FaState<X>> void mergeSubinfos(Set<X> nfaStates);
 
   /**
    * returns a <code>Map</code> from {@link FaAction} objects to an array of

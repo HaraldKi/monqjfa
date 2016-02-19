@@ -57,7 +57,7 @@ class SubmatchData {
     haveSubs = false;
   }
   /**********************************************************************/
-  void add(FaState s) {
+  void add(DfaState s) {
     Map<FaAction,FaSubinfo[]> m = s.getSubinfos();
     haveSubs |= (m!=null);
     // NOTE: Just waiting for the exception seems to be faster than

@@ -85,7 +85,7 @@ public class Statistics {
     throws IOException 
   {
     Statistics s = new Statistics();
-    s.get(nfa.getStart(), w, new HashSet<FaState>());
+    s.get(nfa.getStart(), w, new HashSet<AbstractFaState>());
     return s;
   }
   /**
@@ -96,11 +96,14 @@ public class Statistics {
     throws IOException 
   {
     Statistics s = new Statistics();
-    s.get(dfa.getStart(), w, new HashSet<FaState>());
+    s.get(dfa.getStart(), w, new HashSet<DfaState>());
     return s;
   }
   /********************************************************************/
-  private void get(FaState s, Writer w, Set<FaState> known) throws IOException {
+  private <STATE extends FaState<STATE>> void 
+  get(STATE s, Writer w, Set<STATE> known)
+      throws IOException 
+  {
     known.add(s);
 
     numStates += 1;
@@ -123,12 +126,12 @@ public class Statistics {
     // prepare a set of all child states in order to be able to create
     // a complete regular expression describing the shortest string
     // necessary to reach the node
-    Map<FaState,TrivTupel> m = new HashMap<FaState,TrivTupel>();
-    FaState[] epsChildren = s.getEps();
+    Map<STATE,TrivTupel> m = new HashMap<>();
+    STATE[] epsChildren = s.getEps();
     if( epsChildren!=null ) {
       int l = epsChildren.length;
       for(int i=0; i<l; i++) {
-	FaState child = epsChildren[i];
+	STATE child = epsChildren[i];
 	if( known.contains(child) ) continue;
 	TrivTupel step = m.get(child);
 	if( step==null ) m.put(child, step=new TrivTupel());
@@ -137,7 +140,7 @@ public class Statistics {
       }
     }
     
-    CharTrans t = s.getTrans();
+    CharTrans<STATE> t = s.getTrans();
     if( t!=null ) {
       Class<?> c = t.getClass();
       Int count = charTransTypes.get(c);
@@ -146,7 +149,7 @@ public class Statistics {
 
       int l = t.size();
       for(int i=0; i<l; i++) {
-	FaState child = t.getAt(i);
+	STATE child = t.getAt(i);
 	if( known.contains(child) ) continue;
 	TrivTupel step = m.get(child);
 	if( step==null ) m.put(child, step=new TrivTupel());
@@ -160,16 +163,16 @@ public class Statistics {
     currentDepth += 1;
 
     int sblen = sb.length();
-    Iterator<FaState> it = m.keySet().iterator();
+    Iterator<STATE> it = m.keySet().iterator();
     while( it.hasNext() ) {
-      Object child = it.next();
+      STATE child = it.next();
       TrivTupel tt = m.get(child);
       if( tt.elems>1 ) {
 	sb.append('(').append(tt.sb).append(')');
       } else {
 	sb.append(tt.sb);
       }
-      get((FaState)child, w, known);
+      get(child, w, known);
       sb.setLength(sblen);
     }
 

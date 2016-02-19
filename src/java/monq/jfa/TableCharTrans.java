@@ -24,10 +24,10 @@ import monq.stuff.Sizeof;
  * @author &copy; 2004 Harald Kirsch
  */
 
-class TableCharTrans implements java.io.Serializable, CharTrans {
+class TableCharTrans<T> implements java.io.Serializable, CharTrans<T> {
   private char first;
   private char last;
-  private FaState[] targets;
+  private T[] targets;
 
   // Note: the size is *not* equal to targets.length because targets
   // may contain null entries.
@@ -51,7 +51,7 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
    * We do not support emtpy transitions here. Consequently there
    * should be at least one range in <code>sb</code>
    */
-  public TableCharTrans(StringBuilder ranges, List<FaState> values) {
+  public TableCharTrans(StringBuilder ranges, List<T> values) {
     int L = ranges.length();
     first = ranges.charAt(0);
     last = ranges.charAt(L-1);
@@ -61,12 +61,14 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
     // size() is exactly this:
     size = values.size();
 
-    targets = new FaState[last-first+1];
+    @SuppressWarnings("unchecked")
+    T[] tmp = (T[])new Object[last-first+1];
+    targets = tmp;
     L = values.size();
     for(int pos=0, i=0; pos<L; pos++) {
       char from = ranges.charAt(2*pos);
       char to = ranges.charAt(2*pos+1);
-      FaState o = values.get(pos);
+      T o = values.get(pos);
       //System.out.println("from="+from+", to="+to+", pos="+pos);
       for(int ch=from; ch<=to; ch++) targets[i++] = o;
       if( pos+1<L ) {
@@ -77,10 +79,10 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
   }
   /**********************************************************************/
   @Override
-  public FaState get(char ch) {
+  public T get(char ch) {
     stats += 1;
     if( ch>=first && ch<=last ) {
-      FaState result = targets[ch-first];
+      T result = targets[ch-first];
       return result;
     }
     return null;
@@ -91,8 +93,8 @@ class TableCharTrans implements java.io.Serializable, CharTrans {
   /**********************************************************************/
 
   @Override
-  public FaState getAt(int i) {
-    FaState result = targets[getPos(i)];
+  public T getAt(int i) {
+    T result = targets[getPos(i)];
     return result;
   }
   @Override

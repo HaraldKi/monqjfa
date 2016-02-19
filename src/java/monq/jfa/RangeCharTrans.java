@@ -24,21 +24,21 @@ package monq.jfa;
  *
  * @author &copy; 2004 Harald Kirsch
  */
-class RangeCharTrans implements java.io.Serializable, CharTrans {
+class RangeCharTrans<T> implements java.io.Serializable, CharTrans<T> {
   private char first;
   private char last;
-  private FaState o;
+  private T o;
 
   public static long stats = 0;
 
-  public RangeCharTrans(char first, char last, FaState o) {
+  public RangeCharTrans(char first, char last, T o) {
     this.first = first;
     this.last = last;
     this.o = o;
   }
 
   @Override
-  public FaState get(char ch) {
+  public T get(char ch) {
     stats += 1;
     if( ch>=first && ch<=last ) return o;
     return null;
@@ -48,7 +48,7 @@ class RangeCharTrans implements java.io.Serializable, CharTrans {
   public int size() {return 1;}
   
   @Override
-  public FaState getAt(int pos) {
+  public T getAt(int pos) {
     if( pos!=0 ) throw new ArrayIndexOutOfBoundsException();
     return o;
   }
