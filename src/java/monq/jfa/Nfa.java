@@ -566,8 +566,8 @@ public class Nfa  {
   }
   /*+******************************************************************/
   /**
-   * <p>extends the automaton with an additonal automaton which matches
-   * everything but all non-empty prefixes of this automaton.</p>
+   * <p>extends the automaton with an additional automaton that matches
+   * everything except all non-empty prefixes of this automaton.</p>
    *
    * <p>For example, if this automaton matches "abc", the addional automaton
    * matches every string that does not contain "a", "ab" or "abc". The
