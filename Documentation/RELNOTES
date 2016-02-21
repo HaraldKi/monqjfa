@@ -1,3 +1,11 @@
+VERSION 2.0.2
+
+Fixed incomplete (read: buggy) implementation of
+Nfa.completeToSkip(). See also
+http://cs.stackexchange.com/q/50259/42743 for a deeper discussion of
+this feature.
+
+
 VERSION 2.0.1
 
 Removed left-over debugging output in Nfa.java.
