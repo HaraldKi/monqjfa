@@ -155,7 +155,10 @@ public class Dfa implements Serializable {
         nfaState.addEps(newLast);
       }
     }
-    return new Nfa(dfaToNfa.get(startState), newLast);
+    // assert that the start state has no incoming transitions
+    AbstractFaState newStart = new AbstractFaState();
+    newStart.addEps(dfaToNfa.get(startState));
+    return new Nfa(newStart, newLast);
   }
   /**********************************************************************/
   /**
