@@ -67,7 +67,7 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
   private static Map<FaAction, FaSubinfo[]>
   mergeSub(Map<FaAction, FaSubinfo[]> subinfos, FaAction a, FaSubinfo sfi) {
     if( subinfos==null ) subinfos = new HashMap<FaAction,FaSubinfo[]>();
-
+    
     // If there is nothing yet for a, simply enter what we have as a
     // new entry.
     FaSubinfo[] ary = subinfos.get(a);
@@ -98,9 +98,10 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
     subinfos.put(a, ary);
     return subinfos;
   }
+  
   @Override
   public void addUnassignedSub(FaSubinfo sfi) {
-    mergeSub(subinfos, null, sfi);
+    subinfos = mergeSub(subinfos, null, sfi);
   }
 
   /**
