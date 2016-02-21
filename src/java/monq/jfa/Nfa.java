@@ -610,18 +610,20 @@ public class Nfa  {
   }
   
   /**
+   * <p>
    * creates a kind of complement automaton for the given automaton. On every
    * input string, one of three conditions then holds:
+   * </p>
    * <ol>
    * <li>The given {@code nfa} matches a prefix.</li>
    * <li>The returned result matches a prefix.</li>
-   * <li>The whole string is a prefix of a match of the given {@code nfa}.
-   * <ol>
+   * <li>The whole string is a prefix of a match of the given {@code nfa}.</li>
+   * </ol>
    * 
    * <p>
    * Informally, the returned result applies the following operations to the
    * regular expression {@code re} represented by the given {@code nfa}:
-   * <p>
+   * </p>
    * 
    * <pre>
    *  invert(.* allPrefixes(re) | .*(re).*)
@@ -633,7 +635,7 @@ public class Nfa  {
    * </p>
    * <p>
    * <b>Hint 2:</b> Before making use of the resulting {@code Nfa} you will
-   * usually want to call {@link #setAction}.
+   * usually want to call {@link #addAction}.
    * </p>
    * 
    * @see #completeToSkip
