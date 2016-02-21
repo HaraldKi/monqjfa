@@ -24,20 +24,19 @@ package monq.jfa;
  *
  * @author &copy; 2004 Harald Kirsch
  */
-class SingletonCharTrans implements java.io.Serializable, CharTrans {
+class SingletonCharTrans<T> implements java.io.Serializable, CharTrans<T> {
   private char ch;
-  private FaState o;
+  private T o;
 
   public static long stats = 0;
 
-  public SingletonCharTrans(char ch, FaState o) {
+  public SingletonCharTrans(char ch, T o) {
     this.ch = ch;
     this.o = o;
-    //System.out.println("Singleton("+Misc.printable(ch)+", "+o);
   }
 
   @Override
-  public FaState get(char queryChar) {
+  public T get(char queryChar) {
     stats += 1;
     if( this.ch==queryChar ) return o;
     return null;
@@ -45,7 +44,7 @@ class SingletonCharTrans implements java.io.Serializable, CharTrans {
   public int size() {return 1;}
 
     @Override
-    public FaState getAt(int pos) {
+    public T getAt(int pos) {
     if( pos!=0 ) throw new ArrayIndexOutOfBoundsException(pos);
     return o;
   }

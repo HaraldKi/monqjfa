@@ -61,10 +61,11 @@ public class FaToDot {
     }    
   }
   /**********************************************************************/
-  private static void print(FaState s, 
-			    PrintStream out, 
-			    FaState start, FaState last, 
-			    HashSet<FaState> known) {
+  private static <STATE extends FaState<STATE>> void 
+  print(STATE s, PrintStream out, 
+        STATE start, STATE last,
+        HashSet<STATE> known)
+  {
     known.add(s);
 
     String id = getID(s);
@@ -107,12 +108,12 @@ public class FaToDot {
 
     
     // edges with characer annotation
-    CharTrans trans = s.getTrans();
+    CharTrans<STATE> trans = s.getTrans();
     if( trans!=null ) {
       for(int i=0; i<trans.size(); i++) {
 	char first = trans.getFirstAt(i);
 	char lastChar = trans.getLastAt(i);
-	FaState other = trans.getAt(i);
+	STATE other = trans.getAt(i);
 	String otherId = getID(other);
 	if( first==lastChar ) {
 	  out.println("  n"+id+" -> n"+otherId+
@@ -126,7 +127,7 @@ public class FaToDot {
     }
 
     // dashed edges for epsilon transitions
-    FaState[] eps = s.getEps();
+    STATE[] eps = s.getEps();
     if( eps!=null ) {
       for(int ii=0; ii<eps.length; ii++) {
 	String otherId = getID(eps[ii]);
@@ -135,8 +136,8 @@ public class FaToDot {
     }
 
     // go recursive
-    for(Iterator<FaState> i=s.getChildIterator(IterType.ALL); i.hasNext(); /**/) {
-      FaState child = i.next();
+    for(Iterator<STATE> i=s.getChildIterator(IterType.ALL); i.hasNext(); /**/) {
+      STATE child = i.next();
       if( known.contains(child) ) continue;
       print(child, out, start, last, known);
     }
@@ -155,9 +156,11 @@ public class FaToDot {
    * an Nfa or Dfa. Rather use {@link Nfa#toDot} and {@link Dfa#toDot}
    * to call this function.
    */
-  public static void print(PrintStream out, FaState start, FaState last) {
+  public static <STATE extends FaState<STATE>> void 
+  print(PrintStream out, STATE start, STATE last) 
+  {
     out.println("digraph hallo {");
-    print(start, out, start, last, new HashSet<FaState>());
+    print(start, out, start, last, new HashSet<STATE>());
     out.println("}");
   }
   /**********************************************************************/

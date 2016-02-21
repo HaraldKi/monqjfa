@@ -27,15 +27,14 @@ import monq.jfa.actions.Copy;
  */
 public class IntervalsTest extends TestCase {
 
-
   // exploit a bug once found in Intervals.setFrom()
   public static void test_Bug1() throws Exception {
-    FaState inner = AbstractFaState.createDfaState(new Copy(0),  false);
-    FaState outer = AbstractFaState.createDfaState(new Copy(0), false);
-    IntervalsFaState ivals = new IntervalsFaState();
+    AbstractFaState inner = new AbstractFaState(new Copy(0));
+    AbstractFaState outer = new AbstractFaState(new Copy(0));
+    Intervals<AbstractFaState> ivals = new Intervals<>();
     ivals.invert(outer);
     ivals.overwrite('e', 'e', inner);
-    CharTrans t = ivals.toCharTrans(1.0);
+    CharTrans<AbstractFaState> t = ivals.toCharTrans(1.0);
     ivals.setFrom(t);
     assertEquals(3, ivals.size());
     assertEquals(outer, ivals.getAt(0));
@@ -54,12 +53,12 @@ public class IntervalsTest extends TestCase {
   /**********************************************************************/
   // similar for TableCharTrans
   public static void test_TCTtoString() throws Exception {
-    IntervalsFaState ivals = new IntervalsFaState();
+    Intervals<AbstractFaState> ivals = new Intervals<>();
     for(int i=0; i<10; i++) {
-      FaState someState = AbstractFaState.createDfaState(new Copy(i), false);
+      AbstractFaState someState = new AbstractFaState(new Copy(i));
       ivals.overwrite((char)('a'+i), (char)('a'+i), someState);
     }
-    CharTrans t = ivals.toCharTrans(1.0);
+    CharTrans<AbstractFaState> t = ivals.toCharTrans(1.0);
     String s = t.toString();
     //System.out.println(s);
     assertEquals("[a,j ..........]", s);

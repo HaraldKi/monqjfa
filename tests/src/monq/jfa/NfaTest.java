@@ -31,7 +31,6 @@ import java.lang.reflect.Method;
 
 import org.junit.Test;
 
-import monq.jfa.AbstractFaState.EpsState;
 import monq.jfa.actions.Copy;
 import monq.jfa.actions.Drop;
 import monq.jfa.actions.Embed;
@@ -43,14 +42,14 @@ import monq.jfa.actions.Replace;
  * @author &copy; 2005 Harald Kirsch
  */
 public class NfaTest {
-  
+
   @Test
   public void testSeqToNFA() throws ReSyntaxException {
     String s = "abcdedcba";
     Nfa fa = new Nfa(s, Copy.COPY);
     //assertEquals(s.length()+1,fa.size());
-    FaState state = fa.getStart();
-    FaState other = null;
+    AbstractFaState state = fa.getStart();
+    AbstractFaState other = null;
     // the last char of a sequence is added via an epsilon, therefore
     // L-1 below.
     for(int i=0, L=s.length(); i<L-1; i++) {
@@ -60,17 +59,17 @@ public class NfaTest {
     }
     //assertTrue(other.isStop());
   }
-  
+
 
   @Test
   public void testDotToNFA() throws ReSyntaxException {
     String s = ".";
     Nfa fa = new Nfa(s, Copy.COPY);
     //assertEquals(2, fa.size());
-    FaState state = fa.getStart();
+    AbstractFaState state = fa.getStart();
     assertNotNull(state);
 
-    FaState other = state.follow('\0');
+    AbstractFaState other = state.follow('\0');
     assertNotNull(other);
 
     for(char ch=Character.MIN_VALUE+1; ch<Character.MAX_VALUE; ch++) {
@@ -88,10 +87,10 @@ public class NfaTest {
     for(int i=0; i<re.length; i++) {
       Nfa fa = new Nfa(re[i], Copy.COPY);
       //assertEquals(2, fa.size());
-      FaState start = fa.getStart();
-      FaState stop = start.follow(s[i].charAt(0));
+      AbstractFaState start = fa.getStart();
+      AbstractFaState stop = start.follow(s[i].charAt(0));
       for(int j=1; j<s[i].length(); j++) {
-	FaState other = start.follow(s[i].charAt(j));
+	AbstractFaState other = start.follow(s[i].charAt(j));
 	assertSame(stop, other);
       }
       //assertTrue(stop.isStop());
@@ -120,7 +119,7 @@ public class NfaTest {
     assertEquals(1, nfa.findPath("a"));
     assertEquals(8, nfa.findPath("abababab"));
   }
-  
+
   @Test
   public void testPlus() throws ReSyntaxException {
     Nfa nfa = new Nfa("[ab]+", Drop.DROP);
@@ -135,7 +134,7 @@ public class NfaTest {
     assertEquals(2, nfa.findPath("rx"));
     assertEquals(5, nfa.findPath("hallo"));
   }
-  @Test  
+  @Test
    public void testDoubleOr() throws ReSyntaxException {
     // try to enforce the first branch in Nfa.or()
     Nfa nfa = new Nfa("a|b*", Drop.DROP);
@@ -227,7 +226,7 @@ public class NfaTest {
     assertEquals(Copy.COPY, r.next(sb));
     assertEquals("ab", sb.toString());
   }
-  
+
   @Test
   public void testBugInvertRange() throws Exception {
     Nfa nfa = new Nfa("a", Drop.DROP);
@@ -243,7 +242,7 @@ public class NfaTest {
     assertEquals(Copy.COPY, r.next(sb));
     assertEquals("ab", sb.toString());
   }
-  
+
   @Test
   public void testSameActionTwice()
     throws ReSyntaxException, CompileDfaException,
@@ -432,8 +431,8 @@ public class NfaTest {
   public void testIsImportant() throws ReSyntaxException, CompileDfaException  {
     // it suffices if this does not throw
     new Nfa("a|b", Drop.DROP).compile(DfaRun.UNMATCHED_COPY);
-  } 
-  
+  }
+
   @Test
   public void testOrWithAction()
     throws ReSyntaxException, CompileDfaException,
@@ -963,7 +962,7 @@ public class NfaTest {
         r.setOnFailedMatch(DfaRun.UNMATCHED_DROP);
       }
     };
-    
+
     FaAction unskipXX = new AbstractFaAction() {
       @Override
       public void invoke(StringBuilder out, int start, DfaRun r) {
@@ -971,7 +970,7 @@ public class NfaTest {
         r.unskip("XX");
       }
     };
-    
+
     // use the filter version which copies to StringBuilder to have
     // this tested as well somewhere
     StringBuilder sb = new StringBuilder();
@@ -1114,7 +1113,7 @@ public class NfaTest {
     String s = r.filter("bla99bla");
     assertEquals("blaxbla</EOF>", s);
   }
-  
+
   @Test
   public void testDfaRun_filter1() throws Exception {
     DfaRun r = new
@@ -1181,7 +1180,7 @@ public class NfaTest {
     //System.out.println(e.getMessage());
     assertTrue(e.getMessage().indexOf("path `':")>0);
   }
-  
+
   @Test
   public void test_or_withOther()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
@@ -1198,12 +1197,12 @@ public class NfaTest {
 
     // the start state of other should lead nowwhere now because the
     // .or() should have initialized it
-    FaState state = other.getStart();
+    AbstractFaState state = other.getStart();
     for(char ch=Character.MIN_VALUE; ch<Character.MAX_VALUE; ch++) {
       assertNull(state.follow(ch));
     }
   }
-  
+
   @Test
   public void test_seq_withOther()
     throws ReSyntaxException, CompileDfaException, java.io.IOException
@@ -1219,7 +1218,7 @@ public class NfaTest {
 
     // the start state of other should lead nowwhere now because the
     // .seq() should have initialized it
-    FaState state = other.getStart();
+    AbstractFaState state = other.getStart();
     for(char ch=Character.MIN_VALUE; ch<Character.MAX_VALUE; ch++) {
       assertNull(state.follow(ch));
     }
@@ -1380,7 +1379,7 @@ public class NfaTest {
     Nfa nfa = new Nfa("((ee)+.*)~", new Embed("[", "]"));
 
     nfa.addAction(null); // prevent compiler warning about unused allocation
-    
+
     // just count this test as done if we arrive here
     assertTrue(true);
   }
@@ -1516,7 +1515,7 @@ public class NfaTest {
     public StringBuilder value = new StringBuilder();
     public int rlen;
   }
-  
+
   @Test
   public void test_filter_with_collect() throws Exception {
     final
@@ -1712,21 +1711,21 @@ public class NfaTest {
 
   @Test
   public void test_deleteUseless() throws Exception {
-    FaState[] children = new FaState[3];
-    EpsState start = new EpsState();
+    AbstractFaState[] children = new AbstractFaState[3];
+    AbstractFaState start = new AbstractFaState();
     start.setEps(children);
-    FaState stop = AbstractFaState.createDfaState(new Copy(0), false);
-    FaState useless = new EpsState();
-    FaState useless2 = new EpsState();
-    useless.setEps(new FaState[]{useless2});
-    useless2.setEps(new FaState[]{useless});
-    FaState loop = new EpsState();
-    loop.setEps(new FaState[]{start});
+    AbstractFaState stop = new AbstractFaState(new Copy(0));
+    AbstractFaState useless = new AbstractFaState();
+    AbstractFaState useless2 = new AbstractFaState();
+    useless.setEps(new AbstractFaState[]{useless2});
+    useless2.setEps(new AbstractFaState[]{useless});
+    AbstractFaState loop = new AbstractFaState();
+    loop.setEps(new AbstractFaState[]{start});
 
     children[0] = useless;
     children[1] = loop;
     children[2] = stop;
-    Nfa nfa = new Nfa(start, (EpsState)stop);
+    Nfa nfa = new Nfa(start, stop);
 
     Method deleteUseless = Nfa.class.getDeclaredMethod("removeUseless");
 
@@ -1735,27 +1734,27 @@ public class NfaTest {
     assertEquals(2, start.getEps().length);
 
   }
-  
+
   @Test
   public void allPrefixes() throws Exception {
     Nfa nfa = new Nfa("(abc1+|abXY)@", Drop.DROP);
-    
+
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
 
     StringBuilder out = new StringBuilder();
     for (String text : new String[]{"a", "ab", "abc", "abc1", "abc11", "abX"}) {
-      FaAction a = 
+      FaAction a =
           dfa.match(new CharSequenceCharSource(text), out, (TextStore)null);
       assertEquals(Drop.DROP, a);
     }
-    
+
     for (String text : new String[]{"x", "rst"}) {
-      FaAction a = 
+      FaAction a =
           dfa.match(new CharSequenceCharSource(text), out, (TextStore)null);
       assertNull(a);
     }
   }
-  
+
   @Test
   public void bug_implementationNot() throws Exception {
     // a bug in the implementation of not(). Internally it uses a specific
@@ -1778,27 +1777,47 @@ public class NfaTest {
   /*+******************************************************************/
   @Test
   public void test_completeToSkip() throws Exception {
+    tryCompleter("[^/]*XX", "XdadaXX--/---XX...X", "[XdadaXX]_[---XX]...X");
     tryCompleter("b", "b b1234b...bb", "[b]_[b]_[b]_[b][b]");
     tryCompleter("[a-z]+", "max123braz...", "[max]_[braz]_");
     tryCompleter("de.*", ".....deZZZ", "_[deZZZ]");
-    tryCompleter(".*XX", "XdadaXX...X", "[XdadaXX]_X");
+    tryCompleter(".*aaa", "...a...aa...aaa...", "[...a...aa...aaa]...");
   }
 
   private static void
   tryCompleter(String re, String in, String out) throws Exception
   {
-    Replace repB = new Replace("_");
+    FaAction repB = new Replace("_");
+    //repB = new Printf("((%0))");
     Nfa nfa = new Nfa(re, new Printf("[%0]"));
     nfa.completeToSkip(repB);
+    nfa.toDot("/home/harald/tmp/bla.dot");
 
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    dfa.toDot("/home/harald/tmp/bli.dot");
 
     DfaRun r = new DfaRun(new Nfa("a").compile(DfaRun.UNMATCHED_COPY));
     r.setDfa(dfa);
     String result = r.filter(in);
     assertEquals(out, result);
-
-  } 
+  }
+  @Test
+  public void ggg() throws Exception {
+    Nfa nfa = new Nfa(".*bcd", new Replace("X"));
+    nfa.allPrefixes();
+    //nfa.not();
+    nfa.addAction(Copy.COPY);
+    
+//    Nfa other = new Nfa(".*").seq(nfa.copy()).seq(".*").invert();
+//    other.addAction(Copy.COPY);
+//    nfa.or(other);
+//    nfa.allPrefixes();
+//    nfa.not();
+//    nfa.addAction(Copy.COPY);
+    //nfa.completeToSkip(Copy.COPY);
+    nfa.toDot("/home/harald/tmp/bla.dot");
+    nfa.compile(DfaRun.UNMATCHED_COPY).toDot("/home/harald/tmp/bli.dot");
+  }
 }
 
 

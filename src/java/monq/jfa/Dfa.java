@@ -18,8 +18,9 @@ package monq.jfa;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-
-import monq.jfa.FaState.IterType;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 import java.io.PrintStream;
 import java.io.FileNotFoundException;
@@ -65,7 +66,7 @@ public class Dfa implements Serializable {
   public long matchMax = -1;
   /**********************************************************************/
 
-  private FaState startState;
+  private DfaState startState;
 
   // The action to be used by DfaRun when eof is hit
   final FaAction eofAction;
@@ -80,13 +81,13 @@ public class Dfa implements Serializable {
    */
   static SubmatchData dummySmd = new SubmatchData() {
       @Override
-      public void add(FaState s) {}
+      public void add(DfaState s) {}
     };
 
   /**********************************************************************/
-  FaState getStart() {return startState;}
+  DfaState getStart() {return startState;}
 
-  Dfa(FaState start, DfaRun.FailedMatchBehaviour fmb, FaAction eofA) {
+  Dfa(DfaState start, DfaRun.FailedMatchBehaviour fmb, FaAction eofA) {
     this.fmb = fmb;
     this.eofAction = eofA;
     this.startState = start;
@@ -112,36 +113,52 @@ public class Dfa implements Serializable {
     return new DfaRun(this);
   }
   /**********************************************************************/
+  public Nfa toNfa() {
+    return toNfa(1.0);
+  }
+  /**********************************************************************/
   /**
-   * <p>
-   * converts the <code>Dfa</code> back into an <code>Nfa</code> in a way
-   * that <code>this</code> is totally useless afterwards. Make sure it is
-   * not used somewhere else meanwhile. The approach was taken for efficiency
-   * reasons. A deep copy operation is not implemented.
-   * </p>
+   * create an {@link Nfa} from this {@code Dfa} which has the same
+   * transitions but no actions.
    *
    * @return an {@link Nfa} containing all <code>Dfa</code> nodes plus a
    *         common stop state required by the <code>Nfa</code> data
    *         structure.
    */
-  public Nfa toNfa() {
-    AbstractFaState.EpsState newLast = new AbstractFaState.EpsState();
+  public Nfa toNfa(double memoryForSpeedTradeFactor) {
+    AbstractFaState newLast = new AbstractFaState();
+    Map<DfaState, AbstractFaState> dfaToNfa = new IdentityHashMap<>();
+    LinkedList<DfaState> work = new LinkedList<>();
+    Intervals<AbstractFaState> ivals = new Intervals<>();
+    work.add(startState);
+    dfaToNfa.put(startState, new AbstractFaState());
 
-    FaStateTraverser<FaState> fasTrav = 
-        new FaStateTraverser<FaState>(IterType.ALL, newLast);
-    fasTrav.traverse(startState, new FaStateTraverser.StateVisitor<FaState>() {
-      @Override public void visit(FaState state, FaState last) {
-        if (state.getAction()!=null) {
-          state.addEps(last);
+    while (!work.isEmpty()) {
+      DfaState current = work.removeLast();
+      ivals.reset();
+      CharTrans<DfaState> tr = current.getTrans();
+      for (int i=0; i<tr.size(); i++) {
+        char first = tr.getFirstAt(i);
+        char last = tr.getLastAt(i);
+        DfaState child = tr.getAt(i);
+        AbstractFaState nfaChild = dfaToNfa.get(child);
+        if (nfaChild==null) {
+          nfaChild = new AbstractFaState(child.getAction());
+          dfaToNfa.put(child, nfaChild);
+          work.add(child);
         }
+        ivals.overwrite(first, last, nfaChild);
       }
-    });
-
-    AbstractFaState.EpsState newStart = new AbstractFaState.EpsState();
-    newStart.addEps(startState);
-    Nfa nfa = new Nfa(newStart, newLast);
-    startState = null;
-    return nfa;
+      AbstractFaState nfaState = dfaToNfa.get(current);
+      nfaState.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
+      if (current.getAction()!=null) {
+        nfaState.addEps(newLast);
+      }
+    }
+    // assert that the start state has no incoming transitions
+    AbstractFaState newStart = new AbstractFaState();
+    newStart.addEps(dfaToNfa.get(startState));
+    return new Nfa(newStart, newLast);
   }
   /**********************************************************************/
   /**
@@ -151,7 +168,7 @@ public class Dfa implements Serializable {
   public void toDot(PrintStream out) {
     FaToDot.print(out, startState, null);
   }
-  
+
   public void toDot(String filename) {
     PrintStream out;
     try {
@@ -179,10 +196,10 @@ public class Dfa implements Serializable {
   {
     int startPos = out.length();
     int lastStopPos = startPos;
-    FaState lastStopState = null;
+    DfaState lastStopState = null;
     long rest = matchMax;
 
-    FaState current = startState;
+    DfaState current = startState;
     smd.reset();
     while( current!=null && rest!=0 ) {
       smd.add(current);

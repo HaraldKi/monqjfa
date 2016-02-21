@@ -16,35 +16,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 
 package monq.jfa;
 
-//import jfa.*;
 import monq.jfa.actions.*;
 
 import junit.framework.TestCase;
-
-
-/**
- *
- * @author &copy; 2004,2005 Harald Kirsch
- */
 public class MatchGroupTest extends TestCase {
-
-//   public void test_Basic1()
-//     throws ReSyntaxException, CompileDfaException, java.io.IOException {
-//     String s = new
-//       Nfa("a(b+)@1@c", new Printf(true, "%0-%1-", 0))
-//       .compile()
-//       .createRun(DfaRun.UNMATCHED_COPY)
-//       .filter("abc abbbbbc");
-//     assertEquals("abc-b- abbbbbc-bbbbb-", s);
-//   }
 
   public void test_Basic1a()
     throws ReSyntaxException, CompileDfaException, java.io.IOException {
-    String s = new
-      Nfa("a(!b+)c", new Printf(true, "%0-%1-"))
-      .compile(DfaRun.UNMATCHED_COPY)
-      .createRun()
-      .filter("abc abbbbbc");
+    Nfa nfa = new Nfa("a(!b+)c", new Printf(true, "%0-%1-"));
+    nfa.toDot("/home/harald/tmp/nfa.dot");
+    
+    Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    dfa.toDot("/home/harald/tmp/dfa.dot");
+    
+    String s = dfa
+        .createRun()
+        .filter("abc abbbbbc");
     assertEquals("abc-b- abbbbbc-bbbbb-", s);
   }
   /**********************************************************************/

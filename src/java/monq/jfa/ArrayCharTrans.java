@@ -28,7 +28,7 @@ import monq.stuff.Sizeof;
 *****/
 
 
-class ArrayCharTrans implements Serializable, CharTrans {
+class ArrayCharTrans<T> implements Serializable, CharTrans<T> {
 
   // stores character ranges in consecutive elements as inclusive
   // intervals, i.e. the interval 'a'..'b' contains 2 characters. 
@@ -36,7 +36,7 @@ class ArrayCharTrans implements Serializable, CharTrans {
 
   // contains the value onto which the corresponding interval above is
   // mapped.
-  FaState[] values;
+  T[] values;
 
   public static long stats = 0;
   /**********************************************************************/
@@ -63,10 +63,12 @@ class ArrayCharTrans implements Serializable, CharTrans {
   }
   ///CLOVER:ON
   /**********************************************************************/
-  public ArrayCharTrans(StringBuilder ranges2, List<FaState> values) {
+  public ArrayCharTrans(StringBuilder ranges2, List<T> values) {
     this.ranges = new char[ranges2.length()];
     ranges2.getChars(0, ranges2.length(), ranges, 0);
-    this.values = values.toArray(new FaState[values.size()]);
+    @SuppressWarnings("unchecked")
+    T[] tmp = (T[])new Object[values.size()];
+    this.values = values.toArray(tmp);
   }
   /**********************************************************************/
   public int size() {return values.length; }
@@ -77,11 +79,11 @@ class ArrayCharTrans implements Serializable, CharTrans {
   public char getLastAt(int pos) {
     return ranges[2*pos+1];
   }
-  public FaState getAt(int pos) {
+  public T getAt(int pos) {
     return values[pos];
   }
   /********************************************************************/
-  public FaState get(char ch) {
+  public T get(char ch) {
     stats += 1;
 
     int pos = getPos(ch);
