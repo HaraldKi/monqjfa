@@ -566,34 +566,103 @@ public class Nfa  {
   }
   /*+******************************************************************/
   /**
-   * <p>extends the automaton with an additional automaton that matches
-   * everything except all non-empty prefixes of this automaton.</p>
+   * <p>
+   * extends the automaton with an additional automaton that matches
+   * everything except all non-empty prefixes of this automaton.
+   * </p>
    *
-   * <p>For example, if this automaton matches "abc", the addional automaton
+   * <p>
+   * For example, if this automaton matches "abc", the addional automaton
    * matches every string that does not contain "a", "ab" or "abc". The
-   * additional automaton will have the given action attached.</p>
+   * additional automaton will have the given action attached.
+   * </p>
    *
-   * <p>The resulting, combined automaton will nearly never hit a no-match
+   * <p>
+   * The resulting, combined automaton will nearly never hit a no-match
    * situation when used as a filter. The only exception is when the input
    * ends in a true prefix of the original automaton.
    *
-   * Informally, the operation performed is as follows:</p>
-   *
-   * <pre>this.or(this.copy().allPrefixes().not())</pre>
-   *
+   * Informally, the operation performed for a regular expression re as
+   * </p>
+   * 
+   * <pre>
+   * invert(.*P(re)|.*(re).*)|(re)
+   * </pre>
+   * <p>where {@code P(re)} is the {@link #allPrefixes()} operation.</p>
+   *   
+   * <p>
+   * <b>Hint</b>: this operation will not help much with automata that
+   * implement a regular expression that starts with ".*".
+   * </p>
+   * 
    * @param noMatchAction the action to call when the additional automaton
    *        runs into a match, i.e. when the {@code this} does not match.
    *
    * @throws CompileDfaException if {@code this} automaton does not compile.
+   * 
+   * @see #matchComplement
    */
   public Nfa completeToSkip(FaAction noMatchAction) throws CompileDfaException {
-    Dfa dfa = compile(DfaRun.UNMATCHED_THROW);
-    allPrefixes();
-    not();
-
-    addAction(noMatchAction);
-    or(dfa.toNfa(memoryForSpeedTradeFactor));
+    Nfa completer = matchComplement(this);
+    completer.addAction(noMatchAction);
+    or(completer);
     return this;
+  }
+  
+  /**
+   * creates a kind of complement automaton for the given automaton. On every
+   * input string, one of three conditions then holds:
+   * <ol>
+   * <li>The given {@code nfa} matches a prefix.</li>
+   * <li>The returned result matches a prefix.</li>
+   * <li>The whole string is a prefix of a match of the given {@code nfa}.
+   * <ol>
+   * 
+   * <p>
+   * Informally, the returned result applies the following operations to the
+   * regular expression {@code re} represented by the given {@code nfa}:
+   * <p>
+   * 
+   * <pre>
+   *  invert(.* allPrefixes(re) | .*(re).*)
+   * </pre>
+   * 
+   * <p>
+   * <b>Hint 1:</b> This method is static, as it creates a completely new
+   * {@code Nfa} and does not change the given {@code nfa}.
+   * </p>
+   * <p>
+   * <b>Hint 2:</b> Before making use of the resulting {@code Nfa} you will
+   * usually want to call {@link #setAction}.
+   * </p>
+   * 
+   * @see #completeToSkip
+   */
+  public static Nfa matchComplement(Nfa nfa) throws CompileDfaException {    
+    // in embedThis create .*(re).*
+    Nfa embedThis = nfa.copy();
+    embedThis.pView.pushDot();
+    embedThis.pView.star();
+    embedThis.pView.swap();
+    embedThis.pView.seq();
+    embedThis.pView.pushDot();
+    embedThis.pView.star();
+    embedThis.pView.seq();
+    
+    // in completer, create .*ALLPREFIXES(re)
+    Nfa completer = nfa.copy();
+    completer.allPrefixes();
+    completer.pView.pushDot();
+    completer.pView.star();
+    completer.pView.swap();
+    completer.pView.seq();
+    
+    // fuse the two and invert the result
+    completer.or(embedThis);
+    completer.optional();
+    completer.invert();
+
+    return completer;
   }
   /*+******************************************************************/
   /**
@@ -602,37 +671,48 @@ public class Nfa  {
    *
    * Any actions already specified will be deleted.
    *
+   * @return this
+   * 
    * @throws CompileDfaException if the internally called compile operation
    *         throws this exception
    */
-  public void allPrefixes() throws CompileDfaException {
+  public Nfa allPrefixes() throws CompileDfaException {
     if (null==lastState.getAction()) {
       addAction(DefaultAction.nullInstance());
     }
     // need an automaton were all states can carry eps-transitions
     AbstractFaState dfaStart = compile_p(FaStateFactory.forNfa);
 
-    start = new AbstractFaState();
-    start.addEps(dfaStart);
     lastState = new AbstractFaState();
 
     // everything shall become a stop state, but not useless states
     removeUseless();
 
-    FaStateTraverser<AbstractFaState, AbstractFaState> ft =
-        new FaStateTraverser<>(IterType.ALL, dfaStart);
+    FaStateTraverser<AbstractFaState, Void> ft =
+        new FaStateTraverser<>(IterType.ALL, null);
 
     ft.traverse(dfaStart,
-                new FaStateTraverser.StateVisitor<AbstractFaState, AbstractFaState>() {
+                new FaStateTraverser.StateVisitor<AbstractFaState, Void>() {
       @Override
-      public void visit(AbstractFaState state, AbstractFaState exclude) {
-        if (state==exclude) {
-          return;
-        }
+      public void visit(AbstractFaState state, Void exclude) {
         state.clearAction();
         state.addEps(lastState);
       }
     });
+
+    // the following may leave dfaStart dangling if it has not self-links,
+    // but this is ok
+    start = new AbstractFaState();    
+    Intervals<AbstractFaState> ivals = new Intervals<>();
+    CharTrans<AbstractFaState> trans = dfaStart.getTrans();
+
+    for (int i=0; i<trans.size(); i++) {      
+      AbstractFaState st = trans.getAt(i);
+      ivals.overwrite(trans.getFirstAt(i), trans.getLastAt(i), st);
+    }
+    start.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
+    
+    return this;
   }
   /*+******************************************************************/
   private void removeUseless() {
@@ -972,7 +1052,6 @@ public class Nfa  {
    * actions are kept such that both Nfas reference the same actions.
    */
   public Nfa copy() {
-    // this.toDot("/home/harald/tmp/bla.dot");
     final Map<AbstractFaState,AbstractFaState> visited = new IdentityHashMap<>();
     final Queue<AbstractFaState> work = new LinkedList<>();
     work.add(start);
@@ -1011,17 +1090,16 @@ public class Nfa  {
             continue;
           }
           AbstractFaState newTarget = visited.get(oldTarget);
-           if (newTarget==null) {
-             newTarget = new AbstractFaState();
-             work.add(oldTarget);
-             visited.put(oldTarget, newTarget);
-           }
-           ivals.overwrite(chFirst, chLast, newTarget);
+          if (newTarget==null) {
+            newTarget = new AbstractFaState();
+            work.add(oldTarget);
+            visited.put(oldTarget, newTarget);
+          }
+          ivals.overwrite(chFirst, chLast, newTarget);
         }
         newState.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
       }
     }
-    result.toDot("/home/harald/tmp/bli.dot");
     return result;
   }
   /*+******************************************************************/

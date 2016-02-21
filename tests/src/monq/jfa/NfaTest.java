@@ -1777,25 +1777,46 @@ public class NfaTest {
   /*+******************************************************************/
   @Test
   public void test_completeToSkip() throws Exception {
+    tryCompleter("[^/]*XX", "XdadaXX--/---XX...X", "[XdadaXX]_[---XX]...X");
     tryCompleter("b", "b b1234b...bb", "[b]_[b]_[b]_[b][b]");
     tryCompleter("[a-z]+", "max123braz...", "[max]_[braz]_");
     tryCompleter("de.*", ".....deZZZ", "_[deZZZ]");
-    tryCompleter(".*XX", "XdadaXX...X", "[XdadaXX]_X");
+    tryCompleter(".*aaa", "...a...aa...aaa...", "[...a...aa...aaa]...");
   }
 
   private static void
   tryCompleter(String re, String in, String out) throws Exception
   {
-    Replace repB = new Replace("_");
+    FaAction repB = new Replace("_");
+    //repB = new Printf("((%0))");
     Nfa nfa = new Nfa(re, new Printf("[%0]"));
     nfa.completeToSkip(repB);
+    nfa.toDot("/home/harald/tmp/bla.dot");
 
     Dfa dfa = nfa.compile(DfaRun.UNMATCHED_COPY);
+    dfa.toDot("/home/harald/tmp/bli.dot");
 
     DfaRun r = new DfaRun(new Nfa("a").compile(DfaRun.UNMATCHED_COPY));
     r.setDfa(dfa);
     String result = r.filter(in);
     assertEquals(out, result);
+  }
+  @Test
+  public void ggg() throws Exception {
+    Nfa nfa = new Nfa(".*bcd", new Replace("X"));
+    nfa.allPrefixes();
+    //nfa.not();
+    nfa.addAction(Copy.COPY);
+    
+//    Nfa other = new Nfa(".*").seq(nfa.copy()).seq(".*").invert();
+//    other.addAction(Copy.COPY);
+//    nfa.or(other);
+//    nfa.allPrefixes();
+//    nfa.not();
+//    nfa.addAction(Copy.COPY);
+    //nfa.completeToSkip(Copy.COPY);
+    nfa.toDot("/home/harald/tmp/bla.dot");
+    nfa.compile(DfaRun.UNMATCHED_COPY).toDot("/home/harald/tmp/bli.dot");
   }
 }
 
