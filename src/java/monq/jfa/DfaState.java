@@ -2,6 +2,7 @@ package monq.jfa;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class DfaState implements FaState<DfaState> {
@@ -66,7 +67,7 @@ public class DfaState implements FaState<DfaState> {
 
   @Override
   public Iterator<DfaState> getChildIterator(monq.jfa.FaState.IterType iType) {
-    throw new UnsupportedOperationException();    
+    return new ChildIterator(trans);
   }
 
   @Override
@@ -96,5 +97,31 @@ public class DfaState implements FaState<DfaState> {
   public Map<FaAction,FaSubinfo[]> getSubinfos() {
     return subinfos;
   }
+  
+  private static final class ChildIterator implements Iterator<DfaState> {
+    private final CharTrans<DfaState> trans;
+    private int next = 0;
 
+    public ChildIterator(CharTrans<DfaState> t) {
+      this.trans = t;
+    }
+    @Override
+    public boolean hasNext() {
+      return next<trans.size();
+    }
+
+    @Override
+    public DfaState next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      return trans.getAt(next++);
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+    
+  }
 }
