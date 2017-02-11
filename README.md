@@ -12,13 +12,8 @@ by looking for matches of all regular expressions in parallel, calling
 their actions to reformat the text or to incrementally built up a data
 structure.
 
-Homepage: http://pifpafpuf.de/Monq.jfa/
-
 Release Notes:
 https://raw.githubusercontent.com/HaraldKi/monqjfa/master/Documentation/RELNOTES
-
-For some recent blog entry of how the speed improved recently, read
-http://pifpafpuf.de/2015-11/generated-index.html
 
 Javadoc: http://haraldki.github.io/monqjfa/monqApiDoc/index.html
 
