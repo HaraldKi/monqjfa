@@ -71,21 +71,21 @@ public class ConvinceGC implements Runnable {
     while( count-->0 ) {
       rt.gc();
       if( out!=null ) {
-	long free = rt.freeMemory();
-	long total = rt.totalMemory();
-	String pcent 
-	  = Double.valueOf((double)free/(double)total*100.0).toString();
-	pcent = pcent.substring(0,pcent.indexOf(".")+2);
-	out.println("ConvinceGC: allocated="+total+
-		    ", used="+(total-free)+
-		    ", free="+free+" ("+pcent+")");
+        long free = rt.freeMemory();
+        long total = rt.totalMemory();
+        String pcent 
+        = Double.valueOf((double)free/(double)total*100.0).toString();
+        pcent = pcent.substring(0,pcent.indexOf(".")+2);
+        out.println("ConvinceGC: allocated="+total+
+                    ", used="+(total-free)+
+                    ", free="+free+" ("+pcent+")");
       }
       if( Thread.interrupted() ) break;
       try {
-	Thread.sleep(1000);
+        Thread.sleep(1000);
       } catch( InterruptedException e ) {
-	// Assume this asks us to quit working
-	break;
+        // Assume this asks us to quit working
+        break;
       }
     }
     if( out!=null ) out.println("ConvinceGC exiting");
