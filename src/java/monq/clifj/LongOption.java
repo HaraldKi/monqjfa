@@ -74,7 +74,7 @@ public class LongOption extends Option {
       throw new CommandlineException
 	("long value "+s+" for option `"+opt+"' larger than allowed "+max);
     }
-    return new Long(l);
+    return Long.valueOf(l);
   }
   //**********************************************************************/
   public String addRestrictions(String s) {

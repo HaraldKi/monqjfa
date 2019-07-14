@@ -25,7 +25,7 @@ import java.util.*;
  * @author &copy; 2005 Harald Kirsch
  */
 public class EnumOption extends Option {
-  private Set<String> allowed = new HashSet<String>();
+  private Set<String> allowed = new HashSet<>();
 
   /**
    * <p>creates an option which accepts string values from small

@@ -1782,6 +1782,7 @@ public class NfaTest {
     tryCompleter("[a-z]+", "max123braz...", "[max]_[braz]_");
     tryCompleter("de.*", ".....deZZZ", "_[deZZZ]");
     tryCompleter(".*aaa", "...a...aa...aaa...", "[...a...aa...aaa]...");
+    tryCompleter("123abc", "123123abc", "_[123abc]");
   }
 
   private static void

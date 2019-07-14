@@ -24,7 +24,10 @@ import java.io.Serializable;
  * @author &copy; 2004, 2005 Harald Kirsch
  */
 class FaSubinfo implements Comparable<FaSubinfo>, Serializable {
- 
+  // TODO: An improvement could be to not define this as an object, but just
+  // as a collection of (static) that operate on a short. The short would
+  // combine the type and id fields we have here.
+  
   private static final byte SUBINNER = 0x1;
   private static final byte SUBSTART = 0x2;
   private static final byte SUBSTOP = 0x4;

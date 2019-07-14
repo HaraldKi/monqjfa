@@ -47,17 +47,18 @@ public class Sizeof {
   private Sizeof() {}
 
   static {
-    pSizes = new HashMap<Object,Integer>();
-    pSizes.put(Boolean.TYPE, new Integer(1));
-    pSizes.put(Character.TYPE, new Integer(2));
-    pSizes.put(Byte.TYPE, new Integer(1));
-    pSizes.put(Short.TYPE, new Integer(2));
-    pSizes.put(Integer.TYPE, new Integer(4));
-    pSizes.put(Long.TYPE, new Integer(8));
-    pSizes.put(Float.TYPE, new Integer(4));
-    pSizes.put(Double.TYPE, new Integer(8));
-    pSizes.put(Void.TYPE, new Integer(1));
+    pSizes = new HashMap<>();
+    pSizes.put(Boolean.TYPE, Integer.valueOf(1));
+    pSizes.put(Character.TYPE, Integer.valueOf(2));
+    pSizes.put(Byte.TYPE, Integer.valueOf(1));
+    pSizes.put(Short.TYPE, Integer.valueOf(2));
+    pSizes.put(Integer.TYPE, Integer.valueOf(4));
+    pSizes.put(Long.TYPE, Integer.valueOf(8));
+    pSizes.put(Float.TYPE, Integer.valueOf(4));
+    pSizes.put(Double.TYPE, Integer.valueOf(8));
+    pSizes.put(Void.TYPE, Integer.valueOf(1));
 
+    // TODO: start using Instrumentation.getObjectSize (Hmm, but needs an agent)
     Unsafe u = null;
     Field f = null;
     try {
@@ -101,7 +102,7 @@ public class Sizeof {
   {
     // The stack always contains a parent class and an object. The
     // parent class may be null
-    Stack<Object> stack = new Stack<Object>();
+    Stack<Object> stack = new Stack<>();
     stack.push(new Root().getClass());
     stack.push(obj);
     int rounds = 0;
@@ -180,7 +181,7 @@ public class Sizeof {
       }
      
       Map<Class<?>,Pair> parents = types.get(oc);
-      if( parents==null ) types.put(oc, parents=new HashMap<Class<?>,Pair>());
+      if( parents==null ) types.put(oc, parents=new HashMap<>());
       Pair p = parents.get(parentClass);
       if( p==null ) {
 	p = new Pair();
@@ -204,9 +205,8 @@ public class Sizeof {
    * are parents of objects of type <em>k</em>.
    */
   public static Map<Class<?>, Map<Class<?>,Pair>> sizeof(Object o) {
-    Map<Class<?>, Map<Class<?>,Pair>> types = 
-        new HashMap<Class<?>, Map<Class<?>,Pair>>();
-    sizeof(o, new IdentityHashMap<Object,Object>(), types);
+    Map<Class<?>, Map<Class<?>,Pair>> types = new HashMap<>();
+    sizeof(o, new IdentityHashMap<>(), types);
     return types;
   }
   /**

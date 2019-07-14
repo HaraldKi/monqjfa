@@ -74,7 +74,7 @@ public class ConvinceGC implements Runnable {
 	long free = rt.freeMemory();
 	long total = rt.totalMemory();
 	String pcent 
-	  = new Double((double)free/(double)total*100.0).toString();
+	  = Double.valueOf((double)free/(double)total*100.0).toString();
 	pcent = pcent.substring(0,pcent.indexOf(".")+2);
 	out.println("ConvinceGC: allocated="+total+
 		    ", used="+(total-free)+

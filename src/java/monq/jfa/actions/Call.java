@@ -136,7 +136,7 @@ public class Call extends AbstractFaAction {
 
     Object[] args = new Object[3];
     args[0] = out;
-    args[1] = new Integer(start);
+    args[1] = Integer.valueOf(start);
     args[2] = run;
     try {
       m.invoke(run.clientData, args);

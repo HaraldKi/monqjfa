@@ -6,6 +6,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class DfaState implements FaState<DfaState> {
+  // one entry for each action that can be reached by passing through this
+  // state.
   private Map<FaAction,FaSubinfo[]> subinfos = null;
   private CharTrans<DfaState> trans = EmptyCharTrans.instance();
   private FaAction action = null;

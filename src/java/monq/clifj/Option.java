@@ -130,7 +130,7 @@ public class Option {
    */
   private void addValue(Object v) throws CommandlineException {
     if( values==null ) {
-      values= new ArrayList<Object>();
+      values= new ArrayList<>();
     } else if( values.size()>=cmax ) {
       throw new IllegalArgumentException("to many arguments for option `"+opt+
                                          ", only "+cmax+" are allowed");
@@ -209,7 +209,7 @@ public class Option {
       throw new CommandlineException
 	("option `"+opt+"' used more than once");
     }
-    values = new ArrayList<Object>();
+    values = new ArrayList<>();
     while( i<argv.length && values.size()<cmax
 	   && (!argv[i].startsWith("-") || values.size()<cmin) ) {
       //System.err.println(opt+i);
