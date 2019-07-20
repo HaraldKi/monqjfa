@@ -43,7 +43,7 @@ public class PipelineRequest {
    */
   public static final String KEYRE = "[A-Za-z_][A-Za-z_0-9]*";
 
-  private Map<String,String> m = new HashMap<String,String>();
+  private Map<String,String> m = new HashMap<>();
   private final String host;
   private final String port;
   private final String name;

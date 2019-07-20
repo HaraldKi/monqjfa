@@ -253,7 +253,7 @@ public class ContextManager {
     return new Csp();
   }
   private static class Csp implements ContextStackProvider {
-    private List<Object> stack = new ArrayList<Object>();
+    private List<Object> stack = new ArrayList<>();
     public List<Object> getStack() { return stack; }
   }
 }

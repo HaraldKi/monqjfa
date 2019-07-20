@@ -26,7 +26,7 @@ import java.util.*;
  */
 public class IfContext extends AbstractFaAction {
   // in which Context will we do what?
-  private Map<Context,FaAction> m = new HashMap<Context,FaAction>();
+  private Map<Context,FaAction> m = new HashMap<>();
 
   // used as a key into `m' above for the else case
   private static final Context ELSE = new Context().setName("#ELSE#");
@@ -75,7 +75,7 @@ public class IfContext extends AbstractFaAction {
   /**********************************************************************/
   private IfContext copy() {
     IfContext result = new IfContext();
-    result.m = new HashMap<Context,FaAction>(m);
+    result.m = new HashMap<>(m);
     return result;
   }
   /**********************************************************************/

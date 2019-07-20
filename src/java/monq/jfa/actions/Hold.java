@@ -80,7 +80,7 @@ public class Hold extends AbstractFaAction {
     @SuppressWarnings("unchecked")
     List<StackElem> stack = (List<StackElem>)m.get(this);
     if( stack==null ) {
-      m.put(this, stack=new ArrayList<StackElem>());
+      m.put(this, stack=new ArrayList<>());
     }
     stack.add(new StackElem(r.collect, start));
     r.collect = true;

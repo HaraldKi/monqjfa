@@ -75,7 +75,7 @@ public class DistPipeFilter {
   private Feeder[] pending;
   private TcpServer serv = null;
   private boolean running = false;
-  private Map<InputStream,Job> connections = new HashMap<InputStream,Job>();
+  private Map<InputStream,Job> connections = new HashMap<>();
   
   /**********************************************************************/
   /**

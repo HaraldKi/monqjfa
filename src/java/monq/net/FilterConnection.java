@@ -37,7 +37,7 @@ import java.util.*;
  */
 
 class FilterConnection {
-  private Map<String,String> m = new HashMap<String,String>();
+  private Map<String,String> m = new HashMap<>();
 
   private String host;
   private int port = -1;

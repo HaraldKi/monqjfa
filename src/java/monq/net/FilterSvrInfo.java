@@ -142,7 +142,7 @@ public class FilterSvrInfo {
   public static Map<String,FilterSvrInfo> readAll(String directory)
       throws IOException
   {
-    Map<String,FilterSvrInfo> m = new HashMap<String,FilterSvrInfo>();
+    Map<String,FilterSvrInfo> m = new HashMap<>();
 
     File dir = new File(directory);
     final File[] files = dir.listFiles();
