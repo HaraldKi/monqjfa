@@ -102,19 +102,10 @@ public class Printf extends AbstractFaAction {
     }
 
     Map<Object,Object> m = null;
-    MapProvider mp = null;
-    try {
-      mp = (MapProvider)runner.clientData;
-      try {
-	m = mp.getMap();
-      } catch( NullPointerException e ) {
-	// some comment as below
-      }
-    } catch( ClassCastException e ) {
-      // yes, I intendly let the machine throw the exception instead
-      // of checking myself, because this way it *is* faster.
+    Object mp = runner.clientData;
+    if (mp!=null && (mp instanceof MapProvider)) {
+      m = ((MapProvider)mp).getMap();
     }
-
 
     out.setLength(start);
     f.format(out, ts, m);
