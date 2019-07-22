@@ -60,17 +60,13 @@ class SubmatchData {
   void add(DfaState s) {
     Map<FaAction,FaSubinfo[]> m = s.getSubinfos();
     haveSubs |= (m!=null);
-    // NOTE: Just waiting for the exception seems to be faster than
-    // an explicit test (last time I measured). Seems logical,
-    // because the JVM will do the test anyway, whether I checked or
-    // not.
-    try {
-      subInfos[size] = m;
-    } catch( ArrayIndexOutOfBoundsException e ) {
+
+    if (size>=subInfos.length) {
       int newsize = size + 5 + size/10;
       subInfos = Arrays.copyOf(subInfos, newsize);
-      subInfos[size] = m;
-    }
+    } 
+    subInfos[size] = m;
+
     size += 1;
   }
   /**********************************************************************/
