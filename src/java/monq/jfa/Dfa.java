@@ -205,18 +205,18 @@ public class Dfa implements Serializable {
       smd.add(current);
 
       if( null!=current.getAction() ) {
-	lastStopState = current;
-	lastStopPos = out.length();
+        lastStopState = current;
+        lastStopPos = out.length();
       }
       rest -= 1;
       int ch = in.read();
       if( ch<0 ) {
-	// if we did not move yet, we hit EOF
+        // if we did not move yet, we hit EOF
         // TODO: we are not able to return an action for a match of the empty
         // string at the end of input, a corner case, but a problem for
         // Regexp.matches()
-	if( out.length()==startPos ) return DfaRun.EOF;
-	break;
+        if( out.length()==startPos ) return DfaRun.EOF;
+        break;
       }
       out.append((char)ch);
       current = current.follow((char)ch);
