@@ -170,15 +170,12 @@ public class Dfa implements Serializable {
   }
 
   public void toDot(String filename) {
-    PrintStream out;
-    try {
-      out = new PrintStream(filename, "UTF-8");
+    try (PrintStream out = new PrintStream(filename, "UTF-8")) {
+      toDot(out);
     } catch( FileNotFoundException|UnsupportedEncodingException e ) {
       e.printStackTrace();
       return;
     }
-    toDot(out);
-    out.close();
   }
   /**********************************************************************/
   /**
