@@ -100,7 +100,7 @@ public class DistFilter {
     // We have to invert the order of the servers listed on the
     // command line for the convenience of the user
     String[] restArgs = cmd.getStringValues("--");
-    List<PipelineRequest> reqs = new ArrayList<PipelineRequest>();
+    List<PipelineRequest> reqs = new ArrayList<>();
 
     String tailre = "(;(!"+PipelineRequest.KEYRE+")=(!([^;]|\\\\;)+))*";
     Regexp hostportre = new Regexp("host=(![^;]+);port=(![0-9]+)"+tailre);
@@ -111,29 +111,29 @@ public class DistFilter {
       TextStore ts = null;
       PipelineRequest currentReq = null;
       if( hostportre.matches(restArgs[i]) ) {
-	ts = hostportre.submatches();
-	try {
-	  currentReq = new PipelineRequest(ts.getPart(1),
-					   Integer.parseInt(ts.getPart(2)));
-	} catch( NumberFormatException e ) {
-	  throw new Error("cannot parse `"+restArgs[i]+"', see cause", e);
-	}
-	addKeys(currentReq, ts, 3, fiddle);
-	reqs.add(currentReq);
-	continue;
+        ts = hostportre.submatches();
+        try {
+          currentReq = new PipelineRequest(ts.getPart(1),
+                                           Integer.parseInt(ts.getPart(2)));
+        } catch( NumberFormatException e ) {
+          throw new Error("cannot parse `"+restArgs[i]+"', see cause", e);
+        }
+        addKeys(currentReq, ts, 3, fiddle);
+        reqs.add(currentReq);
+        continue;
       }
 
       if( svrre.matches(restArgs[i]) ) {
-	ts = svrre.submatches();
-	FilterSvrInfo svr = serverConfig.get(ts.getPart(1));
-	if( svr==null ) {
-	  System.err.println("server `"+ts.getPart(1)+"' unknown");
-	  System.exit(1);
-	}
-	currentReq = svr.getRequest();
-	reqs.add(currentReq);
-	addKeys(currentReq, ts, 2, fiddle);
-	continue;
+        ts = svrre.submatches();
+        FilterSvrInfo svr = serverConfig.get(ts.getPart(1));
+        if( svr==null ) {
+          System.err.println("server `"+ts.getPart(1)+"' unknown");
+          System.exit(1);
+        }
+        currentReq = svr.getRequest();
+        reqs.add(currentReq);
+        addKeys(currentReq, ts, 2, fiddle);
+        continue;
       } 
 
       System.err.println(prog+": cannot parse request `"+restArgs[i]+"'");
