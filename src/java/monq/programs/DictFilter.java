@@ -142,7 +142,7 @@ public class DictFilter implements ServiceFactory {
   /**********************************************************************/
   // used while parsing the mwt file.
   private static final class ReadHelper implements ContextStackProvider {
-    private List<Object> stack = new ArrayList<Object>();
+    private List<Object> stack = new ArrayList<>();
 
     // used during setup of the mwt filter, records most recently seen
     // <template> 
@@ -392,7 +392,7 @@ public class DictFilter implements ServiceFactory {
   }
   /********************************************************************/
   private static final FaAction do_template = new AbstractFaAction() {
-    Map<String,String>  m = new HashMap<String,String>();
+    Map<String,String>  m = new HashMap<>();
       public void invoke(StringBuilder yytext, int start, DfaRun r) 
 	throws CallbackException
       {
@@ -424,7 +424,7 @@ public class DictFilter implements ServiceFactory {
     };
   /********************************************************************/
   private static final class Do_t_r extends AbstractFaAction {
-    Map<String,String>  m = new HashMap<String,String>();
+    Map<String,String>  m = new HashMap<>();
     DfaRun convert;
     public Do_t_r(ReParser rep) {
       try {
@@ -652,10 +652,10 @@ public class DictFilter implements ServiceFactory {
       if( !cmd.available(eopts[i]) ) continue;
       String s = enc[i] = cmd.getStringValue(eopts[i]);
       try {
-	java.nio.charset.Charset.forName(s);
+        java.nio.charset.Charset.forName(s);
       } catch( java.nio.charset.UnsupportedCharsetException e ) {
-	System.err.println(prog+": character set `"+s+"' not supported");
-	System.exit(1);
+        System.err.println(prog+": character set `"+s+"' not supported");
+        System.exit(1);
       }
     }
       
@@ -666,14 +666,15 @@ public class DictFilter implements ServiceFactory {
     String inputType = (String)cmd.getValue("-t");
     String elemName = (String)cmd.getValue("-e");
 
-    java.io.InputStream mwtFile = 
-      new BufferedInputStream(new java.io.FileInputStream(mwtFileName));
-    String mwtEnc = monq.stuff.EncodingDetector.detect(mwtFile);
-    Reader rin = new InputStreamReader(mwtFile, mwtEnc);
-    DictFilter dict = new DictFilter(rin, inputType, elemName, 
-				     verbose, memDebug, defaultWord);
-    mwtFile.close();
-
+    DictFilter dict;
+    try (InputStream mwtFile = 
+      new BufferedInputStream(new java.io.FileInputStream(mwtFileName))) {;
+      String mwtEnc = monq.stuff.EncodingDetector.detect(mwtFile);
+      Reader rin = new InputStreamReader(mwtFile, mwtEnc);
+      dict = new DictFilter(rin, inputType, elemName, 
+                            verbose, memDebug, defaultWord);
+    }
+    
     // now set the encodings verified earlier
     if( enc[0]!=null ) dict.setInputEncoding(enc[0]);
     if( enc[1]!=null ) dict.setOutputEncoding(enc[1]);
@@ -681,14 +682,14 @@ public class DictFilter implements ServiceFactory {
 
     if( cmd.available("-c") ) {
       String dfaFileName = cmd.getStringValue("-c");
-      ObjectOutputStream out = 
-	new ObjectOutputStream(new FileOutputStream(dfaFileName));
-      if( verbose ) { 
-	System.err.println("Writing DFA to `"+dfaFileName+"'");
+      try(ObjectOutputStream out = 
+          new ObjectOutputStream(new FileOutputStream(dfaFileName))) {
+        if( verbose ) { 
+          System.err.println("Writing DFA to `"+dfaFileName+"'");
+        }
+        out.writeObject(DfaRun.UNMATCHED_COPY);
+        out.writeObject(dict.getDfa());
       }
-      out.writeObject(DfaRun.UNMATCHED_COPY);
-      out.writeObject(dict.getDfa());
-      out.close();
       System.exit(0);
     }
 
