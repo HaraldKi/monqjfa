@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -35,7 +35,7 @@ import java.io.*;
  * <em>(re,f)</em> on the command line where</p>
  *
  * <dl>
- * <dt><em>re</em></dt><dd>is a 
+ * <dt><em>re</em></dt><dd>is a
  * <a href="../jfa/doc-files/resyntax.html">regular expression</a>
  * and</dd>
  * <dt><em>f</em></dt><dd>is a format as defined for {@link
@@ -89,7 +89,7 @@ import java.io.*;
  * the word <em>insulin</em> somewhere. The output of each ROI will be
  * followed by a pair of newlines. In addition, the word
  * <em>insulin</em> will be triple bracketed in the output.</p>
- * 
+ *
  * <pre>
  *   java programs.Grep \
  *     -cr \
@@ -101,7 +101,7 @@ import java.io.*;
  *   java programs.Grep \
  *   -cr \
  *   -r '&lt;protein&gt;' '&lt;/protein&gt;' \
- *   -rf '%0' '%0\n' 
+ *   -rf '%0' '%0\n'
  *   '[\r\n\t ]+' ' '</pre>
  *
  * <p>works almost as above. In addition whitespace, which includes
@@ -137,7 +137,7 @@ import java.io.*;
  * <code>'[^&lt;]+'</code> is your best bet.</p>
  *
  * <p>There is, however, one admissible use of <code>'.*'</code>. When
- * you use it together with a shortest match operator like in 
+ * you use it together with a shortest match operator like in
  * <code>'(.*&lt;/endtag&gt;)!'</code>, you are guaranteed that the
  * match will extend exactly to the first match of
  * <code>'&lt;/endtag&gt;'</code>.</p>
@@ -145,11 +145,11 @@ import java.io.*;
  * <h3>Use of <code>'%1'</code>, <code>'%2'</code>, etc. in
  * formats</h3>
  * <p>Apart from <code>'%0'</code>, position parameters
- * <code>'%1'</code>, etc. can be 
+ * <code>'%1'</code>, etc. can be
  * used in a {@link monq.jfa.PrintfFormatter format string} under
  * certain circumstances. In contrast to many other regular expression
  * packages, the package employed in <code>Grep</code> does not work with
- * so called <em>capturing parentheses</em><a 
+ * so called <em>capturing parentheses</em><a
  * href="#fn1" class="footnotemark">1</a> by
  * default. Instead, a pair of parentheses is made into reporting
  * parentheses by using an exclamation mark as the first character
@@ -163,11 +163,11 @@ import java.io.*;
  * <hr>
  * <h3>Footnotes</h3>
  * <p class="footnote"><a name="fn1">1)</a> This has to do with the
- * fact that 
+ * fact that
  * <code>Grep</code> works with deterministic finite automata which
  * normally completely preclude the use of capturing parentheses. The
  * details why this is so are too complicated to explain here. Details
- * can be found 
+ * can be found
  * <a href="../monq/jfa/doc-files/resyntax.html#rse">here</a>.</p>
  *
  * <hr>
@@ -175,7 +175,7 @@ import java.io.*;
  */
 public class Grep implements ServiceFactory {
 
-  private Dfa main;
+  private final Dfa main;
 
   // in some situations, callbacks must communicate and store
   // intermediate state
@@ -189,21 +189,21 @@ public class Grep implements ServiceFactory {
     // where did we start holding back data
     public int holdStart;
 
-    // set to true only if the held back data was veryfied for
-    // shipping 
-    public boolean ship;     
+    // set to true only if the held back data was verified for
+    // shipping
+    public boolean ship;
   }
   /**********************************************************************/
   /**
    * <p>create a <code>Grep</code> without ROI.</p>
    *
-   * @param copy if <code>true</code>, non matching text is copied. 
+   * @param copy if <code>true</code>, non matching text is copied.
    * @param autoPrio if <code>true</code>, all regular expressions in
    * <code>args</code> are auto-prioritized to suppress any
    * <code>CompileDfaException</code> due to competing regular
    * expressions.
    * @param args pairs of regular expression and {@link Printf}
-   * formats. 
+   * formats.
    *
    * @throws ReSyntaxException if either a regular expression or a
    * format string has a syntax error
@@ -211,7 +211,7 @@ public class Grep implements ServiceFactory {
    * matches the empty string or if <code>autoPrio==false</code> and
    * there are competing regular expressions.
    */
-  public Grep(boolean copy, boolean autoPrio, String[] args) 
+  public Grep(boolean copy, boolean autoPrio, String[] args)
     throws ReSyntaxException, CompileDfaException {
 
     int prio = 0;
@@ -223,7 +223,7 @@ public class Grep implements ServiceFactory {
       nfa.or(args[i], new Printf(true, args[i+1]).setPriority(prio));
       prio += prioInc;
     }
-    main = nfa.compile(copy ? 
+    main = nfa.compile(copy ?
 		       DfaRun.UNMATCHED_COPY : DfaRun.UNMATCHED_DROP);
   }
   /**********************************************************************/
@@ -255,7 +255,7 @@ public class Grep implements ServiceFactory {
    * <code>CompileDfaException</code> due to competing regular
    * expressions.
    * @param args pairs of regular expression and {@link Printf}
-   * formats. 
+   * formats.
    *
    * @throws ReSyntaxException if either a regular expression or a
    * format string has a syntax error
@@ -268,16 +268,18 @@ public class Grep implements ServiceFactory {
 	      DfaRun.FailedMatchBehaviour fmRoi,
 	      boolean select,
 	      boolean copyEnv,
-	      boolean autoPrio, 
+	      boolean autoPrio,
 	      String[] args) throws ReSyntaxException, CompileDfaException {
 
+    boolean separatorMode = roiOn.isEmpty();
+    
     // set up actions which define how to print the ROI separators
     FaAction toWorkAction, toEnvAction;
     if( rfOn==null) toWorkAction = Copy.COPY;
-    else toWorkAction =  new Printf(true, rfOn);
+    else toWorkAction = new Printf(true, rfOn);
     if( rfOff==null ) toEnvAction = Copy.COPY;
     else toEnvAction = new Printf(true, rfOff);
-    
+
     // When selectively copying only those ROIs with a match, we need
     // a combination of Hold/Match/Decide callbacks to do the
     // work. Otherwise, a simple Printf suffices.
@@ -288,20 +290,28 @@ public class Grep implements ServiceFactory {
       toWorkAction = new Hold(toWorkAction);
       toEnvAction = new Decide(toEnvAction);
       for(int i=0; i<args.length; i+=2) {
-	nfa.or(args[i], new Match(args[i+1]).setPriority(autoPrio ? i : 0));
-      }      
+        nfa.or(args[i], new Match(args[i+1]).setPriority(autoPrio ? i : 0));
+      }
     } else {
       for(int i=0; i<args.length; i+=2) {
-	Printf pf = new Printf(true, args[i+1]);
-	if( autoPrio ) pf.setPriority(i);
-	nfa.or(args[i], pf);
-      }      
+        Printf pf = new Printf(true, args[i+1]);
+        if( autoPrio ) pf.setPriority(i);
+        nfa.or(args[i], pf);
+      }
     }
-    
+
     // add the rule to switch back to the envelope to the Nfa and
     // compile it
-    DfaRun.FailedMatchBehaviour fmMain 
+    DfaRun.FailedMatchBehaviour fmMain
       = copyEnv ? DfaRun.UNMATCHED_COPY : DfaRun.UNMATCHED_DROP;
+    if (separatorMode) {
+      nfa.or(roiOff, toEnvAction);
+      main = nfa.compile(fmRoi);
+      return;
+    }
+    
+
+    // let the end-of-roi action switch to the envelope
     SwitchDfa toEnv = new SwitchDfa(toEnvAction);
     toEnv.setPriority(Integer.MAX_VALUE);
     nfa.or(roiOff, toEnv);
@@ -331,6 +341,7 @@ public class Grep implements ServiceFactory {
     return r;
   }
   /**********************************************************************/
+  @Override
   public Service createService(java.io.InputStream in,
 			       java.io.OutputStream out,
 			       Object param) {
@@ -343,9 +354,10 @@ public class Grep implements ServiceFactory {
   // roi, switches to collect mode and has a boolean which will
   // finally decide whether to ship the ROI
   private static class Hold extends AbstractFaAction {
-    private FaAction a;
+    private final FaAction a;
     public Hold(FaAction a) { this.a = a; }
-    public void invoke(StringBuilder yytext, int start, DfaRun r) 
+    @Override
+    public void invoke(StringBuilder yytext, int start, DfaRun r)
       throws CallbackException {
       Com com = (Com)r.clientData;
       com.ship = false;
@@ -358,11 +370,12 @@ public class Grep implements ServiceFactory {
   // When using a ROI to be shipped only on matches, the Printf
   // actions are wrapped into one of those
   private static class Match extends AbstractFaAction {
-    private FaAction a;
+    private final FaAction a;
     public Match(String format) throws ReSyntaxException {
       this.a = new Printf(true, format);
     }
-    public void invoke(StringBuilder yytext, int start, DfaRun r) 
+    @Override
+    public void invoke(StringBuilder yytext, int start, DfaRun r)
       throws CallbackException {
       Com com = (Com)r.clientData;
       com.ship = true;
@@ -373,9 +386,10 @@ public class Grep implements ServiceFactory {
   // Action to be run when leaving the ROI. It calls its Hold client
   // to make the decision whether to ship or drop the ROI.
   private static class Decide extends AbstractFaAction {
-    private FaAction a;
+    private final FaAction a;
     public Decide(FaAction a) { this.a = a; }
-    public void invoke(StringBuilder yytext, int start, DfaRun r) 
+    @Override
+    public void invoke(StringBuilder yytext, int start, DfaRun r)
       throws CallbackException {
       Com com = (Com)r.clientData;
       a.invoke(yytext, start, r);
@@ -391,8 +405,8 @@ public class Grep implements ServiceFactory {
     for(int i=0; i<l; i++) {
       char ch = s.charAt(i);
       if( ch!='\\' ) {
-	scratch.append(ch);
-	continue;
+        scratch.append(ch);
+        continue;
       }
       if( i+1==l ) break;
       i += 1;
@@ -438,13 +452,13 @@ public class Grep implements ServiceFactory {
 		  +"given, the whole input is searched",
 		  2, 2));
     cmd.addOption
-      (new BooleanOption("-d", 
+      (new BooleanOption("-d",
 			 "delete non-matching text within roi. "
 			 +"By default, non-matching text within a roi "
 			 +"which contains a match is copied."));
 
     cmd.addOption
-      (new BooleanOption("-cr", 
+      (new BooleanOption("-cr",
 			 "copy every region of interest, even if they "
 			 +"do not contain a match. Without roi, all "
 			 +"non-matching text is copied."));
@@ -480,7 +494,7 @@ public class Grep implements ServiceFactory {
       System.err.println(prog+": must have an even number of arguments");
       System.exit(1);
     }
-    
+
     StringBuilder scratch = new StringBuilder();
     int l = args.length;
     for(int i=0; i<l; i+=1) args[i] = escapeLiteral(scratch, args[i]);
@@ -494,11 +508,11 @@ public class Grep implements ServiceFactory {
       roi[1] = escapeLiteral(scratch, roi[1]);
       String[] rf = {null, null};
       if( cmd.available("-rf") ) {
-	rf = cmd.getStringValues("-rf");
-	rf[0] = escapeLiteral(scratch, rf[0]);
-	rf[1] = escapeLiteral(scratch, rf[1]);
+        rf = cmd.getStringValues("-rf");
+        rf[0] = escapeLiteral(scratch, rf[0]);
+        rf[1] = escapeLiteral(scratch, rf[1]);
       }
-      
+
       // actions needed when switching between envelope and work
       // set up whether all ROIs are to be copied or only those with a
       // match. It is only slightly nonsensical to combine -cr and -d
@@ -513,10 +527,10 @@ public class Grep implements ServiceFactory {
       if( cmd.available("-d") ) fmRoi = DfaRun.UNMATCHED_DROP;
 
       grep = new Grep(roi[0], roi[1], rf[0], rf[1],
-		      fmRoi, 
-		      select, 
+		      fmRoi,
+		      select,
 		      cmd.available("-co"),
-		      cmd.available("-ap"), 
+		      cmd.available("-ap"),
 		      args);
     } else {
       String[] forbidden = {"-co", "-d", "-rf"};
@@ -536,7 +550,7 @@ public class Grep implements ServiceFactory {
       if( exit ) System.exit(1);
 
       grep = new Grep(cmd.available("-cr"),
-		      cmd.available("-ap"), 
+		      cmd.available("-ap"),
 		      args);
     }
 
@@ -552,7 +566,7 @@ public class Grep implements ServiceFactory {
 	r.filter(System.out);
       } catch( java.io.IOException e ) {
 	String msg = e.getMessage();
-	if( msg.startsWith("Broken pipe") 
+	if( msg.startsWith("Broken pipe")
 	    || msg.startsWith("EOF hit in") ) {
 	  System.exit(1);
 	}

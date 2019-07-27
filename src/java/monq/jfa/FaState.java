@@ -58,7 +58,7 @@ interface FaState<STATE extends FaState<STATE>> {
   /**
    * returns the character transition table of this state.
    */
-   CharTrans<STATE> getTrans();
+  CharTrans<STATE> getTrans();
   
   /**
    * changes the character transition table of this state. The

@@ -1,4 +1,4 @@
-/*+********************************************************************* 
+/*+*********************************************************************
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -83,7 +83,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /**
    * defines typed enumerated values which describe
    * what a <code>DfaRun</code> shall do in its read() and filter()
-   * functions, if 
+   * functions, if
    * no match can be found.
    */
   public static final class FailedMatchBehaviour implements Serializable {
@@ -106,7 +106,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    *
    * @see #setOnFailedMatch
    */
-  public static final FailedMatchBehaviour UNMATCHED_COPY 
+  public static final FailedMatchBehaviour UNMATCHED_COPY
     = new FailedMatchBehaviour(0);
   /**
    * requests the <code>DfaRun</code> object to drop (delete) input
@@ -130,7 +130,9 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * returned by {@link #next next()} on EOF.
    */
   public static final FaAction EOF = new AbstractFaAction() {
+      @Override
       public void invoke(StringBuilder sb, int start, DfaRun r) {}
+      @Override
       public String toString() { return "DfaRun.EOF"; }
     };
 
@@ -203,13 +205,13 @@ public class DfaRun extends EmptyCharSource implements Serializable {
 
   // A string buffer for convenient use of some methods which don't
   // require the caller to supply one.
-  private StringBuilder readBuf = new StringBuilder(1024);
-  private TextStore readTs = new TextStore();
+  private final StringBuilder readBuf = new StringBuilder(1024);
+  private final TextStore readTs = new TextStore();
 
   // reusable field for calling Dfa.match() and the action returned by
   // Dfa.match(). Both are needed to assemble submatch information
   // should a callback call submatches().
-  private SubmatchData smd = new SubmatchData();
+  private final SubmatchData smd = new SubmatchData();
   private FaAction action;
   /**********************************************************************/
   /**
@@ -229,11 +231,11 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * @see #setOnFailedMatch
    * @param dfa is the automaton to operate initially. Callbacks may
    * change it.
-   * @param in is the initial input source. 
+   * @param in is the initial input source.
    *
    * @throws IllegalArgumentException if the given <code>dfa</code>
    * matches the empty string, i.e. if {@link Dfa#matchesEmpty} returns
-   * <code>true</code>. 
+   * <code>true</code>.
    */
   public DfaRun(Dfa dfa, CharSource in) {
     if( dfa.matchesEmpty() ) {
@@ -246,7 +248,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /**
    * <p>creates a <code>DfaRun</code> with empty initial input. This
    * method calls the 2 parameter constructur with an empty
-   * <code>CharSource</code>.</p> 
+   * <code>CharSource</code>.</p>
    *
    * @see #DfaRun(Dfa,CharSource)
    */
@@ -255,7 +257,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   }
 
   /**********************************************************************/
-  /** 
+  /**
    * <p>changes the input source. Within a thread, this is permissable at
    * all times because a <code>DfaRun</code> object does not buffer
    * input data between calls to any of its methods.</p>
@@ -273,8 +275,8 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * set input source.</li>
    * </ol>
    */
-  public void setIn(CharSource in) { 
-    this.in = in; 
+  public void setIn(CharSource in) {
+    this.in = in;
     eofArmed = true;
     this.onFailedMatch = dfa.fmb;
   }
@@ -297,7 +299,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * @see #setOnFailedMatch
    */
   public void setDfa(Dfa dfa) {
-    this.dfa = dfa; 
+    this.dfa = dfa;
     this.onFailedMatch = dfa.fmb;
   }
 
@@ -305,7 +307,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * returns the {@link Dfa} operated by <code>this</code>.
    */
   public Dfa getDfa() { return dfa; }
-  
+
   /**
    * <p>changes the way how unmatched input is handled. Any of the
    * values {@link #UNMATCHED_COPY}, {@link #UNMATCHED_DROP} or {@link
@@ -396,10 +398,10 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * <p>may be called by a callback to
    * retrieve see <a
    * href="doc-files/resyntax.html#rse">submatches</a>. Retrieving
-   * submatches must be 
+   * submatches must be
    * done before the match is changed in any way. A typical call
    * within an {@link FaAction} looks like</p> <pre>
-   *   public void invoke(StringBuilder out, int start, DfaRun r) 
+   *   public void invoke(StringBuilder out, int start, DfaRun r)
    *     throws CallbackException {
    *   {
    *     TextStore ts = r.submatches(out, start);
@@ -411,7 +413,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * <code>start</code>. It may contain more characters.
    *
    * @param start is the position where the full match starts within
-   * <code>txt</code> 
+   * <code>txt</code>
    *
    * @return a <code>TextStore</code> that contains the whole match as
    * part 0 and submatches as subsequent parts. The return value is
@@ -486,8 +488,8 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * </dl>
    *
    */
-  public FaAction next(StringBuilder out) 
-    throws java.io.IOException 
+  public FaAction next(StringBuilder out)
+    throws java.io.IOException
   {
     matchStart = out.length();
     FaAction a = dfa.match(in, out, smd);
@@ -497,28 +499,28 @@ public class DfaRun extends EmptyCharSource implements Serializable {
       // match. Note: there is always at least one character available as
       // long as not Dfa.EOF is returned by dfa.match()
       if( onFailedMatch==UNMATCHED_COPY ) {
-	int unmatched = 0;
-	do {
-	  out.append((char)(in.read()));
-	  unmatched += 1;
-	  a = dfa.match(in, out, smd);
-	} while( a==null && unmatched<maxCopy );
-	matchStart += unmatched;
+        int unmatched = 0;
+        do {
+          out.append((char)(in.read()));
+          unmatched += 1;
+          a = dfa.match(in, out, smd);
+        } while( a==null && unmatched<maxCopy );
+        matchStart += unmatched;
 
       } else if( onFailedMatch==UNMATCHED_DROP ) {
-	do {
-	  in.read();
-	  a = dfa.match(in, out, smd);
-	} while( a==null );
+        do {
+          in.read();
+          a = dfa.match(in, out, smd);
+        } while( a==null );
 
       } else {
-	// everything else is a failure
-	String emsg = lookahead();
-	throw new NomatchException("no matching regular expression "+
-				   "when looking at `"+emsg+"'");
+        // everything else is a failure
+        String emsg = lookahead();
+        throw new NomatchException("no matching regular expression "+
+            "when looking at `"+emsg+"'");
       }
     }
-    
+
     // We handle EOF and eofAction as if we have found a match
     if( a==EOF && dfa.eofAction!=null && eofArmed) {
       eofArmed = false;
@@ -531,7 +533,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   /**
    * fetch a bit of lookahead for use in messages for
    * exceptions. The lookahead is pushed back into the input
-   * afterwards. 
+   * afterwards.
    */
   private String lookahead() {
     // Read up to 30 chars for a decent error message
@@ -539,9 +541,9 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     int i;
     try {
       for(i=0; i<30; i++) {
-	int ch = in.read();
-	if( ch==-1 ) break;
-	sb.append((char)ch);
+        int ch = in.read();
+        if( ch==-1 ) break;
+        sb.append((char)ch);
       }
     } catch( java.io.IOException e ) {
       in.pushBack(sb, 0);
@@ -555,24 +557,25 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   }
   /**********************************************************************/
   /**
-   * ==== IMPORTANT ====
-   * This should never again be public because it does not honour the
-   * chunks defined by actions+collect mode. It only honours chunks of
-   * actions. This should not be made visible to the outside.
+   * ==== IMPORTANT ==== This should never again be public because it does not
+   * honour the chunks defined by actions+collect mode. It only honours chunks
+   * of actions. This should not be made visible to the outside.
    *
-   * <p>calls {@link #next} once and applies the returned {@link
-   * FaAction}. This includes the special actions configured for non
-   * matching input and EOF, if any.</p>
+   * <p>
+   * calls {@link #next} once and applies the returned {@link FaAction}. This
+   * includes the special actions configured for non matching input and EOF, if
+   * any.
+   * </p>
    *
-   * <p>Due to the <code>FaAction<code> applied to <code>out</code>
-   * after calling <code>next</code> anything can happen to
-   * <code>out</code>. In particular it need not become longer.</p>
+   * <p>
+   * Due to the <code>FaAction<code> applied to <code>out</code> after calling
+   * <code>next</code> anything can happen to <code>out</code>. In particular it
+   * need not become longer.
+   * </p>
    *
-   * @return <code>false</code> if <code>out</code> was not changed
-   * and would not be changed &mdash; due to EOF &mdash; by any
-   * subsequent calls to this method. If <code>true</code> is
-   * returned, <code>out</code> is not necessarily changed, but there
-   * is more input available to process.
+   * @return <code>false</code> if we hit EOF <strong>and</strong> we produced
+   * no data in <code>out</code>. As long as <code>true</code> is returned, it
+   * makes sense to call again to possibly get more data.
    */
   private boolean crunch(StringBuilder out) throws java.io.IOException {
     int l = out.length();
@@ -589,14 +592,14 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     } catch( CallbackException e ) {
       String msg;
       if( matchStart<=out.length() ) {
-	msg = e.getMessage()+
-	  ". The match, possibly changed by the complaining "+
-	  "action, follows in "+
-	  "double brackets:\n[["+out.substring(matchStart)+"]]";
+        msg = e.getMessage()+
+            ". The match, possibly changed by the complaining "+
+            "action, follows in "+
+            "double brackets:\n[["+out.substring(matchStart)+"]]";
       } else {
-	msg = e.getMessage() + 
-	  ". Matched and filtered data just before the "+
-	  "match triggering the exception is: `"+out+"'";
+        msg = e.getMessage() +
+            ". Matched and filtered data just before the "+
+            "match triggering the exception is: `"+out+"'";
       }
 
       CallbackException ee = new CallbackException(msg);
@@ -608,9 +611,9 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   }
   /**********************************************************************/
   /**
-   * <p>delivers filtered data in naturally occuring chunks by
+   * <p>delivers filtered data in naturally occurring chunks by
    * appending to <code>out</code>. As long as {@link #collect} is
-   * <code>false</code>, the naturally occuring chunk is determined by
+   * <code>false</code>, the naturally occurring chunk is determined by
    * one call to {@link #next next()}, and the application of the
    * returned callback. The data may be prefixed with filtered data
    * not yet delivered by a previous call to {@link
@@ -636,7 +639,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    *
    * @exception java.io.EOFException if
    * EOF is hit while <code>collect==true</code>.
-   * @exception CallbackException if a callback throws this exception 
+   * @exception CallbackException if a callback throws this exception
    *
    * @return <code>true</code>, if some input was read and
    * filtered. It also means that this method should be called again
@@ -664,8 +667,8 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * delivered or if <code>count==0</code>. A return of
    * <code>false</code> signals that all input was processed.
    */
-  public boolean read(StringBuilder out, int count) 
-    throws java.io.IOException 
+  public boolean read(StringBuilder out, int count)
+    throws java.io.IOException
   {
     int l = out.length();
 
@@ -689,12 +692,13 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * @return the resulting character casted to <code>int</code> or -1
    * to signal EOF.
    */
+  @Override
   public int read() throws java.io.IOException {
     // The next line is not really necessary because the case would be
     // handled quite nicely by the read() below, but hopefully it
     // speeds up things quite a bit.
     int ch;
-    if( (ch=super.readOne())>=0 ) return (char)ch;
+    if( (ch=super.readOne())>=0 ) return ch;
 
     // We have to loop a bit because read(buf) not necessarily
     // delivers a character, even if it returns true.
@@ -708,7 +712,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
       return readBuf.charAt(0);
     }
     return -1;
-  }  
+  }
   /**********************************************************************/
   /**
    * <p>reads and filters input, copying it to the output
@@ -725,7 +729,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * <p>reads and filters input, copying it to the output
    * until EOF is hit.</p>
    */
-  public void filter(PrintStream out) 
+  public void filter(PrintStream out)
     throws java.io.IOException
   {
     StringBuilder sb = new StringBuilder(4200);
@@ -736,20 +740,21 @@ public class DfaRun extends EmptyCharSource implements Serializable {
       if( out.checkError() ) return;
     }
     out.print(sb);
+    out.flush();
   }
   /**********************************************************************/
   /**
    * <p>reads and filters the given input and returns the filtered
    * result.</p>
    */
-  public synchronized String filter(String sin) 
+  public synchronized String filter(String sin)
     throws java.io.IOException
   {
     readBuf.setLength(0);
     setIn(new CharSequenceCharSource(sin));
     while( crunch(readBuf) ) /**/;
     return readBuf.toString();
-  }    
+  }
   /**********************************************************************/
   /**
    * <p>run the machine until EOF is hit. This is useful, when the
@@ -761,7 +766,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * happening, use {@link #collect} as for the other
    * <code>filter</code> methods.
    */
-  public synchronized void filter() 
+  public synchronized void filter()
       throws java.io.IOException
   {
     readBuf.setLength(0);
@@ -770,4 +775,4 @@ public class DfaRun extends EmptyCharSource implements Serializable {
     }
   }
 }
- 
+
