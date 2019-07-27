@@ -473,7 +473,7 @@ public final class Xml {
    * #splitElement(Map,StringBuilder,int)} directly.</p>
    */
   public static Map<String,String> splitElement(StringBuilder s, int start) {
-    Map<String,String> h = new HashMap<String,String>();
+    Map<String,String> h = new HashMap<>();
     splitElement(h, s, start);
     return h;
   }

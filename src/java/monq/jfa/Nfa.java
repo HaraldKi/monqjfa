@@ -422,10 +422,8 @@ public class Nfa  {
   }
   /*+******************************************************************/
   public void toDot(String filename) {
-    try {
-      PrintStream out = new PrintStream(filename, "UTF-8");
+    try(PrintStream out = new PrintStream(filename, "UTF-8")) {
       toDot(out);
-      out.close();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -1060,7 +1058,7 @@ public class Nfa  {
     Nfa result = new Nfa(Nfa.NOTHING);
     result.start = new AbstractFaState();
     visited.put(start, result.start);
-    Intervals<AbstractFaState> ivals = new Intervals<AbstractFaState>();
+    Intervals<AbstractFaState> ivals = new Intervals<>();
 
     while (!work.isEmpty()) {
       AbstractFaState current = work.remove();
@@ -1183,7 +1181,7 @@ public class Nfa  {
   // is a convenience wrapper around findAction for use in findPath
   private static boolean hasAction(Set<AbstractFaState> nfaStates) {
     List<Clash> clashes = new LinkedList<>();
-    Set<FaAction> actions = new HashSet<FaAction>(3);
+    Set<FaAction> actions = new HashSet<>(3);
     StringBuilder sb = new StringBuilder();
     return null!=findAction(sb, 'a', 'a', clashes, actions, nfaStates);
   }
@@ -1248,7 +1246,7 @@ public class Nfa  {
     and have no outgoing non-epsilons.
   *****/
   private static <T extends FaState<T>> void eclosure(Set<T> states) {
-    LinkedList<T> stack = new LinkedList<T>();
+    LinkedList<T> stack = new LinkedList<>();
     Set<T> closure = Nfa.<T>newSet(states.size()+20);
 
     stack.addAll(states);
@@ -1456,7 +1454,7 @@ public class Nfa  {
     // If we find multiple actions on some stop states, these are
     // registered as clashes here and will finally result in an
     // exception.
-    List<Clash>clashes = new LinkedList<Clash>();
+    List<Clash>clashes = new LinkedList<>();
 
     // reusable container for findAction()
     Set<FaAction> actions = newSet(3);
@@ -1504,7 +1502,7 @@ public class Nfa  {
     // transition as well as the set of Nfa states that represent the dfa state.
 
     LinkedList<CompileTask<STATE>> stack = new LinkedList<>();
-    stack.add(new CompileTask<STATE>(dfaStart, 0, (char)0, (char)0, starters));
+    stack.add(new CompileTask<>(dfaStart, 0, (char)0, (char)0, starters));
 
     // this is the transition table we will use over and over again so
     // that it can grow to a typical required size internally. The

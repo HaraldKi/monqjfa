@@ -27,8 +27,6 @@ import java.io.Serializable;
  * ease subclassing for specialized states of an automaton.
  */
 class AbstractFaState implements FaState<AbstractFaState>, Serializable {
-  // for use in addEps(STATE) only
-  private final AbstractFaState[] tmp = new AbstractFaState[1];
   private AbstractFaState[] eps = null;
   private CharTrans<AbstractFaState> trans = null;
   private FaAction action = null;
@@ -66,7 +64,7 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
    */
   private static Map<FaAction, FaSubinfo[]>
   mergeSub(Map<FaAction, FaSubinfo[]> subinfos, FaAction a, FaSubinfo sfi) {
-    if( subinfos==null ) subinfos = new HashMap<FaAction,FaSubinfo[]>();
+    if( subinfos==null ) subinfos = new HashMap<>();
     
     // If there is nothing yet for a, simply enter what we have as a
     // new entry.
@@ -198,6 +196,7 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
 
    @Override
    public void addEps(AbstractFaState state) {
+     AbstractFaState[] tmp = new AbstractFaState[1];
      tmp[0] = state;
      addEps(tmp);
    }
@@ -217,9 +216,9 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
 
    @Override
   public AbstractFaState follow(char ch) {
-     CharTrans<AbstractFaState> trans = getTrans();
-     if( trans==null ) return null;
-     AbstractFaState state = trans.get(ch);
+     CharTrans<AbstractFaState> t = getTrans();
+     if( t==null ) return null;
+     AbstractFaState state = t.get(ch);
      return state;
    }
   /**********************************************************************/
@@ -242,8 +241,8 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
 
     ChildIterator(IterType iType) {
       if (iType==IterType.ALL || iType==IterType.EPSILON) {
-        AbstractFaState[] eps = getEps();
-        if( eps!=null ) eps_L = eps.length;
+        AbstractFaState[] epses = getEps();
+        if( epses!=null ) eps_L = epses.length;
       }
       if (iType==IterType.ALL || iType==IterType.CHAR) {
         CharTrans<AbstractFaState> t = getTrans();

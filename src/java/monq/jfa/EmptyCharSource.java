@@ -120,7 +120,8 @@ public class EmptyCharSource implements CharSource {
     return pushed[pstart++];
   }
 
-  // REMINDER: This has declare the IOException to allow subclasses
-  // that really need it to do this too.
+  /**
+   * @throws java.io.IOException only to allow subclasses to do so. 
+   */
   public int read() throws java.io.IOException { return readOne(); }
 }

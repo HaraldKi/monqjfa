@@ -58,7 +58,7 @@ public class PlainSet<E> extends AbstractSet<E> {
   public boolean add(E o) {
     int idx = indexFor(o);
     if( oflowFind(elems[idx], o) ) return false;
-    elems[idx] = new Elem<E>(o, elems[idx]);
+    elems[idx] = new Elem<>(o, elems[idx]);
     size += 1;
     if( size>=upperThreshold ) rearrange();
     return true;

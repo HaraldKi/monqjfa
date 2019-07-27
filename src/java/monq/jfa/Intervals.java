@@ -35,11 +35,11 @@ public class Intervals<D> {
   // character and reaching up to just before the next character or
   // Character.MAX_VALUE.
   protected final StringBuilder ivals = new StringBuilder();
-  protected final List<D> values = new ArrayList<D>();
+  protected final List<D> values = new ArrayList<>();
  
   // used during conversion to CharTrans
   private StringBuilder ranges = new StringBuilder();
-  private List<D> vtmp = new ArrayList<D>();
+  private List<D> vtmp = new ArrayList<>();
  
   public static final long[] stats = new long[4];
   /**********************************************************************/
@@ -239,11 +239,11 @@ public class Intervals<D> {
       char first = ranges.charAt(0);
       char last = ranges.charAt(1);
       if( first==last ) {
-	t = new SingletonCharTrans<D>(first, vtmp.get(0));
-	stats[0] += 1;
+        t = new SingletonCharTrans<>(first, vtmp.get(0));
+        stats[0] += 1;
       } else {
-	t = new RangeCharTrans<D>(first, last, vtmp.get(0));
-	stats[1] += 1;
+        t = new RangeCharTrans<>(first, last, vtmp.get(0));
+        stats[1] += 1;
       }
     } else {
       // estimate the size of an ArrayCharTrans
@@ -255,11 +255,11 @@ public class Intervals<D> {
       //System.out.println("table: "+tableTransSize);
 
       if( arrayTransSize*memoryForSpeedTradeFactor<tableTransSize ) {
-	t = new ArrayCharTrans<D>(ranges, vtmp);
-	stats[2] += 1;
+        t = new ArrayCharTrans<>(ranges, vtmp);
+        stats[2] += 1;
       } else {
-	t = new TableCharTrans<D>(ranges, vtmp);
-	stats[3] += 1;
+        t = new TableCharTrans<>(ranges, vtmp);
+        stats[3] += 1;
       }
 
     }

@@ -186,7 +186,7 @@ public class FaToDot {
     Nfa nfa = new Nfa(Nfa.NOTHING);
     for(int i=1; i<argv.length; i++) {
       nfa.or(argv[i], 
-	     new monq.jfa.actions.Replace(new Integer(i).toString()));
+	     new monq.jfa.actions.Replace(Integer.valueOf(i).toString()));
     }
     if ("-nfa".equals(argv[0])) {
       nfa.toDot(System.out);

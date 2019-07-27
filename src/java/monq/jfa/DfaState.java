@@ -74,9 +74,9 @@ public class DfaState implements FaState<DfaState> {
 
   @Override
   public DfaState follow(char ch) {
-    CharTrans<DfaState> trans = getTrans();
-    if( trans==null ) return null;
-    DfaState state = trans.get(ch);
+    CharTrans<DfaState> t = getTrans();
+    if( t==null ) return null;
+    DfaState state = t.get(ch);
     return state;
   }
 

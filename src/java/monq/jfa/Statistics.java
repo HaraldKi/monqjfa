@@ -39,7 +39,7 @@ public class Statistics {
   public int longestPathlen = -1;
 
   /** type and number of CharTrans implementations used */
-  public Map<Class<?>,Int> charTransTypes = new HashMap<Class<?>,Int>();
+  public Map<Class<?>,Int> charTransTypes = new HashMap<>();
 
   private int currentDepth = 0;
   private StringBuilder sb = new StringBuilder();
