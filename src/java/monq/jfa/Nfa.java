@@ -57,14 +57,14 @@ import monq.jfa.actions.DefaultAction;
 */
 
 public class Nfa  {
-  private AbstractFaState start;
+  private NfaState start;
 
   // is the single unique state used for operations on and with the
   // Nfa like those necessary for Thompson's construction. This state
   // is always treated as if it were a stop state, except in
   // compile(). To make it a into a stop state which survives
   // compilation, addAction() must be called just before compilation.
-  private AbstractFaState lastState;
+  private NfaState lastState;
 
   // our private parser for regular expressions
   private ReParser reParser = null;
@@ -230,15 +230,15 @@ public class Nfa  {
    * <p>initializes this automaton to recogize nothing.<p>
    */
   private void initialize() {
-    start = new AbstractFaState();
-    lastState = new AbstractFaState();
+    start = new NfaState();
+    lastState = new NfaState();
   }
   //-*******************************************************************
   private void initialize(final CharSequence pairs, boolean invert) {
-    start = new AbstractFaState();
-    lastState = new AbstractFaState();
+    start = new NfaState();
+    lastState = new NfaState();
 
-    Intervals<AbstractFaState> ivals = new Intervals<>();
+    Intervals<NfaState> ivals = new Intervals<>();
 
     if( pairs!=null ) {
       if( pairs.length()%2!=0 ) {
@@ -262,29 +262,29 @@ public class Nfa  {
   // given string. (no regex parsing!)
   private void initialize(CharSequence s) {
     //System.out.println("+++"+s.toString());
-    start = new AbstractFaState();
+    start = new NfaState();
 
-    Intervals<AbstractFaState> assemble = new Intervals<>();
-    AbstractFaState current = start;
-    AbstractFaState other;
+    Intervals<NfaState> assemble = new Intervals<>();
+    NfaState current = start;
+    NfaState other;
     char ch;
     int i, L;
     for(i=0, L=s.length(); i<L-1; i++) {
-      other = new AbstractFaState();
+      other = new NfaState();
       ch = s.charAt(i);
       assemble.overwrite(ch, ch, other);
       current.setTrans(assemble.toCharTrans(memoryForSpeedTradeFactor));
       current = other;
     }
-    lastState = new AbstractFaState();
+    lastState = new NfaState();
     ch = s.charAt(i);
     assemble.overwrite(ch, ch, lastState);
     current.setTrans(assemble.toCharTrans(memoryForSpeedTradeFactor));
   }
-  private void initializeAsSequence(AbstractFaState start1,
-                                    AbstractFaState last1,
-				    AbstractFaState start2,
-				    AbstractFaState last2) {
+  private void initializeAsSequence(NfaState start1,
+                                    NfaState last1,
+				    NfaState start2,
+				    NfaState last2) {
     // FIXME:
     // Since we are sure that start2 has no incoming transitions, we
     // can drop that state if we transfer all its transitions to
@@ -304,10 +304,10 @@ public class Nfa  {
     lastState = last2;
   }
   //-*******************************************************************
-  private void initializeAsOr(AbstractFaState start1,
-			      AbstractFaState last1,
-			      AbstractFaState start2,
-			      AbstractFaState last2) {
+  private void initializeAsOr(NfaState start1,
+			      NfaState last1,
+			      NfaState start2,
+			      NfaState last2) {
     // To conserve objects, we want to use one of the last states as
     // the new lastState. However, a state with an action is not a
     // good last state as it would assign that action to the other
@@ -317,7 +317,7 @@ public class Nfa  {
       // action to the automaton ending in last2
       if( null!=last2.getAction() ) {
 	// again no good lastState, so we need a fresh one
-	lastState = new AbstractFaState();
+	lastState = new NfaState();
 	last1.addEps(lastState);
 	last2.addEps(lastState);
       } else {
@@ -335,7 +335,7 @@ public class Nfa  {
     // important, we can skip it by just transfering its eps
     // transitions to the other one.
     if( start2.isImportant() ) {
-      AbstractFaState tmp = start1; start1 = start2; start2 = tmp;
+      NfaState tmp = start1; start1 = start2; start2 = tmp;
     }
     if( !start2.isImportant() ) {
       start1.addEps(start2.getEps());
@@ -378,7 +378,7 @@ public class Nfa  {
     return this;
   }
   //-********************************************************************/
-  AbstractFaState getStart() {return start;}
+  NfaState getStart() {return start;}
   //private AbstractFaState.EpsState getLastState() {return lastState;}
 
   /**
@@ -396,15 +396,15 @@ public class Nfa  {
   public Nfa addAction(FaAction a) {
     if( a==null ) return this;
 
-    AbstractFaState newLast = new AbstractFaState(a);
+    NfaState newLast = new NfaState(a);
     lastState.addEps(newLast);
     lastState = newLast;
 
-    FaStateTraverser<AbstractFaState, FaAction> fasVis = new FaStateTraverser<>(IterType.ALL, a);
+    FaStateTraverser<NfaState, FaAction> fasVis = new FaStateTraverser<>(IterType.ALL, a);
     fasVis.traverse(start,
-                    new FaStateTraverser.StateVisitor<AbstractFaState, FaAction>() {
+                    new FaStateTraverser.StateVisitor<NfaState, FaAction>() {
       @Override
-      public void visit(AbstractFaState state, FaAction action) {
+      public void visit(NfaState state, FaAction action) {
         state.reassignSub(null, action);
       }
     });
@@ -432,7 +432,7 @@ public class Nfa  {
   /**
    * for internal use by {@link Dfa#toNfa()} only.
    */
-  Nfa(AbstractFaState start, AbstractFaState lastState) {
+  Nfa(NfaState start, NfaState lastState) {
     this.start = start;
     this.lastState = lastState;
   }
@@ -459,7 +459,7 @@ public class Nfa  {
     if( subgraphID>Byte.MAX_VALUE ) return false;
 
     byte id = (byte)subgraphID++;
-    Set<AbstractFaState> known = newSet();
+    Set<NfaState> known = newSet();
 
     FaSubinfo startInfo = FaSubinfo.start(id);
     FaSubinfo stopInfo = FaSubinfo.stop(id);
@@ -483,27 +483,27 @@ public class Nfa  {
   // epsilon transition, are not marked. The parent is not touched
   // here.
   // TODO: this is still recursive, it will bomb out on moderately large Nfas
-  private void _markAsSub(AbstractFaState parent,
+  private void _markAsSub(NfaState parent,
 			  FaSubinfo innerInfo, boolean innerValid,
-			  Set<AbstractFaState> known) {
+			  Set<NfaState> known) {
     known.add(parent);
 
     // iterate of character transitions
-    CharTrans<AbstractFaState> trans = parent.getTrans();
+    CharTrans<NfaState> trans = parent.getTrans();
     if( trans!=null ) {
       int N = trans.size();
       for(int i=0; i<N; i++) {
-	AbstractFaState child = trans.getAt(i);
+	NfaState child = trans.getAt(i);
 	child.addUnassignedSub(innerInfo);
 	if( known.contains(child) ) continue;
 	_markAsSub(child, innerInfo, true, known);
       }
     }
 
-    AbstractFaState[] children = parent.getEps();
+    NfaState[] children = parent.getEps();
     if( children!=null ) {
       for(int i=0; i<children.length; i++) {
-	AbstractFaState child = children[i];
+	NfaState child = children[i];
 	if( known.contains(child) ) continue;
 	//if( innerValid ) child.addUnassignedSub(innerInfo);
 	_markAsSub(child, innerInfo, innerValid, known);
@@ -517,8 +517,8 @@ public class Nfa  {
    * state has no outgoing ones.
    */
   private void embed() {
-    AbstractFaState newStart = new AbstractFaState();
-    AbstractFaState newLast = new AbstractFaState();
+    NfaState newStart = new NfaState();
+    NfaState newLast = new NfaState();
     newStart.addEps(start);
     lastState.addEps(newLast);
     start = newStart;
@@ -681,20 +681,20 @@ public class Nfa  {
       addAction(DefaultAction.nullInstance());
     }
     // need an automaton were all states can carry eps-transitions
-    AbstractFaState dfaStart = compile_p(FaStateFactory.forNfa);
+    NfaState dfaStart = compile_p(FaStateFactory.forNfa);
 
-    lastState = new AbstractFaState();
+    lastState = new NfaState();
 
     // everything shall become a stop state, but not useless states
     removeUseless();
 
-    FaStateTraverser<AbstractFaState, Void> ft =
+    FaStateTraverser<NfaState, Void> ft =
         new FaStateTraverser<>(IterType.ALL, null);
 
     ft.traverse(dfaStart,
-                new FaStateTraverser.StateVisitor<AbstractFaState, Void>() {
+                new FaStateTraverser.StateVisitor<NfaState, Void>() {
       @Override
-      public void visit(AbstractFaState state, Void exclude) {
+      public void visit(NfaState state, Void exclude) {
         state.clearAction();
         state.addEps(lastState);
       }
@@ -702,12 +702,12 @@ public class Nfa  {
 
     // the following may leave dfaStart dangling if it has not self-links,
     // but this is ok
-    start = new AbstractFaState();    
-    Intervals<AbstractFaState> ivals = new Intervals<>();
-    CharTrans<AbstractFaState> trans = dfaStart.getTrans();
+    start = new NfaState();    
+    Intervals<NfaState> ivals = new Intervals<>();
+    CharTrans<NfaState> trans = dfaStart.getTrans();
 
     for (int i=0; i<trans.size(); i++) {      
-      AbstractFaState st = trans.getAt(i);
+      NfaState st = trans.getAt(i);
       ivals.overwrite(trans.getFirstAt(i), trans.getLastAt(i), st);
     }
     start.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
@@ -717,17 +717,17 @@ public class Nfa  {
   /*+******************************************************************/
   private void removeUseless() {
     // TODO: refactor, at least by extracting the loops into methods
-    Map<AbstractFaState,Boolean> stateUseful = new IdentityHashMap<>();
-    ArrayList<AbstractFaState> states = new ArrayList<>();
+    Map<NfaState,Boolean> stateUseful = new IdentityHashMap<>();
+    ArrayList<NfaState> states = new ArrayList<>();
 
     states.add(start);
     int nextState = 0;
     while (nextState<states.size()) {
-      AbstractFaState state = states.get(nextState++);
+      NfaState state = states.get(nextState++);
       stateUseful.put(state, state.getAction()!=null || state==lastState);
-      Iterator<AbstractFaState> children = state.getChildIterator(IterType.ALL);
+      Iterator<NfaState> children = state.getChildIterator(IterType.ALL);
       while (children.hasNext()) {
-        AbstractFaState child = children.next();
+        NfaState child = children.next();
         if (stateUseful.containsKey(child)) {
           continue;
         }
@@ -743,11 +743,11 @@ public class Nfa  {
       // reverse iteration tends to hit children earlier, allowing to mark as
       // useful many states in one sweep
       for (int i=states.size()-1; i>=0; i--) {
-        AbstractFaState state = states.get(i);
+        NfaState state = states.get(i);
         if (stateUseful.get(state)) {
           continue;
         }
-        Iterator<AbstractFaState> children = state.getChildIterator(IterType.ALL);
+        Iterator<NfaState> children = state.getChildIterator(IterType.ALL);
         while (children.hasNext()) {
           if (stateUseful.get(children.next())) {
             stateUseful.put(state, Boolean.TRUE);
@@ -765,9 +765,9 @@ public class Nfa  {
       return;
     }
 
-    Intervals<AbstractFaState> worker = new Intervals<>();
+    Intervals<NfaState> worker = new Intervals<>();
     for (int i=0; i<states.size(); i++) {
-      AbstractFaState state = states.get(i);
+      NfaState state = states.get(i);
       Boolean b = stateUseful.get(state);
       if (!b) {
         continue;
@@ -778,10 +778,10 @@ public class Nfa  {
     }
   }
   /*+******************************************************************/
-  private void removeUselessCharTrans(AbstractFaState state,
-                                      Map<AbstractFaState,Boolean> useful,
-                                      Intervals<AbstractFaState> ivalsWorker) {
-    CharTrans<AbstractFaState> t = state.getTrans();
+  private void removeUselessCharTrans(NfaState state,
+                                      Map<NfaState,Boolean> useful,
+                                      Intervals<NfaState> ivalsWorker) {
+    CharTrans<NfaState> t = state.getTrans();
     if( t==null ) return;
 
     // Since CharTrans is immutable, we move things into an Intervals
@@ -792,7 +792,7 @@ public class Nfa  {
     ivalsWorker.setFrom(t);
     int L = ivalsWorker.size();
     for(int i=0; i<L; i++) {
-      AbstractFaState child = ivalsWorker.getAt(i);
+      NfaState child = ivalsWorker.getAt(i);
       if (child==null) {
         continue;
       }
@@ -808,8 +808,8 @@ public class Nfa  {
   }
   /*+******************************************************************/
   private static void
-  removeUselessEps(AbstractFaState state, Map<AbstractFaState,Boolean> useful) {
-    AbstractFaState[] eps = state.getEps();
+  removeUselessEps(NfaState state, Map<NfaState,Boolean> useful) {
+    NfaState[] eps = state.getEps();
     if (eps==null) {
       return;
     }
@@ -835,16 +835,16 @@ public class Nfa  {
    * epsilon transitions, are traversed because the automaton was compiled
    * just before.
    */
-  private void invertStates(AbstractFaState initialState,
-			   final AbstractFaState sink,
-			   final AbstractFaState last,
-			   final Intervals<AbstractFaState> worker) {
-    FaStateTraverser<AbstractFaState, Void> fasTrav =
+  private void invertStates(NfaState initialState,
+			   final NfaState sink,
+			   final NfaState last,
+			   final Intervals<NfaState> worker) {
+    FaStateTraverser<NfaState, Void> fasTrav =
         new FaStateTraverser<>(IterType.CHAR, null);
 
     fasTrav.traverse(initialState,
-                     new FaStateTraverser.StateVisitor<AbstractFaState, Void>() {
-      @Override public void visit(AbstractFaState state, Void xd) {
+                     new FaStateTraverser.StateVisitor<NfaState, Void>() {
+      @Override public void visit(NfaState state, Void xd) {
         if (state.getAction()==null) {
           state.addEps(last);
         } else {
@@ -885,14 +885,14 @@ public class Nfa  {
     }
 
     // need to manufacture some CharTrans, so we need this.
-    Intervals<AbstractFaState> worker = new Intervals<>();
+    Intervals<NfaState> worker = new Intervals<>();
 
     // This automaton needs to be compiled; we lose the lastState by
     // this, but will add a new one later on
-    AbstractFaState dfaStart = compile_p(FaStateFactory.forNfa);
+    NfaState dfaStart = compile_p(FaStateFactory.forNfa);
 
-    AbstractFaState newLast = new AbstractFaState();
-    AbstractFaState sinkState = new AbstractFaState(null);
+    NfaState newLast = new NfaState();
+    NfaState sinkState = new NfaState(null);
     worker.complete(sinkState);
     sinkState.setTrans(worker.toCharTrans(memoryForSpeedTradeFactor));
 
@@ -900,7 +900,7 @@ public class Nfa  {
 
     invertStates(dfaStart, sinkState, newLast, worker);
 
-    start = new AbstractFaState();
+    start = new NfaState();
     start.addEps(dfaStart);
     lastState = newLast;
 
@@ -974,8 +974,8 @@ public class Nfa  {
    *
    * TODO: get rid of recursion, use FaStateTraverser instead.
    */
-  private void trimStopState(AbstractFaState s, Set<AbstractFaState> known,
-			     AbstractFaState newLast, FaAction mark) {
+  private void trimStopState(NfaState s, Set<NfaState> known,
+			     NfaState newLast, FaAction mark) {
     known.add(s);
     FaAction a = s.getAction();
 
@@ -993,9 +993,9 @@ public class Nfa  {
     // subgraph information. We have to remove it again.
     s.reassignSub(mark, null);
 
-    Iterator<AbstractFaState> i = s.getChildIterator(IterType.ALL);
+    Iterator<NfaState> i = s.getChildIterator(IterType.ALL);
     while( i.hasNext() ) {
-      AbstractFaState child = i.next();
+      NfaState child = i.next();
       if( known.contains(child) ) continue;
       trimStopState(child, known, newLast, mark);
     }
@@ -1030,16 +1030,16 @@ public class Nfa  {
     // have epsilon transitions going out. In addition, it might have
     // incoming transitions, therefore we prefix a harmless state in
     // front.
-    AbstractFaState newStart = new AbstractFaState();
-    AbstractFaState compiledStart = compile_p(FaStateFactory.forNfa);
+    NfaState newStart = new NfaState();
+    NfaState compiledStart = compile_p(FaStateFactory.forNfa);
     newStart.addEps(compiledStart);
 
     // the following may result in totally disconnected states which
     // we leave for the garbage collector (in C this was a real
     // pain). However, we cannot live with dead states, i.e. states
     // from which we cannot reach any stop state
-    AbstractFaState newLast = new AbstractFaState();
-    trimStopState(newStart, Nfa.<AbstractFaState>newSet(), newLast, mark);
+    NfaState newLast = new NfaState();
+    trimStopState(newStart, Nfa.<NfaState>newSet(), newLast, mark);
 
     start = newStart;
     lastState = newLast;
@@ -1052,46 +1052,46 @@ public class Nfa  {
    * actions are kept such that both Nfas reference the same actions.
    */
   public Nfa copy() {
-    final Map<AbstractFaState,AbstractFaState> visited = new IdentityHashMap<>();
-    final Queue<AbstractFaState> work = new LinkedList<>();
+    final Map<NfaState,NfaState> visited = new IdentityHashMap<>();
+    final Queue<NfaState> work = new LinkedList<>();
     work.add(start);
     Nfa result = new Nfa(Nfa.NOTHING);
-    result.start = new AbstractFaState();
+    result.start = new NfaState();
     visited.put(start, result.start);
-    Intervals<AbstractFaState> ivals = new Intervals<>();
+    Intervals<NfaState> ivals = new Intervals<>();
 
     while (!work.isEmpty()) {
-      AbstractFaState current = work.remove();
-      AbstractFaState newState = visited.get(current);
+      NfaState current = work.remove();
+      NfaState newState = visited.get(current);
       if (current==lastState) {
         result.lastState = newState;
       }
-      AbstractFaState[] eps = current.getEps();
+      NfaState[] eps = current.getEps();
       if (eps!=null) {
-        for (AbstractFaState oldTarget : eps) {
-          AbstractFaState newTarget = visited.get(oldTarget);
+        for (NfaState oldTarget : eps) {
+          NfaState newTarget = visited.get(oldTarget);
           if (newTarget==null) {
-            newTarget = new AbstractFaState();
+            newTarget = new NfaState();
             work.add(oldTarget);
             visited.put(oldTarget, newTarget);
           }
           newState.addEps(newTarget);
         }
       }
-      CharTrans<AbstractFaState> trans = current.getTrans();
+      CharTrans<NfaState> trans = current.getTrans();
       if (trans!=null) {
         int l = trans.size();
         ivals.reset();
         for (int i=0; i<l; i++) {
           char chFirst = trans.getFirstAt(i);
           char chLast = trans.getLastAt(i);
-          AbstractFaState oldTarget = trans.getAt(i);
+          NfaState oldTarget = trans.getAt(i);
           if (oldTarget==null) {
             continue;
           }
-          AbstractFaState newTarget = visited.get(oldTarget);
+          NfaState newTarget = visited.get(oldTarget);
           if (newTarget==null) {
-            newTarget = new AbstractFaState();
+            newTarget = new NfaState();
             work.add(oldTarget);
             visited.put(oldTarget, newTarget);
           }
@@ -1179,7 +1179,7 @@ public class Nfa  {
   }
   /**********************************************************************/
   // is a convenience wrapper around findAction for use in findPath
-  private static boolean hasAction(Set<AbstractFaState> nfaStates) {
+  private static boolean hasAction(Set<NfaState> nfaStates) {
     List<Clash> clashes = new LinkedList<>();
     Set<FaAction> actions = new HashSet<>(3);
     StringBuilder sb = new StringBuilder();
@@ -1192,8 +1192,8 @@ public class Nfa  {
    */
   int findPath(String s) {
     int lastMatch;
-    Set<AbstractFaState> current = newSet(100);
-    Set<AbstractFaState> other = newSet(100);
+    Set<NfaState> current = newSet(100);
+    Set<NfaState> other = newSet(100);
 
     current.add(start);
     eclosure(current);
@@ -1202,15 +1202,15 @@ public class Nfa  {
 
     for(int i=0, L=s.length(); i<L && current.size()>0; i++) {
       char ch = s.charAt(i);
-      for(Iterator<AbstractFaState> j=current.iterator(); j.hasNext(); ) {
-	AbstractFaState state = j.next();
+      for(Iterator<NfaState> j=current.iterator(); j.hasNext(); ) {
+	NfaState state = j.next();
 	state = state.follow(ch);
 	if( state!=null ) {
 	  //System.out.println("followed "+ch);
 	  other.add(state);
 	}
       }
-      Set<AbstractFaState> tmp = current; current = other; other = tmp;
+      Set<NfaState> tmp = current; current = other; other = tmp;
       other.clear();
       eclosure(current);
       if( hasAction(current) ) lastMatch = i+1;
@@ -1295,7 +1295,7 @@ public class Nfa  {
   private static FaAction findAction(StringBuilder dfaPath, char first,
                                      char last, List<Clash> clashes,
                                      Set<FaAction> actions,
-                                     Set<AbstractFaState> nfaStates)
+                                     Set<NfaState> nfaStates)
   {
     FaAction actionFound = null;
     actions.clear();
@@ -1367,15 +1367,15 @@ public class Nfa  {
     return other;
   }
   /********************************************************************/
-  void addTransition(Intervals<Set<AbstractFaState>> v,
-                     char first, char last, AbstractFaState dst) {
+  void addTransition(Intervals<Set<NfaState>> v,
+                     char first, char last, NfaState dst) {
     int from = v.split(first);
     if( from<0 ) {
       // first falls just on an interval border
       from = -(from+1);
     } else {
       // Need a fresh Set for the new interval pos, which starts with ch
-      Set<AbstractFaState> states = v.getAt(from);
+      Set<NfaState> states = v.getAt(from);
       if( states!=null ) v.setAt(from, newSet(states));
     }
 
@@ -1385,7 +1385,7 @@ public class Nfa  {
       if( to<0 ) {
 	to = -(to+1);
       } else {
-	Set<AbstractFaState> states = v.getAt(to);
+	Set<NfaState> states = v.getAt(to);
 	if( states!=null ) v.setAt(to, newSet(states));
       }
     }
@@ -1393,7 +1393,7 @@ public class Nfa  {
     // now we are sure that interval borders nicely fit with first and
     // last
     for(int i=from; i<to; i++) {
-      Set<AbstractFaState> s = v.getAt(i);
+      Set<NfaState> s = v.getAt(i);
       if( s==null ) s = newSet();
       s.add(dst);
       v.setAt(i, s);
@@ -1467,7 +1467,7 @@ public class Nfa  {
 
     // Generate the representative set of nfa states for the start
     // state of the dfa
-    Set<AbstractFaState> starters = newSet(100);
+    Set<NfaState> starters = newSet(100);
     starters.add(start);
     eclosure(starters);
 
@@ -1492,7 +1492,7 @@ public class Nfa  {
 
     // The map 'known' stores unique sets of NFA states as keys and
     // maps them to their assigned DFA state
-    Map<Set<AbstractFaState>, STATE> known = new HashMap<>();
+    Map<Set<NfaState>, STATE> known = new HashMap<>();
     known.put(starters, dfaStart);
 
 
@@ -1508,7 +1508,7 @@ public class Nfa  {
     // that it can grow to a typical required size internally. The
     // transition tables used in generated states are then copied from
     // it.
-    Intervals<Set<AbstractFaState>> currentTrans = new Intervals<>();
+    Intervals<Set<NfaState>> currentTrans = new Intervals<>();
     Intervals<STATE> dfaTrans = new Intervals<>();
 
     while( stack.size()>0 ) {
@@ -1525,14 +1525,14 @@ public class Nfa  {
       // stored in currentTrans are not destination states but
       // Sets of destination states.
       currentTrans.reset();
-      for(AbstractFaState nfaState : currentTask.nfaStates) {
-        CharTrans<AbstractFaState> trans = nfaState.getTrans();
+      for(NfaState nfaState : currentTask.nfaStates) {
+        CharTrans<NfaState> trans = nfaState.getTrans();
 	if( trans==null ) continue;
 	int L = trans.size();
 	for(int j=0; j<L; j++) {
 	  char first = trans.getFirstAt(j);
 	  char last = trans.getLastAt(j);
-	  AbstractFaState st = trans.getAt(j);
+	  NfaState st = trans.getAt(j);
 	  addTransition(currentTrans, first, last, st);
 	}
       }
@@ -1544,7 +1544,7 @@ public class Nfa  {
       int L = currentTrans.size();
       dfaTrans.reset();
       for(int i=0; i<L; i++) {
-        Set<AbstractFaState> stateSet = currentTrans.getAt(i);
+        Set<NfaState> stateSet = currentTrans.getAt(i);
 	if( stateSet==null ) {
 	  continue;
 	}
@@ -1596,11 +1596,11 @@ public class Nfa  {
     final char chLeft;
     final int steps;
     final char chRight;
-    final Set<AbstractFaState> nfaStates;
+    final Set<NfaState> nfaStates;
     final STATE dfaState;
 
     CompileTask(STATE dfaState, int steps, char chLeft, char chRight,
-                Set<AbstractFaState> nfaStates) {
+                Set<NfaState> nfaStates) {
       this.chLeft = chLeft;
       this.chRight = chRight;
       this.steps = steps;
@@ -1619,8 +1619,8 @@ public class Nfa  {
   }
   //-*****************************************************************
   private class ParserView implements NfaParserView {
-    private List<AbstractFaState> startStack = new ArrayList<>();
-    private List<AbstractFaState> lastStack = new ArrayList<>();
+    private List<NfaState> startStack = new ArrayList<>();
+    private List<NfaState> lastStack = new ArrayList<>();
 
     private <T> T pop(List<T> stack) {
       return stack.remove(stack.size()-1);
@@ -1657,14 +1657,14 @@ public class Nfa  {
     }
     @Override
     public void or() {
-      AbstractFaState oldStart = pop(startStack);
-      AbstractFaState oldLast = pop(lastStack);
+      NfaState oldStart = pop(startStack);
+      NfaState oldLast = pop(lastStack);
       initializeAsOr(oldStart, oldLast, start, lastState);
     }
     @Override
     public void seq() {
-      AbstractFaState oldStart = pop(startStack);
-      AbstractFaState oldLast = pop(lastStack);
+      NfaState oldStart = pop(startStack);
+      NfaState oldLast = pop(lastStack);
       initializeAsSequence(oldStart, oldLast, start, lastState);
     }
 

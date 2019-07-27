@@ -85,7 +85,7 @@ public class Statistics {
     throws IOException 
   {
     Statistics s = new Statistics();
-    s.get(nfa.getStart(), w, new HashSet<AbstractFaState>());
+    s.get(nfa.getStart(), w, new HashSet<NfaState>());
     return s;
   }
   /**

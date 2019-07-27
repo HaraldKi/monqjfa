@@ -92,7 +92,7 @@ public class DfaState implements FaState<DfaState> {
 
   @Override
   public <X extends FaState<X>> void mergeSubinfos(Set<X> nfaStates) {
-    subinfos = AbstractFaState.mergeSubinfosInto(subinfos, nfaStates);
+    subinfos = NfaState.mergeSubinfosInto(subinfos, nfaStates);
   }
 
   @Override

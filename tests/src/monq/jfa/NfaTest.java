@@ -48,8 +48,8 @@ public class NfaTest {
     String s = "abcdedcba";
     Nfa fa = new Nfa(s, Copy.COPY);
     //assertEquals(s.length()+1,fa.size());
-    AbstractFaState state = fa.getStart();
-    AbstractFaState other = null;
+    NfaState state = fa.getStart();
+    NfaState other = null;
     // the last char of a sequence is added via an epsilon, therefore
     // L-1 below.
     for(int i=0, L=s.length(); i<L-1; i++) {
@@ -66,10 +66,10 @@ public class NfaTest {
     String s = ".";
     Nfa fa = new Nfa(s, Copy.COPY);
     //assertEquals(2, fa.size());
-    AbstractFaState state = fa.getStart();
+    NfaState state = fa.getStart();
     assertNotNull(state);
 
-    AbstractFaState other = state.follow('\0');
+    NfaState other = state.follow('\0');
     assertNotNull(other);
 
     for(char ch=Character.MIN_VALUE+1; ch<Character.MAX_VALUE; ch++) {
@@ -87,10 +87,10 @@ public class NfaTest {
     for(int i=0; i<re.length; i++) {
       Nfa fa = new Nfa(re[i], Copy.COPY);
       //assertEquals(2, fa.size());
-      AbstractFaState start = fa.getStart();
-      AbstractFaState stop = start.follow(s[i].charAt(0));
+      NfaState start = fa.getStart();
+      NfaState stop = start.follow(s[i].charAt(0));
       for(int j=1; j<s[i].length(); j++) {
-	AbstractFaState other = start.follow(s[i].charAt(j));
+	NfaState other = start.follow(s[i].charAt(j));
 	assertSame(stop, other);
       }
       //assertTrue(stop.isStop());
@@ -1197,7 +1197,7 @@ public class NfaTest {
 
     // the start state of other should lead nowwhere now because the
     // .or() should have initialized it
-    AbstractFaState state = other.getStart();
+    NfaState state = other.getStart();
     for(char ch=Character.MIN_VALUE; ch<Character.MAX_VALUE; ch++) {
       assertNull(state.follow(ch));
     }
@@ -1218,7 +1218,7 @@ public class NfaTest {
 
     // the start state of other should lead nowwhere now because the
     // .seq() should have initialized it
-    AbstractFaState state = other.getStart();
+    NfaState state = other.getStart();
     for(char ch=Character.MIN_VALUE; ch<Character.MAX_VALUE; ch++) {
       assertNull(state.follow(ch));
     }
@@ -1711,16 +1711,16 @@ public class NfaTest {
 
   @Test
   public void test_deleteUseless() throws Exception {
-    AbstractFaState[] children = new AbstractFaState[3];
-    AbstractFaState start = new AbstractFaState();
+    NfaState[] children = new NfaState[3];
+    NfaState start = new NfaState();
     start.setEps(children);
-    AbstractFaState stop = new AbstractFaState(new Copy(0));
-    AbstractFaState useless = new AbstractFaState();
-    AbstractFaState useless2 = new AbstractFaState();
-    useless.setEps(new AbstractFaState[]{useless2});
-    useless2.setEps(new AbstractFaState[]{useless});
-    AbstractFaState loop = new AbstractFaState();
-    loop.setEps(new AbstractFaState[]{start});
+    NfaState stop = new NfaState(new Copy(0));
+    NfaState useless = new NfaState();
+    NfaState useless2 = new NfaState();
+    useless.setEps(new NfaState[]{useless2});
+    useless2.setEps(new NfaState[]{useless});
+    NfaState loop = new NfaState();
+    loop.setEps(new NfaState[]{start});
 
     children[0] = useless;
     children[1] = loop;

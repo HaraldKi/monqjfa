@@ -26,9 +26,9 @@ import java.io.Serializable;
  * implements a prototype of an {@link FaState} to
  * ease subclassing for specialized states of an automaton.
  */
-class AbstractFaState implements FaState<AbstractFaState>, Serializable {
-  private AbstractFaState[] eps = null;
-  private CharTrans<AbstractFaState> trans = null;
+class NfaState implements FaState<NfaState>, Serializable {
+  private NfaState[] eps = null;
+  private CharTrans<NfaState> trans = null;
   private FaAction action = null;
 
   // A state can be part of several subgraphs. Subgraphs are
@@ -38,11 +38,11 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
   // FaSubinfo.compareTo()).
   private Map<FaAction,FaSubinfo[]> subinfos = null;
   /*+******************************************************************/
-  public AbstractFaState() {
+  public NfaState() {
     // empty
   }
   /*+******************************************************************/
-  public AbstractFaState(FaAction a) {
+  public NfaState(FaAction a) {
     this.action = a;
   }
   /*+******************************************************************/
@@ -167,10 +167,10 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
   }
   /**********************************************************************/
   @Override
-  public CharTrans<AbstractFaState> getTrans() {
+  public CharTrans<NfaState> getTrans() {
     return trans;
   }
-  public void setTrans(CharTrans<AbstractFaState> trans) {
+  public void setTrans(CharTrans<NfaState> trans) {
     this.trans = trans;
   }
   @Override
@@ -186,39 +186,39 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
     return getTrans()!=null || getAction()!=null || subinfos!=null;
   }
    @Override
-  public AbstractFaState[] getEps() {
+  public NfaState[] getEps() {
      return eps;
    }
    @Override
-  public void setEps(AbstractFaState[] eps) {
+  public void setEps(NfaState[] eps) {
      this.eps = eps;
    }
 
    @Override
-   public void addEps(AbstractFaState state) {
-     AbstractFaState[] tmp = new AbstractFaState[1];
+   public void addEps(NfaState state) {
+     NfaState[] tmp = new NfaState[1];
      tmp[0] = state;
      addEps(tmp);
    }
    @Override
-   public void addEps(AbstractFaState[] others) {
+   public void addEps(NfaState[] others) {
      if( others==null ) return;
      if( eps==null ) {
-       eps = new AbstractFaState[others.length];
+       eps = new NfaState[others.length];
        System.arraycopy(others, 0, eps, 0, others.length);
        return;
      }
-     AbstractFaState[] tmp = new AbstractFaState[eps.length+others.length];
+     NfaState[] tmp = new NfaState[eps.length+others.length];
      System.arraycopy(eps, 0, tmp, 0, eps.length);
      System.arraycopy(others, 0, tmp, eps.length, others.length);
      eps = tmp;
    }
 
    @Override
-  public AbstractFaState follow(char ch) {
-     CharTrans<AbstractFaState> t = getTrans();
+  public NfaState follow(char ch) {
+     CharTrans<NfaState> t = getTrans();
      if( t==null ) return null;
-     AbstractFaState state = t.get(ch);
+     NfaState state = t.get(ch);
      return state;
    }
   /**********************************************************************/
@@ -233,7 +233,7 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
    * an {@link FaState} object to create a <code>ChildIterator</code>
    * for that state.</p>a
    */
-  public class ChildIterator implements Iterator<AbstractFaState> {
+  public class ChildIterator implements Iterator<NfaState> {
     private int trans_i = 0;
     private int trans_L = 0;
     private int eps_i = 0;
@@ -241,11 +241,11 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
 
     ChildIterator(IterType iType) {
       if (iType==IterType.ALL || iType==IterType.EPSILON) {
-        AbstractFaState[] epses = getEps();
+        NfaState[] epses = getEps();
         if( epses!=null ) eps_L = epses.length;
       }
       if (iType==IterType.ALL || iType==IterType.CHAR) {
-        CharTrans<AbstractFaState> t = getTrans();
+        CharTrans<NfaState> t = getTrans();
         if( t!=null ) trans_L = t.size();
       }
     }
@@ -256,7 +256,7 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
     }
 
     @Override
-    public AbstractFaState next() {
+    public NfaState next() {
       if( trans_i<trans_L ) {
         return getTrans().getAt(trans_i++);
       }
@@ -270,7 +270,7 @@ class AbstractFaState implements FaState<AbstractFaState>, Serializable {
   }
   /**********************************************************************/
   @Override
-  public Iterator<AbstractFaState> getChildIterator(IterType iType) {
+  public Iterator<NfaState> getChildIterator(IterType iType) {
     return new ChildIterator(iType);
   }
   /********************************************************************/

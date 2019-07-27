@@ -126,12 +126,12 @@ public class Dfa implements Serializable {
    *         structure.
    */
   public Nfa toNfa(double memoryForSpeedTradeFactor) {
-    AbstractFaState newLast = new AbstractFaState();
-    Map<DfaState, AbstractFaState> dfaToNfa = new IdentityHashMap<>();
+    NfaState newLast = new NfaState();
+    Map<DfaState, NfaState> dfaToNfa = new IdentityHashMap<>();
     LinkedList<DfaState> work = new LinkedList<>();
-    Intervals<AbstractFaState> ivals = new Intervals<>();
+    Intervals<NfaState> ivals = new Intervals<>();
     work.add(startState);
-    dfaToNfa.put(startState, new AbstractFaState());
+    dfaToNfa.put(startState, new NfaState());
 
     while (!work.isEmpty()) {
       DfaState current = work.removeLast();
@@ -141,22 +141,22 @@ public class Dfa implements Serializable {
         char first = tr.getFirstAt(i);
         char last = tr.getLastAt(i);
         DfaState child = tr.getAt(i);
-        AbstractFaState nfaChild = dfaToNfa.get(child);
+        NfaState nfaChild = dfaToNfa.get(child);
         if (nfaChild==null) {
-          nfaChild = new AbstractFaState(child.getAction());
+          nfaChild = new NfaState(child.getAction());
           dfaToNfa.put(child, nfaChild);
           work.add(child);
         }
         ivals.overwrite(first, last, nfaChild);
       }
-      AbstractFaState nfaState = dfaToNfa.get(current);
+      NfaState nfaState = dfaToNfa.get(current);
       nfaState.setTrans(ivals.toCharTrans(memoryForSpeedTradeFactor));
       if (current.getAction()!=null) {
         nfaState.addEps(newLast);
       }
     }
     // assert that the start state has no incoming transitions
-    AbstractFaState newStart = new AbstractFaState();
+    NfaState newStart = new NfaState();
     newStart.addEps(dfaToNfa.get(startState));
     return new Nfa(newStart, newLast);
   }

@@ -29,12 +29,12 @@ public class IntervalsTest extends TestCase {
 
   // exploit a bug once found in Intervals.setFrom()
   public static void test_Bug1() throws Exception {
-    AbstractFaState inner = new AbstractFaState(new Copy(0));
-    AbstractFaState outer = new AbstractFaState(new Copy(0));
-    Intervals<AbstractFaState> ivals = new Intervals<>();
+    NfaState inner = new NfaState(new Copy(0));
+    NfaState outer = new NfaState(new Copy(0));
+    Intervals<NfaState> ivals = new Intervals<>();
     ivals.invert(outer);
     ivals.overwrite('e', 'e', inner);
-    CharTrans<AbstractFaState> t = ivals.toCharTrans(1.0);
+    CharTrans<NfaState> t = ivals.toCharTrans(1.0);
     ivals.setFrom(t);
     assertEquals(3, ivals.size());
     assertEquals(outer, ivals.getAt(0));
@@ -53,12 +53,12 @@ public class IntervalsTest extends TestCase {
   /**********************************************************************/
   // similar for TableCharTrans
   public static void test_TCTtoString() throws Exception {
-    Intervals<AbstractFaState> ivals = new Intervals<>();
+    Intervals<NfaState> ivals = new Intervals<>();
     for(int i=0; i<10; i++) {
-      AbstractFaState someState = new AbstractFaState(new Copy(i));
+      NfaState someState = new NfaState(new Copy(i));
       ivals.overwrite((char)('a'+i), (char)('a'+i), someState);
     }
-    CharTrans<AbstractFaState> t = ivals.toCharTrans(1.0);
+    CharTrans<NfaState> t = ivals.toCharTrans(1.0);
     String s = t.toString();
     //System.out.println(s);
     assertEquals("[a,j ..........]", s);
