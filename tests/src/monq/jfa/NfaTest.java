@@ -507,6 +507,7 @@ public class NfaTest {
     }
     assertEquals("KIRSCH", sb.toString());
   }
+
   @Test
   public void testDfaRunPiped()
     throws ReSyntaxException,  CompileDfaException,
@@ -516,17 +517,17 @@ public class NfaTest {
     FaAction mark = new Printf("#%0#");
     Dfa dfa1 = new Nfa(" [a-z]", mark).compile(DfaRun.UNMATCHED_COPY);
 
-    // The 2nd step will used the marked stuff to upcase the marked
+    // The 2nd step will use the marked stuff to upcase the marked
     // character
     FaAction upCase = new AbstractFaAction() {
-	@Override
+      @Override
+      public void invoke(StringBuilder out, int start, DfaRun runner) {
+        char ch = out.charAt(start+2);
+        out.setLength(start);
+        out.append(' ').append(Character.toUpperCase(ch));
+      }
+    };
 
-	public void invoke(StringBuilder out, int start, DfaRun runner) {
-	  char ch = out.charAt(start+2);
-	  out.setLength(start);
-	  out.append(' ').append(Character.toUpperCase(ch));
-	}
-      };
     Dfa dfa2 = new Nfa("# .#", upCase).compile(DfaRun.UNMATCHED_COPY);
 
     String s = " alle meine entchen schwimmen auf dem see";
@@ -536,10 +537,8 @@ public class NfaTest {
     r = new DfaRun(dfa2, r);
 
     StringBuilder sb = new StringBuilder(50);
-    assertTrue(r.read(sb, 100));
-    assertFalse(r.read(sb));
-    assertEquals(" Alle Meine Entchen Schwimmen Auf Dem See",
-		 sb.toString());
+    r.filter(sb);
+    assertEquals(" Alle Meine Entchen Schwimmen Auf Dem See", sb.toString());
   }
   @Test
   public void testReaderPushBack()
@@ -1031,6 +1030,7 @@ public class NfaTest {
       result.append(scratch);
       scratch.setLength(0);
     }
+    result.append(scratch);
     //System.out.println("\n>>"+result+"<<");
     assertEquals("......a..[b]..xxx", result.toString());
   }
@@ -1071,23 +1071,6 @@ public class NfaTest {
     Dfa dfa = new Nfa("a", Copy.COPY).compile(DfaRun.UNMATCHED_COPY);
     DfaRun run = new DfaRun(dfa);
     assertEquals(dfa, run.getDfa());
-  }
-
-  // check that overreading with DfaRun.read(buf,count) works
-  @Test
-  public void testDfaRun5()
-    throws ReSyntaxException, CompileDfaException, java.io.IOException
-  {
-    Nfa nfa = new Nfa("a+", Copy.COPY);
-    DfaRun r = new DfaRun(nfa.compile(DfaRun.UNMATCHED_DROP),
-			  new CharSequenceCharSource("aaaaab"));
-    StringBuilder sb = new StringBuilder();
-    int l = 0;
-    while( r.read(sb, 1) ) {
-      assertEquals(1, sb.length()-l);
-      l+=1;
-    }
-    assertEquals("aaaaa", sb.toString());
   }
 
   // check that overreading with DfaRun.read() works
@@ -1501,7 +1484,7 @@ public class NfaTest {
       assertEquals(toks[i], sb.substring(r.matchStart()));
       sb.setLength(0);
     }
-    assertTrue(r.read(sb));
+    assertFalse(r.read(sb));
     assertEquals(".", sb.toString());
     sb.setLength(0);
     assertFalse(r.read(sb));
@@ -1782,7 +1765,7 @@ public class NfaTest {
     tryCompleter("[a-z]+", "max123braz...", "[max]_[braz]_");
     tryCompleter("de.*", ".....deZZZ", "_[deZZZ]");
     tryCompleter(".*aaa", "...a...aa...aaa...", "[...a...aa...aaa]...");
-    tryCompleter("123abc", "123123abc", "_[123abc]");
+    tryCompleter("123abc", "123123abc", "1_[123abc]");
   }
 
   private static void
@@ -1808,7 +1791,7 @@ public class NfaTest {
     nfa.allPrefixes();
     //nfa.not();
     nfa.addAction(Copy.COPY);
-    
+
 //    Nfa other = new Nfa(".*").seq(nfa.copy()).seq(".*").invert();
 //    other.addAction(Copy.COPY);
 //    nfa.or(other);

@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
 package monq.jfa;
 
 import java.io.Serializable;
+import java.io.IOException;
 import java.io.PrintStream;
 
 /**
@@ -78,7 +79,7 @@ import java.io.PrintStream;
  * @author (C) 2003 Harald Kirsch
  * @version $Revision: 1.48 $, $Date: 2006-09-03 17:28:50 $
  */
-public class DfaRun extends EmptyCharSource implements Serializable {
+public class DfaRun implements CharSource, Serializable {
 
   /**
    * defines typed enumerated values which describe
@@ -203,9 +204,8 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   private FailedMatchBehaviour onFailedMatch;
   private int matchStart;
 
-  // A string buffer for convenient use of some methods which don't
-  // require the caller to supply one.
   private final StringBuilder readBuf = new StringBuilder(1024);
+  private int readPos; // current index into readBuf
   private final TextStore readTs = new TextStore();
 
   // reusable field for calling Dfa.match() and the action returned by
@@ -573,19 +573,15 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * need not become longer.
    * </p>
    *
-   * @return <code>false</code> if we hit EOF <strong>and</strong> we produced
-   * no data in <code>out</code>. As long as <code>true</code> is returned, it
-   * makes sense to call again to possibly get more data.
+   * @return {@code false} on EOF, output data may or may not have been
+   * produced.
    */
   private boolean crunch(StringBuilder out) throws java.io.IOException {
-    int l = out.length();
     action = next(out);
     if( action==null ) return true;
 
     if( action==EOF ) {
-      // there may have been some unmatched characters added to out
-      // just before EOF was hit
-      return l<out.length();
+      return false;
     }
     try {
       action.invoke(out, matchStart, this);
@@ -615,10 +611,7 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * appending to <code>out</code>. As long as {@link #collect} is
    * <code>false</code>, the naturally occurring chunk is determined by
    * one call to {@link #next next()}, and the application of the
-   * returned callback. The data may be prefixed with filtered data
-   * not yet delivered by a previous call to {@link
-   * #read(StringBuilder,int)}. Because the callback may delete the
-   * matching text, the string returned may be empty.</p>
+   * returned callback. The data may be prefixed with pushed back data.</p>
    *
    * <p>If an {@link FaAction#invoke FaAction.invoke()} callback
    * switches to <code>collect==true</code>, this function keeps
@@ -641,47 +634,16 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    * EOF is hit while <code>collect==true</code>.
    * @exception CallbackException if a callback throws this exception
    *
-   * @return <code>true</code>, if some input was read and
-   * filtered. It also means that this method should be called again
-   * because there might be more input waiting to be processed. Only
-   * if <code>false</code> is returned, all input is completely
-   * processed and <code>out</code> was not changed.
+   * @return{@code false} on EOF, data may or may not have been produced in
+   * {@code out}.
    */
-  public boolean read(StringBuilder out) throws java.io.IOException {
-    // copy stuff which might have been pushed back to the output
-    int popped = pop(out);
-
-    boolean unfinished;
-    while( (unfinished=crunch(out)) && collect ) /**/;
-    if( collect ) throw new java.io.EOFException(ECOLLECT);
-    return unfinished || popped>0;
-  }
-
-  /**
-   * reads and filters input until <code>out</code> is grown by
-   * <code>count</code> characters. Less characters are returned if
-   * all input was processed. The field {@link #collect} is
-   * hounored in the same way as by {@link #read(StringBuilder)}.
-   *
-   * @return <code>true</code>, if at least one character can be
-   * delivered or if <code>count==0</code>. A return of
-   * <code>false</code> signals that all input was processed.
-   */
-  public boolean read(StringBuilder out, int count)
-    throws java.io.IOException
-  {
-    int l = out.length();
-
-    // copy stuff which might have been pushed back to the output
-    int popped = pop(out, count);
-    boolean outChanged = false;
-    boolean tmp;
-    while( out.length()-l<count && (tmp=read(out)) ) {
-      outChanged = outChanged || tmp;
+  public boolean read(StringBuilder out) throws IOException {
+    if (!noData()) {
+      out.append(readBuf, readPos, readBuf.length());
+      readPos = 0;
+      readBuf.setLength(0);
     }
-    int tooMany = out.length()-l-count;
-    if( tooMany>0) pushBack(out, out.length()-tooMany);
-    return outChanged || popped>0;
+    return readCollect(out);
   }
   /**********************************************************************/
   /**
@@ -694,24 +656,41 @@ public class DfaRun extends EmptyCharSource implements Serializable {
    */
   @Override
   public int read() throws java.io.IOException {
-    // The next line is not really necessary because the case would be
-    // handled quite nicely by the read() below, but hopefully it
-    // speeds up things quite a bit.
-    int ch;
-    if( (ch=super.readOne())>=0 ) return ch;
-
-    // We have to loop a bit because read(buf) not necessarily
-    // delivers a character, even if it returns true.
-    readBuf.setLength(0);
-
-    // we cannot use the return value of the following read because
-    // 'true' merely signals that some input was processed, not that
-    // output was produced
-    read(readBuf, 1);
-    if( readBuf.length()>0 ) {
-      return readBuf.charAt(0);
+    while (noData()) {
+      if (!readCollect(readBuf)) {
+        if (noData()) return -1;
+        break;
+      }
     }
-    return -1;
+
+    int ch = readBuf.charAt(readPos++);
+    if (noData()) {
+      readPos = 0;
+      readBuf.setLength(0);
+    }
+    return ch;
+  }
+  /**********************************************************************/
+  /**
+   * returns {@code false} on EOF, data may or may not have been produced in
+   * {@code out}.
+   */
+  private boolean readCollect(StringBuilder out) throws IOException {
+    boolean moreData;
+    while( (moreData=crunch(out)) && collect ) /**/;
+    if( collect ) throw new java.io.EOFException(ECOLLECT);
+    return moreData;
+  }
+  /**********************************************************************/
+  private boolean noData() {
+    return readPos>=readBuf.length();
+  }
+  /**********************************************************************/
+  @Override
+  public void pushBack(StringBuilder src, int fromPos)
+  {    
+    readBuf.insert(readPos, src, fromPos, src.length());
+    src.setLength(fromPos);
   }
   /**********************************************************************/
   /**
@@ -732,9 +711,8 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   public void filter(PrintStream out)
     throws java.io.IOException
   {
-    StringBuilder sb = new StringBuilder(4200);
+    StringBuilder sb = new StringBuilder(500);
     while( read(sb) ) {
-      if( sb.length()<4096 ) continue;
       out.print(sb);
       sb.setLength(0);
       if( out.checkError() ) return;
@@ -750,10 +728,10 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   public synchronized String filter(String sin)
     throws java.io.IOException
   {
-    readBuf.setLength(0);
+    StringBuilder sb = new StringBuilder(sin.length());
     setIn(new CharSequenceCharSource(sin));
-    while( crunch(readBuf) ) /**/;
-    return readBuf.toString();
+    while( read(sb) ) /**/;
+    return sb.toString();
   }
   /**********************************************************************/
   /**
@@ -769,9 +747,9 @@ public class DfaRun extends EmptyCharSource implements Serializable {
   public synchronized void filter()
       throws java.io.IOException
   {
-    readBuf.setLength(0);
-    while( crunch(readBuf) ) {
-      if( !collect ) readBuf.setLength(0);
+    StringBuilder sb = new StringBuilder(1000);
+    while( read(sb) ) {
+      sb.setLength(0);
     }
   }
 }
