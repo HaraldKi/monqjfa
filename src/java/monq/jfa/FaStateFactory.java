@@ -5,7 +5,7 @@ public abstract class FaStateFactory<S extends FaState<S>> {
   public abstract S create(FaAction a);
   
   public static final FaStateFactory<NfaState> forNfa = 
-      new FaStateFactory<>() {
+      new FaStateFactory<NfaState>() {
         @Override public NfaState create() {
           return new NfaState();
         }
@@ -17,7 +17,7 @@ public abstract class FaStateFactory<S extends FaState<S>> {
   };
 
   public static final FaStateFactory<DfaState> forDfa = 
-      new FaStateFactory<>() {
+      new FaStateFactory<DfaState>() {
         @Override public DfaState create() {
           return new DfaState();
         }
