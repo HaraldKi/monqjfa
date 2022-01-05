@@ -1,4 +1,4 @@
-monqjfa --- Nondeterministic and Deterministic Finita Automata for Java (NFA, DFA)
+monqjfa --- Nondeterministic and Deterministic Finite Automata for Java (NFA, DFA)
 =======
 
 The Java class library monq.jfa provides fast and flexible text
